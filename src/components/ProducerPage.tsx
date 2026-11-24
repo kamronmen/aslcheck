@@ -18,6 +18,7 @@ import {
   MapPin,
   Clock,
   Smartphone,
+  Sparkles,
 } from 'lucide-react';
 import type { ProductWithManufacturer, NewProductPayload, ReportWithProduct } from '../types';
 import {
@@ -26,6 +27,7 @@ import {
   deleteProduct,
   fetchReports,
 } from '../lib/api';
+import { generateProducerAiReport, type ProducerAiReport } from '../lib/ai';
 import { QrLabelCard } from './QrLabelCard';
 import { BatchQrModal } from './BatchQrModal';
 
@@ -54,6 +56,10 @@ export const ProducerPage: React.FC = () => {
   const [isReportsLoading, setIsReportsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
+
+  // Gemini AI Executive Report State (Feature B)
+  const [aiReport, setAiReport] = useState<ProducerAiReport | null>(null);
+  const [isAiReportLoading, setIsAiReportLoading] = useState(false);
 
   // Modals
   const [selectedProductForQr, setSelectedProductForQr] = useState<ProductWithManufacturer | null>(null);
@@ -113,6 +119,32 @@ export const ProducerPage: React.FC = () => {
       loadData();
     }
   }, [isUnlocked]);
+
+  // Calculate KPIs
+  const totalProducts = products.length;
+  const totalScans = products.reduce((acc, p) => acc + (p.scan_count || 0), 0);
+  const suspiciousCount = products.filter(
+    (p) => p.is_flagged || (p.scan_count || 0) > (p.max_safe_scans || 3)
+  ).length;
+
+  // Run AI Risk Report
+  const handleRunProducerAiReport = async () => {
+    if (isAiReportLoading) return;
+    setIsAiReportLoading(true);
+    try {
+      const report = await generateProducerAiReport({
+        total_products: totalProducts,
+        total_scans: totalScans,
+        suspicious_count: suspiciousCount,
+        reports: reports.slice(0, 10),
+      });
+      setAiReport(report);
+    } catch (err) {
+      console.error('Failed to run AI risk report:', err);
+    } finally {
+      setIsAiReportLoading(false);
+    }
+  };
 
   // Handle PIN Submission
   const handlePinSubmit = (e: React.FormEvent) => {
@@ -250,13 +282,6 @@ export const ProducerPage: React.FC = () => {
       </div>
     );
   }
-
-  // Calculate KPIs
-  const totalProducts = products.length;
-  const totalScans = products.reduce((acc, p) => acc + (p.scan_count || 0), 0);
-  const suspiciousCount = products.filter(
-    (p) => p.is_flagged || (p.scan_count || 0) > (p.max_safe_scans || 3)
-  ).length;
 
   const filteredProducts = products.filter((p) => {
     const term = searchTerm.toLowerCase();
@@ -764,10 +789,10 @@ export const ProducerPage: React.FC = () => {
         </div>
       )}
 
-      {/* SECTION 2: LIVE COUNTERFEIT REPORTS RADAR (Feature 5) */}
+      {/* SECTION 2: LIVE COUNTERFEIT REPORTS RADAR + FEATURE B: GEMINI AI REPORT */}
       {activeSection === 'reports' && (
         <div className="mt-4 space-y-4">
-          <div className="flex items-center justify-between p-4 rounded-xl border border-[#1F1F1F] bg-[#0A0A0A]">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] gap-3">
             <div>
               <h2 className="text-sm font-semibold tracking-tight text-[#FAFAFA] flex items-center space-x-2">
                 <Flag className="h-4 w-4 text-[#EF4444]" strokeWidth={1.75} />
@@ -778,15 +803,93 @@ export const ProducerPage: React.FC = () => {
               </p>
             </div>
 
-            <button
-              type="button"
-              onClick={refreshReports}
-              className="flex items-center space-x-1.5 rounded-lg border border-[#1F1F1F] bg-[#141414] px-3 py-1.5 text-xs text-[#FAFAFA] hover:bg-[#1E1E1E] transition-colors"
-            >
-              <RefreshCw className={`h-3.5 w-3.5 ${isReportsLoading ? 'animate-spin' : ''}`} />
-              <span>Radarni yangilash</span>
-            </button>
+            <div className="flex items-center space-x-2">
+              {/* Feature B: Gemini AI Producer Report Trigger */}
+              <button
+                type="button"
+                onClick={handleRunProducerAiReport}
+                disabled={isAiReportLoading}
+                className="flex items-center space-x-1.5 rounded-lg border border-[#2A2A2A] bg-[#141414] hover:bg-[#1E1E1E] px-3 py-1.5 text-xs font-medium text-[#FAFAFA] transition-colors shadow-sm"
+              >
+                <Sparkles className="h-3.5 w-3.5 text-[#FAFAFA]" strokeWidth={1.75} />
+                <span>{isAiReportLoading ? 'AI hisoboti tayyorlanmoqda...' : 'AI Xavf Hisoboti'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={refreshReports}
+                className="flex items-center space-x-1.5 rounded-lg border border-[#1F1F1F] bg-[#141414] px-3 py-1.5 text-xs text-[#FAFAFA] hover:bg-[#1E1E1E] transition-colors"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${isReportsLoading ? 'animate-spin' : ''}`} />
+                <span>Radarni yangilash</span>
+              </button>
+            </div>
           </div>
+
+          {/* Feature B: Gemini AI Executive Briefing Card */}
+          {aiReport && (
+            <div className="rounded-xl border border-[#222222] bg-[#0D0D0D] p-5 space-y-3.5 shadow-xl animate-in fade-in duration-300">
+              <div className="flex items-center justify-between pb-3 border-b border-[#1A1A1A]">
+                <div className="flex items-center space-x-2">
+                  <Sparkles className="h-4 w-4 text-[#FAFAFA]" strokeWidth={1.75} />
+                  <h3 className="text-xs font-semibold text-[#FAFAFA] tracking-tight">
+                    Gemini AI: Boshqaruv va Kontrafakt Xavfi Tahlili
+                  </h3>
+                </div>
+
+                <span
+                  className={`inline-flex items-center space-x-1 rounded px-2.5 py-0.5 text-[10px] font-mono font-bold ${
+                    aiReport.risk_level === 'Past'
+                      ? 'bg-[#10B981]/15 border border-[#10B981]/30 text-[#10B981]'
+                      : aiReport.risk_level === 'Yuqori'
+                      ? 'bg-[#EF4444]/15 border border-[#EF4444]/30 text-[#EF4444]'
+                      : 'bg-[#F59E0B]/15 border border-[#F59E0B]/30 text-[#F59E0B]'
+                  }`}
+                >
+                  <span>Xavf darajasi: {aiReport.risk_level}</span>
+                </span>
+              </div>
+
+              <div className="space-y-3 text-xs">
+                <div>
+                  <span className="text-[10px] text-[#525252] uppercase font-mono tracking-wider block mb-1">
+                    Boshqaruv Xulosasi (Executive Summary)
+                  </span>
+                  <p className="text-[#888888] leading-relaxed">
+                    {aiReport.executive_summary}
+                  </p>
+                </div>
+
+                {aiReport.top_hotspots && aiReport.top_hotspots.length > 0 && (
+                  <div className="pt-2 border-t border-[#141414]">
+                    <span className="text-[10px] text-[#525252] uppercase font-mono tracking-wider block mb-1.5">
+                      Aniqlangan Qaynoq Nuqtalar va Xavfli Hududlar
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {aiReport.top_hotspots.map((spot, idx) => (
+                        <span
+                          key={idx}
+                          className="rounded bg-[#141414] border border-[#262626] px-2.5 py-1 text-[11px] font-medium text-[#FAFAFA] flex items-center space-x-1"
+                        >
+                          <MapPin className="h-3 w-3 text-[#EF4444]" strokeWidth={1.75} />
+                          <span>{spot}</span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="pt-2 border-t border-[#141414]">
+                  <span className="text-[10px] text-[#525252] uppercase font-mono tracking-wider block mb-1">
+                    Ishlab Chiqaruvchi Uchun Tavsiya Etilgan Harakatlar
+                  </span>
+                  <p className="text-[#FAFAFA] font-medium leading-relaxed">
+                    🛡️ {aiReport.action_recommendation}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {reports.length === 0 ? (
             <div className="p-12 text-center rounded-xl border border-[#1F1F1F] bg-[#0A0A0A]">

@@ -17,9 +17,12 @@ import {
   AlertOctagon,
   ShieldAlert,
   ShoppingBag,
+  Sparkles,
+  RefreshCw,
 } from 'lucide-react';
 import type { VerificationResult, ScanLog } from '../types';
 import { reportFakeProduct, claimProduct } from '../lib/api';
+import { analyzeProductWithAi, type ProductAiAnalysis } from '../lib/ai';
 
 interface VerificationCardProps {
   result: VerificationResult;
@@ -48,6 +51,10 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
   const [reportSuccess, setReportSuccess] = useState(false);
 
+  // Gemini AI Analysis state (Feature A)
+  const [aiAnalysis, setAiAnalysis] = useState<ProductAiAnalysis | null>(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+
   // Automatic Expiry Date Check
   const isExpired = product?.expiry_date
     ? new Date(product.expiry_date).getTime() < new Date().setHours(0, 0, 0, 0)
@@ -68,6 +75,20 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
       console.error('Claim error:', err);
     } finally {
       setIsClaiming(false);
+    }
+  };
+
+  // Run AI Analysis
+  const handleRunAiAnalysis = async () => {
+    if (!product || isAiLoading) return;
+    setIsAiLoading(true);
+    try {
+      const analysis = await analyzeProductWithAi(product);
+      setAiAnalysis(analysis);
+    } catch (err) {
+      console.error('AI Analysis failed:', err);
+    } finally {
+      setIsAiLoading(false);
     }
   };
 
@@ -369,6 +390,100 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
               </div>
             )}
           </div>
+        </div>
+
+        {/* FEATURE A: Gemini AI Intelligence Box */}
+        <div>
+          {!aiAnalysis && !isAiLoading && (
+            <div className="rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="text-left">
+                  <div className="text-xs font-semibold text-[#FAFAFA] flex items-center space-x-1.5">
+                    <Sparkles className="h-3.5 w-3.5 text-[#FAFAFA]" strokeWidth={1.75} />
+                    <span>Gemini AI Tarkib va Xavfsizlik Ekspertizasi</span>
+                  </div>
+                  <p className="text-[11px] text-[#888888] mt-0.5">
+                    Mahsulot tarkibi, tabiiylik va nusxalanish ehtimolini sunʼiy intellekt orqali chuqur tekshiring
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleRunAiAnalysis}
+                  className="flex items-center justify-center space-x-2 rounded-lg border border-[#2A2A2A] bg-[#141414] hover:bg-[#1E1E1E] px-4 py-2 text-xs font-medium text-[#FAFAFA] transition-colors shrink-0"
+                >
+                  <Sparkles className="h-3.5 w-3.5 text-[#FAFAFA]" strokeWidth={1.75} />
+                  <span>AI bilan tahlil qilish</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {isAiLoading && (
+            <div className="rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] p-6 text-center animate-pulse">
+              <RefreshCw className="h-5 w-5 animate-spin mx-auto mb-2 text-[#888888]" />
+              <div className="text-xs font-semibold text-[#FAFAFA]">
+                Gemini 2.5 Flash tahlil qilmoqda...
+              </div>
+              <div className="text-[11px] text-[#525252] mt-0.5">
+                Tarkib, xavfsizlik va kontrafakt ehtimoli hisoblanmoqda
+              </div>
+            </div>
+          )}
+
+          {aiAnalysis && (
+            <div className="rounded-xl border border-[#222222] bg-[#0A0A0A] p-5 space-y-3.5 shadow-xl animate-in fade-in duration-300">
+              <div className="flex items-center justify-between pb-3 border-b border-[#141414]">
+                <div className="flex items-center space-x-2">
+                  <Sparkles className="h-4 w-4 text-[#FAFAFA]" strokeWidth={1.75} />
+                  <h3 className="text-xs font-semibold text-[#FAFAFA] tracking-tight">
+                    Gemini AI Xavfsizlik va Tarkib Tahlili
+                  </h3>
+                </div>
+
+                <span
+                  className={`inline-flex items-center space-x-1 rounded px-2 py-0.5 text-[10px] font-mono font-bold ${
+                    aiAnalysis.safety_score === 'Yuqori'
+                      ? 'bg-[#10B981]/15 border border-[#10B981]/30 text-[#10B981]'
+                      : aiAnalysis.safety_score === 'Past'
+                      ? 'bg-[#EF4444]/15 border border-[#EF4444]/30 text-[#EF4444]'
+                      : 'bg-[#F59E0B]/15 border border-[#F59E0B]/30 text-[#F59E0B]'
+                  }`}
+                >
+                  <span>Xavfsizlik darajasi: {aiAnalysis.safety_score}</span>
+                </span>
+              </div>
+
+              <div className="space-y-3 text-xs">
+                <div>
+                  <span className="text-[10px] text-[#525252] uppercase font-mono tracking-wider block mb-1">
+                    Tarkib va Tabiiylik Bahosi
+                  </span>
+                  <p className="text-[#888888] leading-relaxed">
+                    {aiAnalysis.ingredients_summary}
+                  </p>
+                </div>
+
+                <div className="pt-2 border-t border-[#141414]">
+                  <span className="text-[10px] text-[#525252] uppercase font-mono tracking-wider block mb-1">
+                    Asllik va Kontrafakt Xulosasi
+                  </span>
+                  <p className="text-[#888888] leading-relaxed">
+                    {aiAnalysis.authenticity_verdict}
+                  </p>
+                </div>
+
+                <div className="pt-2 border-t border-[#141414]">
+                  <span className="text-[10px] text-[#525252] uppercase font-mono tracking-wider block mb-1">
+                    Xaridor Uchun Amaliy Tavsiya
+                  </span>
+                  <p className="text-[#FAFAFA] font-medium leading-relaxed">
+                    💡 {aiAnalysis.buyer_tip}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Manufacturer Card */}
