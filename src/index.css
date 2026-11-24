@@ -32,12 +32,16 @@
   }
 }
 
-/* Printing styles for QR label card */
+/* Printing styles for QR label cards (Single & Batch A4) */
 @media print {
   body * {
     visibility: hidden;
   }
-  #printable-qr-area, #printable-qr-area * {
+  .no-print {
+    display: none !important;
+  }
+  #printable-qr-area, #printable-qr-area *,
+  #batch-printable-area, #batch-printable-area * {
     visibility: visible;
   }
   #printable-qr-area {
@@ -53,7 +57,27 @@
     box-shadow: none !important;
     padding: 16px !important;
   }
-  #printable-qr-area * {
+  #batch-printable-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+    background: white !important;
     color: black !important;
+    padding: 10mm !important;
+  }
+  #batch-printable-area .batch-label-item {
+    background: white !important;
+    border: 1px dashed #777 !important;
+    color: black !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    padding: 12px !important;
+  }
+  #batch-printable-area * {
+    color: black !important;
+    border-color: #ddd !important;
   }
 }

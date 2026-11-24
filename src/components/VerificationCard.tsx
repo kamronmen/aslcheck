@@ -15,9 +15,11 @@ import {
   Check,
   Hash,
   AlertOctagon,
+  ShieldAlert,
+  ShoppingBag,
 } from 'lucide-react';
 import type { VerificationResult, ScanLog } from '../types';
-import { reportFakeProduct } from '../lib/api';
+import { reportFakeProduct, claimProduct } from '../lib/api';
 
 interface VerificationCardProps {
   result: VerificationResult;
@@ -32,11 +34,42 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
   const { status, product, logs: initialLogs } = result;
   const [logs, setLogs] = useState<ScanLog[]>(initialLogs);
   const [currentStatus, setCurrentStatus] = useState(status);
+  
+  // Ownership Claim state
+  const [isClaimed, setIsClaimed] = useState<boolean>(Boolean(product?.is_claimed));
+  const [claimedAt, setClaimedAt] = useState<string | null>(product?.claimed_at || null);
+  const [isClaiming, setIsClaiming] = useState(false);
+  const [justClaimed, setJustClaimed] = useState(false);
+
+  // Counterfeit Report state
   const [showReportForm, setShowReportForm] = useState(false);
   const [reportLocation, setReportLocation] = useState('');
   const [reportComment, setReportComment] = useState('');
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
   const [reportSuccess, setReportSuccess] = useState(false);
+
+  // Automatic Expiry Date Check
+  const isExpired = product?.expiry_date
+    ? new Date(product.expiry_date).getTime() < new Date().setHours(0, 0, 0, 0)
+    : false;
+
+  // Handle Ownership Claim
+  const handleClaim = async () => {
+    if (!product || isClaiming || isClaimed) return;
+    setIsClaiming(true);
+    try {
+      const res = await claimProduct(product.id);
+      if (res.success) {
+        setIsClaimed(true);
+        setClaimedAt(res.claimed_at);
+        setJustClaimed(true);
+      }
+    } catch (err) {
+      console.error('Claim error:', err);
+    } finally {
+      setIsClaiming(false);
+    }
+  };
 
   // Submit counterfeit report
   const handleReportSubmit = async (e: React.FormEvent) => {
@@ -186,7 +219,77 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
         </div>
       </div>
 
+      {/* Feature 3: Automatic Expiry Date Alert Banner */}
+      {isExpired && (
+        <div className="border-b border-[#EF4444]/40 bg-[#EF4444]/15 px-5 py-3.5 flex items-start space-x-3 text-xs text-[#EF4444]">
+          <AlertOctagon className="h-4 w-4 shrink-0 mt-0.5" strokeWidth={2} />
+          <div>
+            <div className="font-bold tracking-tight">
+              OGOHLANTIRISH: Mahsulot asl, lekin yaroqlilik muddati o‘tgan!
+            </div>
+            <p className="text-[#888888] mt-0.5">
+              Belgilangan yaroqlilik sanasi ({product.expiry_date}) tugagan. Ushbu mahsulotni isteʼmol qilish yoki ishlatish sog‘liq uchun xavfli bo‘lishi mumkin.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Feature 2: Smart Ownership Claim Status Banners */}
+      {justClaimed && (
+        <div className="border-b border-[#10B981]/30 bg-[#10B981]/15 px-5 py-3 flex items-center space-x-2.5 text-xs text-[#10B981] animate-in fade-in">
+          <Check className="h-4 w-4 shrink-0" strokeWidth={2.5} />
+          <span className="font-semibold">
+            Ushbu mahsulot siz tomoningizdan faollashtirildi (Band qilindi).
+          </span>
+        </div>
+      )}
+
+      {isClaimed && !justClaimed && (
+        <div className="border-b border-[#F59E0B]/30 bg-[#F59E0B]/10 px-5 py-3.5 flex items-start space-x-3 text-xs text-[#F59E0B]">
+          <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5" strokeWidth={2} />
+          <div className="leading-relaxed">
+            <span className="font-bold">DIQQAT!</span> Ushbu mahsulot avvalroq{' '}
+            <span className="font-mono font-semibold underline">
+              {claimedAt
+                ? new Date(claimedAt).toLocaleString('uz-UZ', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })
+                : 'oldingi xaridor tomonidan'}
+            </span>{' '}
+            sotib olinib, faollashtirilgan. Agar bu rastadagi yopiq yangi qadoq bo‘lsa — qalbaki yoki nusxalangan bo‘lishi mumkin!
+          </div>
+        </div>
+      )}
+
       <div className="p-5 sm:p-6 space-y-6">
+        {/* Feature 2: Ownership Claim Action Button (when not yet claimed) */}
+        {!isClaimed && (
+          <div className="rounded-xl border border-[#1F1F1F] bg-[#0D0D0D] p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <div className="text-xs font-semibold text-[#FAFAFA] flex items-center space-x-1.5">
+                <ShoppingBag className="h-3.5 w-3.5 text-[#10B981]" strokeWidth={2} />
+                <span>Ushbu mahsulotni xarid qildingizmi?</span>
+              </div>
+              <p className="text-[11px] text-[#888888] mt-0.5">
+                Kodni o‘zingizga band qiling — boshqa hech kim ushbu kodni qayta faollashtirolmaydi.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleClaim}
+              disabled={isClaiming}
+              className="flex items-center justify-center space-x-2 rounded-lg bg-[#FAFAFA] px-4 py-2 text-xs font-bold text-black hover:bg-[#E5E5E5] disabled:opacity-50 transition-colors shrink-0 shadow-sm"
+            >
+              <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
+              <span>{isClaiming ? 'Band qilinmoqda...' : 'Sotib oldim — Kodni band qilish'}</span>
+            </button>
+          </div>
+        )}
+
         {/* Product Details Grid */}
         <div>
           <div className="flex items-center justify-between mb-3">
@@ -235,13 +338,20 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
                 </div>
               </div>
 
+              {/* Expiry Date (Highlighted if expired) */}
               <div className="col-span-2 sm:col-span-1">
                 <span className="text-[11px] text-[#525252] flex items-center gap-1">
                   <Clock className="h-3 w-3" strokeWidth={1.75} />
                   Yaroqlilik muddati
                 </span>
-                <div className="font-mono text-xs text-[#FAFAFA] mt-0.5">
-                  {product.expiry_date}
+                <div
+                  className={`font-mono text-xs mt-0.5 ${
+                    isExpired
+                      ? 'text-[#EF4444] font-bold px-1.5 py-0.5 rounded bg-[#EF4444]/10 border border-[#EF4444]/30 inline-block'
+                      : 'text-[#FAFAFA]'
+                  }`}
+                >
+                  {product.expiry_date} {isExpired ? '(Muddati o‘tgan)' : ''}
                 </div>
               </div>
             </div>

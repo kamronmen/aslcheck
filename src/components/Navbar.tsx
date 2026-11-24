@@ -1,6 +1,5 @@
 import React from 'react';
 import { ShieldCheck, CheckCircle2, Factory } from 'lucide-react';
-import { isSupabaseConfigured } from '../lib/supabase';
 
 interface NavbarProps {
   activeTab: 'verify' | 'producer';
@@ -34,7 +33,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
           </div>
         </div>
 
-        {/* Center / Right: Segmented Switcher */}
+        {/* Center / Right: Segmented Switcher & Status */}
         <div className="flex items-center space-x-3 sm:space-x-4">
           <nav className="flex rounded-lg border border-[#1F1F1F] bg-[#0A0A0A] p-1">
             <button
@@ -64,19 +63,13 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
             </button>
           </nav>
 
-          {/* Database indicator pill */}
+          {/* Clean 'Reyestr faol' Status Pill (Feature 6) */}
           <div
-            title={
-              isSupabaseConfigured
-                ? 'Supabase bulutli reyestri faol va bog‘langan'
-                : 'Mahalliy sinov bazasi faol'
-            }
-            className="hidden items-center space-x-1.5 rounded-full border border-[#1F1F1F] bg-[#0A0A0A] px-2.5 py-1 text-[11px] text-[#888888] md:flex"
+            title="Milliy himoyalangan reyestr faol ishlamoqda"
+            className="hidden items-center space-x-1.5 rounded-full border border-[#10B981]/30 bg-[#10B981]/10 px-2.5 py-1 text-[11px] text-[#10B981] md:flex"
           >
             <span className="h-1.5 w-1.5 rounded-full bg-[#10B981] animate-pulse" />
-            <span className="font-mono text-[10px]">
-              {isSupabaseConfigured ? 'Supabase Online' : 'Local Cache'}
-            </span>
+            <span className="font-medium text-[11px]">Reyestr faol</span>
           </div>
         </div>
       </div>

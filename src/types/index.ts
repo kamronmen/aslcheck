@@ -20,6 +20,8 @@ export interface Product {
   scan_count: number;
   max_safe_scans: number;
   is_flagged: boolean;
+  is_claimed?: boolean;
+  claimed_at?: string | null;
   created_at: string;
 }
 
@@ -35,6 +37,14 @@ export interface ScanLog {
 
 export interface ProductWithManufacturer extends Product {
   manufacturers: Manufacturer;
+}
+
+export interface ReportWithProduct extends ScanLog {
+  product?: {
+    id: string;
+    serial_code: string;
+    product_name: string;
+  } | null;
 }
 
 export type VerificationStatus = 'AUTHENTIC' | 'SUSPICIOUS' | 'NOT_FOUND';
