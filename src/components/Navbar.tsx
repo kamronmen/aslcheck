@@ -1,9 +1,11 @@
 import React from 'react';
-import { ShieldCheck, CheckCircle2, Factory } from 'lucide-react';
+import { ShieldCheck, CheckCircle2, Factory, Sparkles } from 'lucide-react';
+
+export type NavTab = 'verify' | 'ai' | 'producer';
 
 interface NavbarProps {
-  activeTab: 'verify' | 'producer';
-  setActiveTab: (tab: 'verify' | 'producer') => void;
+  activeTab: NavTab;
+  setActiveTab: (tab: NavTab) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
@@ -33,13 +35,14 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
           </div>
         </div>
 
-        {/* Center / Right: Segmented Switcher & Status */}
-        <div className="flex items-center space-x-3 sm:space-x-4">
+        {/* Center / Right: 3 Segmented Tabs & Status */}
+        <div className="flex items-center space-x-2 sm:space-x-4">
           <nav className="flex rounded-lg border border-[#1F1F1F] bg-[#0A0A0A] p-1">
+            {/* 1. Tekshirish Tab */}
             <button
               type="button"
               onClick={() => setActiveTab('verify')}
-              className={`flex items-center space-x-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
+              className={`flex items-center space-x-1.5 rounded-md px-2.5 sm:px-3 py-1.5 text-xs font-medium transition-all ${
                 activeTab === 'verify'
                   ? 'bg-[#FAFAFA] text-black shadow-sm font-semibold'
                   : 'text-[#888888] hover:text-[#FAFAFA] hover:bg-[#141414]'
@@ -49,24 +52,43 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
               <span>Tekshirish</span>
             </button>
 
+            {/* 2. AI Ekspert Tab */}
+            <button
+              type="button"
+              onClick={() => setActiveTab('ai')}
+              className={`relative flex items-center space-x-1.5 rounded-md px-2.5 sm:px-3 py-1.5 text-xs font-medium transition-all ${
+                activeTab === 'ai'
+                  ? 'bg-[#FAFAFA] text-black shadow-sm font-semibold'
+                  : 'text-[#888888] hover:text-[#FAFAFA] hover:bg-[#141414]'
+              }`}
+            >
+              <Sparkles className="h-3.5 w-3.5 text-[#10B981]" strokeWidth={2} />
+              <span>AI Ekspert</span>
+              <span className="hidden sm:inline-block rounded bg-[#10B981]/20 px-1 py-0.2 text-[9px] font-bold text-[#10B981] ml-0.5">
+                NEW
+              </span>
+            </button>
+
+            {/* 3. Ishlab chiqaruvchi Tab */}
             <button
               type="button"
               onClick={() => setActiveTab('producer')}
-              className={`flex items-center space-x-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
+              className={`flex items-center space-x-1.5 rounded-md px-2.5 sm:px-3 py-1.5 text-xs font-medium transition-all ${
                 activeTab === 'producer'
                   ? 'bg-[#FAFAFA] text-black shadow-sm font-semibold'
                   : 'text-[#888888] hover:text-[#FAFAFA] hover:bg-[#141414]'
               }`}
             >
               <Factory className="h-3.5 w-3.5" strokeWidth={1.75} />
-              <span>Ishlab chiqaruvchi</span>
+              <span className="hidden sm:inline">Ishlab chiqaruvchi</span>
+              <span className="sm:hidden">Zavod</span>
             </button>
           </nav>
 
-          {/* Clean 'Reyestr faol' Status Pill (Feature 6) */}
+          {/* Clean 'Reyestr faol' Status Pill */}
           <div
             title="Milliy himoyalangan reyestr faol ishlamoqda"
-            className="hidden items-center space-x-1.5 rounded-full border border-[#10B981]/30 bg-[#10B981]/10 px-2.5 py-1 text-[11px] text-[#10B981] md:flex"
+            className="hidden items-center space-x-1.5 rounded-full border border-[#10B981]/30 bg-[#10B981]/10 px-2.5 py-1 text-[11px] text-[#10B981] lg:flex"
           >
             <span className="h-1.5 w-1.5 rounded-full bg-[#10B981] animate-pulse" />
             <span className="font-medium text-[11px]">Reyestr faol</span>

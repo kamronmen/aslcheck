@@ -46,7 +46,101 @@ export default async function handler(req: any, res?: any) {
     '';
 
   try {
-    // 1. PRODUCT ANALYSIS MODE
+    // 1. GENERAL AI EXPERT CHAT MODE (Interactive conversation)
+    if (mode === 'general_chat') {
+      const { question, history, context } = payload || {};
+
+      const systemPrompt = `Siz "AslCheck" milliy mahsulotlar reyestri va kontrafaktga qarshi kurashish platformasining rasmiy AI maslahatchisisiz (Google Gemini 3.5 Flash asosida).
+Asosiy vazifangiz: iste'molchilarga tovarlar, oziq-ovqatlar (asal, yog'lar, choy, shirinliklar), kosmetika va texnika mahsulotlarining sifati, tabiiyligi, yaroqlilik muddati, E-qo'shimchalari, standartlari va soxta (kontrafakt) nusxalardan saqlanish bo'yicha amaliy, ilmiy asoslangan va ishonchli maslahatlar berish.
+
+Javob berish qoidalari:
+1. Sof, ravon va tabiiy o'zbek tilida (lotin alifbosida) javob bering.
+2. Iste'molchiga qadoqdagi belgilar, shtrix-kod, AslCheck QR pasporti va organoleptik usullarni tushuntiring.
+3. Chiroyli formatda: abzatslar, punktlar va amaliy tavsiyalar ("💡 Tavsiya:") bilan yozing.
+${context ? `Joriy mahsulot konteksti: ${context}` : ''}`;
+
+      // Build multi-turn contents array for Gemini
+      const contents: Array<{ role: string; parts: Array<{ text: string }> }> = [
+        {
+          role: 'user',
+          parts: [{ text: systemPrompt }],
+        },
+        {
+          role: 'model',
+          parts: [
+            {
+              text: 'Tushundim. Men AslCheck rasmiy AI maslahatchisiman. Isteʼmolchilarga mahsulotlar sifati, tabiiyligi va kontrafaktdan himoyalanish bo‘yicha aniq, xolis va amaliy yordam berishga tayyorman.',
+            },
+          ],
+        },
+      ];
+
+      // Append conversation history if available
+      if (Array.isArray(history) && history.length > 0) {
+        for (const msg of history.slice(-6)) {
+          if (msg && msg.text) {
+            contents.push({
+              role: msg.role === 'assistant' || msg.role === 'model' ? 'model' : 'user',
+              parts: [{ text: String(msg.text) }],
+            });
+          }
+        }
+      }
+
+      // Add current question
+      contents.push({
+        role: 'user',
+        parts: [{ text: question || 'AslCheck tizimi nima va u qanday yordam beradi?' }],
+      });
+
+      let replyText = '';
+
+      if (apiKey && apiKey.length > 10) {
+        try {
+          const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`;
+          const response = await fetch(geminiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents,
+              generationConfig: {
+                temperature: 0.7,
+                maxOutputTokens: 1000,
+              },
+            }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            replyText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          } else {
+            const errData = await response.text();
+            console.warn('Gemini chat response not ok:', response.status, errData);
+          }
+        } catch (callErr) {
+          console.warn('Gemini chat call failed:', callErr);
+        }
+      }
+
+      if (!replyText) {
+        replyText = `AslCheck AI maslahatchisi xulosasi:
+Mahsulotlarning asl nusxasini tekshirish uchun har doim uning qadog‘idagi unikal seriya kodini AslCheck orqali skanerlang va himoya lentasi butunligini tekshiring.
+
+Asl mahsulot belgilari:
+• Litsenziyalangan ishlab chiqaruvchi va davlat sertifikati mavjudligi
+• Partiya raqami va yaroqlilik muddatining aniq bosilganligi
+• Skanerlashlar soni xavfsiz chegarada (odatda 3 tagacha) ekanligi
+
+💡 Amaliy tavsiya: Qadoqni ochishdan oldin AslCheck orqali tekshirib, "Sotib oldim — Kodni band qilish" tugmasini bosing.`;
+      }
+
+      if (res && typeof res.status === 'function') {
+        return res.status(200).json({ text: replyText });
+      }
+      return new Response(JSON.stringify({ text: replyText }), { status: 200, headers });
+    }
+
+    // 2. PRODUCT ANALYSIS MODE
     if (mode === 'product_analysis') {
       const p = payload || {};
       const prompt = `Siz "AslCheck" milliy mahsulotlar pasporti tizimining rasmiy AI xavfsizlik va oziq-ovqat/tovar ekspertisiz.
@@ -112,7 +206,7 @@ Qat'iy ravishda quyidagi JSON formatida javob bering (boshqa hech qanday soʻz, 
           safetyScore = 'Past';
           authVerdict = 'Mahsulot kodining aslligi tasdiqlangan, ammo belgilangan yaroqlilik muddati tugagan!';
         } else if (isSuspicious) {
-          safetyScore = 'O\'rtacha';
+          safetyScore = "O'rtacha";
           authVerdict = `Kod xavfsiz chegaradan (${p.max_safe_scans || 3}) ko'p, ya'ni ${p.scan_count} marta skanerlangan. Qadoq nusxalangan bo'lish xavfi yuqori.`;
         }
 
@@ -132,7 +226,7 @@ Qat'iy ravishda quyidagi JSON formatida javob bering (boshqa hech qanday soʻz, 
       return new Response(JSON.stringify(aiResult), { status: 200, headers });
     }
 
-    // 2. PRODUCER REPORT MODE
+    // 3. PRODUCER REPORT MODE
     if (mode === 'producer_report') {
       const p = payload || {};
       const prompt = `Siz "AslCheck" brend himoyasi va kontrafakt monitoringi bo'yicha yetakchi AI tahlilchisiz.
@@ -182,7 +276,7 @@ Qat'iy ravishda quyidagi JSON formatida javob bering (faqat valid JSON):
 
       if (!aiResult) {
         const suspiciousRatio = (p.suspicious_count || 0) / Math.max(1, p.total_products || 1);
-        const riskLevel = suspiciousRatio > 0.3 ? 'Yuqori' : suspiciousRatio > 0 ? 'O\'rtacha' : 'Past';
+        const riskLevel = suspiciousRatio > 0.3 ? 'Yuqori' : suspiciousRatio > 0 ? "O'rtacha" : 'Past';
 
         aiResult = {
           risk_level: riskLevel,

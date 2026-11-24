@@ -28,11 +28,13 @@ interface VerificationCardProps {
   result: VerificationResult;
   searchedCode: string;
   onRefresh?: () => void;
+  onAskAiAboutProduct?: (prompt: string) => void;
 }
 
 export const VerificationCard: React.FC<VerificationCardProps> = ({
   result,
   searchedCode,
+  onAskAiAboutProduct,
 }) => {
   const { status, product, logs: initialLogs } = result;
   const [logs, setLogs] = useState<ScanLog[]>(initialLogs);
@@ -481,6 +483,23 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
                     💡 {aiAnalysis.buyer_tip}
                   </p>
                 </div>
+
+                {onAskAiAboutProduct && (
+                  <div className="pt-3 border-t border-[#141414] flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onAskAiAboutProduct(
+                          `Menda "${product.product_name}" mahsuloti bor (Kodi: ${product.serial_code}). Tarkibi: ${product.ingredients || 'ko\'rsatilmagan'}. Ushbu mahsulotning tabiiyligi va haqiqiyligi bo'yicha yana nimalarga e'tibor berishim kerak?`
+                        )
+                      }
+                      className="inline-flex items-center space-x-1.5 text-xs text-[#10B981] hover:text-[#FAFAFA] transition-colors"
+                    >
+                      <Sparkles className="h-3.5 w-3.5" strokeWidth={1.75} />
+                      <span>AI Ekspert bilan to‘liq muloqot qilish →</span>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}

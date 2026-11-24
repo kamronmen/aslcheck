@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Search, QrCode, RefreshCw, Sparkles, ArrowRight } from 'lucide-react';
+import { Search, QrCode, RefreshCw, Sparkles, ArrowRight, Lightbulb } from 'lucide-react';
 import { QrScannerModal } from './QrScannerModal';
 import { VerificationCard } from './VerificationCard';
 import { verifyProduct } from '../lib/api';
 import type { VerificationResult } from '../types';
 
-export const VerifyPage: React.FC = () => {
+interface VerifyPageProps {
+  onNavigateToAi?: (question?: string) => void;
+}
+
+export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
   const [inputCode, setInputCode] = useState('');
   const [searchedCode, setSearchedCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -165,6 +169,36 @@ export const VerifyPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Prominent AI Assistant Banner */}
+      <div className="mt-5 mx-auto max-w-2xl rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-lg">
+        <div className="flex items-start space-x-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#10B981]/30 bg-[#10B981]/10 text-[#10B981]">
+            <Sparkles className="h-4.5 w-4.5" strokeWidth={1.75} />
+          </div>
+          <div>
+            <div className="text-xs font-semibold text-[#FAFAFA] flex items-center space-x-1.5">
+              <span>AslCheck AI Ekspert</span>
+              <span className="inline-flex items-center space-x-1 rounded bg-[#10B981]/15 px-1.5 py-0.2 text-[9px] font-bold text-[#10B981]">
+                Gemini 3.5
+              </span>
+            </div>
+            <p className="text-[11px] text-[#888888] mt-0.5 leading-relaxed">
+              Mahsulot tabiiyligi, E-qo‘shimchalar yoki qadoqning asl ekanligi bo‘yicha savolingiz bormi?
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => onNavigateToAi?.()}
+          className="shrink-0 flex items-center justify-center space-x-1.5 rounded-lg border border-[#2A2A2A] bg-[#141414] px-3.5 py-2 text-xs font-semibold text-[#FAFAFA] hover:bg-[#1E1E1E] hover:border-[#444444] transition-colors"
+        >
+          <Lightbulb className="h-3.5 w-3.5 text-[#F59E0B]" strokeWidth={2} />
+          <span>AI bilan maslahat</span>
+          <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
+        </button>
+      </div>
+
       {/* Loading Skeleton */}
       {isLoading && (
         <div className="mt-8 mx-auto max-w-2xl rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] p-6 animate-pulse">
@@ -188,6 +222,7 @@ export const VerifyPage: React.FC = () => {
           <VerificationCard
             result={verificationResult}
             searchedCode={searchedCode}
+            onAskAiAboutProduct={(prompt) => onNavigateToAi?.(prompt)}
           />
         </div>
       )}
