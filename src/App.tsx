@@ -3,6 +3,7 @@ import { Navbar, type NavTab } from './components/Navbar';
 import { VerifyPage } from './components/VerifyPage';
 import { ProducerPage } from './components/ProducerPage';
 import { AiExpertPage } from './components/AiExpertPage';
+import { FloatingChatWidget } from './components/FloatingChatWidget';
 import { ShieldCheck } from 'lucide-react';
 
 export function App() {
@@ -56,6 +57,8 @@ export function App() {
           </div>
         </div>
       </footer>
+      {/* Floating On-Screen AI Chatbot Widget */}
+      {activeTab !== 'ai' && <FloatingChatWidget />}
     </div>
   );
 }
