@@ -66,6 +66,14 @@ function getSharedAudio(): HTMLAudioElement | null {
   return sharedAudioEl;
 }
 
+/**
+ * Unlock HTML5 Audio playback synchronously inside a user tap/click gesture
+ * so later async TTS replies play without browser autoplay blocks.
+ */
+export function prepareAudioPlaybackGesture(): void {
+  unlockAudioOnGesture();
+}
+
 function unlockAudioOnGesture(): void {
   const audio = getSharedAudio();
   if (!audio) return;
@@ -437,7 +445,8 @@ async function playBlobAudio(
  */
 export async function playTextToSpeech(
   rawText: string,
-  playbackId: string
+  playbackId: string,
+  options?: { skipGestureUnlock?: boolean }
 ): Promise<void> {
   const cleanedText = cleanTextForAudio(rawText).slice(0, 1200);
   if (!cleanedText) {
@@ -457,7 +466,9 @@ export async function playTextToSpeech(
   loadingPlayerId = playbackId;
 
   // CRITICAL: Unlock mobile Safari/Chrome HTMLAudioElement synchronously inside user click
-  unlockAudioOnGesture();
+  if (!options?.skipGestureUnlock) {
+    unlockAudioOnGesture();
+  }
 
   notifyListener(playbackId, 'loading');
 

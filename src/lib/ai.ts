@@ -24,6 +24,13 @@ export interface ChatMessage {
   role: 'user' | 'assistant';
   text: string;
   timestamp: string;
+  isVoice?: boolean;
+  durationSec?: number;
+}
+
+export interface VoiceChatResponse {
+  transcript: string;
+  reply: string;
 }
 
 /**
@@ -151,6 +158,52 @@ Asosiy tavsiyalar:
 • Ishlab chiqaruvchi litsenziyasi va partiya raqamini AslCheck reyestri bilan solishtiring.
 • Qadoq ochilmaganiga va himoya plyonkasi zararlanmaganiga ishonch hosil qiling.
 • Xarid qilgach, "Sotib oldim — Kodni band qilish" funksiyasini faollashtiring.`;
+}
+
+/**
+ * Interactive Voice Chat with AslCheck AI Assistant (/api/ai mode: voice_chat)
+ */
+export async function askAiWithVoice(params: {
+  audioBase64: string;
+  mimeType: string;
+  history?: Array<{ role: 'user' | 'assistant'; text: string }>;
+  context?: string;
+}): Promise<VoiceChatResponse> {
+  const { audioBase64, mimeType, history = [], context } = params;
+
+  try {
+    const response = await fetch('/api/ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mode: 'voice_chat',
+        payload: {
+          audioBase64,
+          mimeType,
+          history,
+          context,
+        },
+      }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data && typeof data.reply === 'string' && data.reply.trim()) {
+        return {
+          transcript: typeof data.transcript === 'string' ? data.transcript.trim() : '',
+          reply: data.reply.trim(),
+        };
+      }
+    }
+  } catch (err) {
+    console.warn('Voice chat call to /api/ai failed:', err);
+  }
+
+  return {
+    transcript: '',
+    reply:
+      "Kechirasiz, ovozli xabarni qayta ishlashda vaqtinchalik uzilish yuz berdi. Iltimos, qaytadan urinib ko'ring.",
+  };
 }
 
 /**

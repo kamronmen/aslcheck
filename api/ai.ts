@@ -264,6 +264,90 @@ Asosiy mezonlar:
       return sendJson({ text: replyText }, 200);
     }
 
+    // 2B. MULTIMODAL VOICE CHAT MODE (Uzbek Speech Understanding + Response)
+    if (mode === 'voice_chat') {
+      const { audioBase64, mimeType, history, context } = payload || {};
+
+      if (!audioBase64 || typeof audioBase64 !== 'string') {
+        return sendJson({ error: 'Ovozli xabar yuborilmadi.' }, 400);
+      }
+
+      const cleanMime = String(mimeType || 'audio/webm').split(';')[0].trim().toLowerCase() || 'audio/webm';
+
+      const voiceSystemPrompt = `Siz "AslCheck" milliy mahsulotlar reyestri va kontrafaktga qarshi kurashish platformasining ovozli AI ekspertisiz.
+Foydalanuvchi sizga o'zbek tilida (yoki aralash nutqda) ovozli savol yubordi.
+
+Vazifangiz:
+1. Audio yozuvdagi foydalanuvchi nutqini diqqat bilan tinglang va "transcript" maydoniga sof o'zbek tilida (lotin alifbosi) aniq matn ko'rinishida yozing. Agar audioda nutq umuman eshitilmasa, "transcript": "" qaytaring.
+2. "reply" maydoniga xuddi jonli suhbatda gapirayotgandek ravon, samimiy, ilmiy asoslangan va qisqa-lo'nda (3-5 gap, ovozli o'qilishga qulay) o'zbek tilida (lotin alifbosi) javob yozing.
+3. Hech qanday emoji yoki murakkab markdown belgilar (*, #) ishlatmang, chunki javob ovozli tarzda ham o'qib beriladi.
+${context ? `Joriy kontekst: ${context}` : ''}
+
+FAQAT valid JSON qaytaring:
+{
+  "transcript": "Foydalanuvchi aytgan gapning o'zbekcha matni",
+  "reply": "AI ekspertning ravon o'zbekcha ovozli javobi"
+}`;
+
+      const contents: Array<{ role: string; parts: Array<any> }> = [];
+
+      if (Array.isArray(history) && history.length > 0) {
+        for (const msg of history.slice(-6)) {
+          if (msg && msg.text) {
+            contents.push({
+              role: msg.role === 'assistant' || msg.role === 'model' ? 'model' : 'user',
+              parts: [{ text: String(msg.text) }],
+            });
+          }
+        }
+      }
+
+      contents.push({
+        role: 'user',
+        parts: [
+          { text: voiceSystemPrompt },
+          {
+            inlineData: {
+              mimeType: cleanMime,
+              data: audioBase64,
+            },
+          },
+        ],
+      });
+
+      const data = await callGemini({
+        contents,
+        generationConfig: {
+          temperature: 0.35,
+          maxOutputTokens: 900,
+          responseMimeType: 'application/json',
+        },
+      });
+
+      const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      const parsed = extractCleanJson(rawText);
+
+      if (parsed && typeof parsed.reply === 'string' && parsed.reply.trim()) {
+        return sendJson(
+          {
+            transcript:
+              typeof parsed.transcript === 'string' ? parsed.transcript.trim() : '',
+            reply: parsed.reply.trim(),
+          },
+          200
+        );
+      }
+
+      return sendJson(
+        {
+          transcript: '',
+          reply:
+            "Kechirasiz, ovozingizni aniq anglashning imkoni bo'lmadi. Iltimos, mikrofonga yaqinroq bo'lib qaytadan gapiring yoki savolingizni matn shaklida yozing.",
+        },
+        200
+      );
+    }
+
     // 3. SHARPER CONSUMER PRODUCT ANALYSIS MODE
     if (mode === 'product_analysis') {
       const p = payload || {};

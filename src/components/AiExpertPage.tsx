@@ -5,10 +5,24 @@ import {
   Trash2,
   User,
   CheckCircle2,
+  Mic,
+  Volume2,
+  VolumeX,
+  X,
+  AlertCircle,
 } from 'lucide-react';
 import { AiCoreIcon, VerifiedSealIcon } from './Icons';
 import { AudioPlayerButton } from './AudioPlayerButton';
-import { askAiAssistant, type ChatMessage } from '../lib/ai';
+import { askAiAssistant, askAiWithVoice, type ChatMessage } from '../lib/ai';
+import {
+  playTextToSpeech,
+  prepareAudioPlaybackGesture,
+  stopCurrentAudio,
+} from '../lib/tts';
+import {
+  VoiceRecorderSession,
+  MAX_VOICE_DURATION_SEC,
+} from '../lib/voiceRecorder';
 
 interface AiExpertPageProps {
   initialQuestion?: string;
@@ -40,7 +54,7 @@ Quyidagi masalalarda aniq yordam bera olaman:
 • AslCheck QR pasporti va seriya raqamlari qanday ishlashi
 • Muddati o‘tgan yoki klonlangan mahsulot aniqlanganda ko‘riladigan choralar
 
-Savolingizni yozing yoki quyidagi tayyor so‘rovlardan birini tanlang. Har bir javobni pastdagi karnay tugmasi orqali ovozli eshitishingiz mumkin.`,
+Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan birini tanlang. Har bir javobni pastdagi karnay tugmasi orqali ovozli eshitishingiz mumkin.`,
         timestamp: new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' }),
       },
     ];
@@ -48,8 +62,16 @@ Savolingizni yozing yoki quyidagi tayyor so‘rovlardan birini tanlang. Har bir 
 
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [autoSpeak, setAutoSpeak] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingSec, setRecordingSec] = useState(0);
+  const [voiceLevels, setVoiceLevels] = useState<number[]>(() => Array(12).fill(0.18));
+  const [voiceError, setVoiceError] = useState<string | null>(null);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const recorderRef = useRef<VoiceRecorderSession | null>(null);
+  const autoStopRef = useRef<() => void>(() => {});
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -64,6 +86,10 @@ Savolingizni yozing yoki quyidagi tayyor so‘rovlardan birini tanlang. Har bir 
       const trimmed = textToSend.trim();
       if (!trimmed || isLoading) return;
 
+      if (autoSpeak) {
+        prepareAudioPlaybackGesture();
+      }
+
       const userMessage: ChatMessage = {
         id: `user-${Date.now()}`,
         role: 'user',
@@ -73,6 +99,7 @@ Savolingizni yozing yoki quyidagi tayyor so‘rovlardan birini tanlang. Har bir 
 
       setMessages((prev) => [...prev, userMessage]);
       setInputValue('');
+      setVoiceError(null);
       setIsLoading(true);
 
       try {
@@ -82,14 +109,19 @@ Savolingizni yozing yoki quyidagi tayyor so‘rovlardan birini tanlang. Har bir 
 
         const replyText = await askAiAssistant(trimmed, history);
 
+        const aiId = `ai-${Date.now()}`;
         const aiMessage: ChatMessage = {
-          id: `ai-${Date.now()}`,
+          id: aiId,
           role: 'assistant',
           text: replyText,
           timestamp: new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' }),
         };
 
         setMessages((prev) => [...prev, aiMessage]);
+
+        if (autoSpeak && replyText) {
+          void playTextToSpeech(replyText, `chat-msg-${aiId}`, { skipGestureUnlock: true });
+        }
       } catch (err) {
         console.error('AI chat error:', err);
         const errorMessage: ChatMessage = {
@@ -104,8 +136,163 @@ Savolingizni yozing yoki quyidagi tayyor so‘rovlardan birini tanlang. Har bir 
         setTimeout(() => inputRef.current?.focus(), 100);
       }
     },
-    [isLoading, messages]
+    [isLoading, messages, autoSpeak]
   );
+
+  const handleStopAndSendVoice = useCallback(async () => {
+    const session = recorderRef.current;
+    if (!session) return;
+
+    // Unlock mobile HTMLAudioElement synchronously inside the tap gesture
+    prepareAudioPlaybackGesture();
+    recorderRef.current = null;
+    setIsRecording(false);
+    setRecordingSec(0);
+    setVoiceLevels(Array(12).fill(0.18));
+
+    let recorded;
+    try {
+      recorded = await session.stop();
+    } catch (err: any) {
+      if (err?.message === 'TOO_SHORT') {
+        setVoiceError('Ovoz juda qisqa. Tugmani bosib kamida 1 soniya gapiring.');
+      } else {
+        setVoiceError('Ovoz yozuvini saqlab bo‘lmadi. Qaytadan urinib ko‘ring.');
+      }
+      return;
+    }
+
+    const pendingId = `voice-pending-${Date.now()}`;
+    const nowTime = new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' });
+
+    setVoiceError(null);
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: pendingId,
+        role: 'user',
+        text: 'Ovozli savol tinglanmoqda...',
+        timestamp: nowTime,
+        isVoice: true,
+        durationSec: recorded.durationSec,
+      },
+    ]);
+    setIsLoading(true);
+
+    try {
+      const history = messages
+        .filter((m) => m.id !== 'msg-welcome')
+        .map((m) => ({ role: m.role, text: m.text }));
+
+      const { transcript, reply } = await askAiWithVoice({
+        audioBase64: recorded.base64,
+        mimeType: recorded.mimeType,
+        history,
+      });
+
+      const finalTranscript = transcript || `Ovozli savol (${recorded.durationSec}s)`;
+      const aiId = `ai-${Date.now()}`;
+      const replyTime = new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' });
+
+      setMessages((prev) => [
+        ...prev.map((m) => (m.id === pendingId ? { ...m, text: finalTranscript } : m)),
+        {
+          id: aiId,
+          role: 'assistant',
+          text: reply,
+          timestamp: replyTime,
+        },
+      ]);
+
+      // Spoken interaction always speaks back in natural Uzbek AI voice
+      if (reply) {
+        void playTextToSpeech(reply, `chat-msg-${aiId}`, { skipGestureUnlock: true });
+      }
+    } catch (err) {
+      console.error('Voice AI error:', err);
+      setMessages((prev) => [
+        ...prev.map((m) =>
+          m.id === pendingId ? { ...m, text: `Ovozli savol (${recorded.durationSec}s)` } : m
+        ),
+        {
+          id: `err-${Date.now()}`,
+          role: 'assistant',
+          text: "Ovozli savolga javob berishda uzilish yuz berdi. Iltimos, qaytadan urinib ko'ring.",
+          timestamp: new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' }),
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [messages]);
+
+  useEffect(() => {
+    autoStopRef.current = () => {
+      void handleStopAndSendVoice();
+    };
+  }, [handleStopAndSendVoice]);
+
+  useEffect(() => {
+    return () => {
+      recorderRef.current?.cancel();
+      recorderRef.current = null;
+    };
+  }, []);
+
+  const handleStartVoiceRecording = async () => {
+    if (isLoading || isRecording) return;
+
+    // Prevent recording AI's own voice output
+    stopCurrentAudio();
+    prepareAudioPlaybackGesture();
+    setVoiceError(null);
+    setRecordingSec(0);
+    setVoiceLevels(Array(12).fill(0.2));
+
+    const session = new VoiceRecorderSession({
+      onLevels: (levels) => setVoiceLevels(levels),
+      onDurationTick: (sec) => setRecordingSec(sec),
+      onMaxDurationReached: () => autoStopRef.current(),
+    });
+
+    recorderRef.current = session;
+    try {
+      await session.start();
+      setIsRecording(true);
+    } catch (err: any) {
+      session.cancel();
+      recorderRef.current = null;
+      setIsRecording(false);
+
+      if (err?.message === 'UNSUPPORTED_BROWSER') {
+        setVoiceError('Ushbu brauzer ovoz yozishni qo‘llab-quvvatlamaydi.');
+      } else if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError') {
+        setVoiceError('Mikrofon ruxsati berilmadi. Brauzer sozlamalaridan ruxsat bering.');
+      } else if (err?.name === 'NotFoundError') {
+        setVoiceError('Mikrofon qurilmasi topilmadi.');
+      } else {
+        setVoiceError('Mikrofonni ishga tushirib bo‘lmadi. Qaytadan urinib ko‘ring.');
+      }
+    }
+  };
+
+  const handleCancelVoiceRecording = () => {
+    recorderRef.current?.cancel();
+    recorderRef.current = null;
+    setIsRecording(false);
+    setRecordingSec(0);
+    setVoiceLevels(Array(12).fill(0.18));
+  };
+
+  const handleToggleAutoSpeak = () => {
+    const next = !autoSpeak;
+    setAutoSpeak(next);
+    if (next) {
+      prepareAudioPlaybackGesture();
+    } else {
+      stopCurrentAudio();
+    }
+  };
 
   useEffect(() => {
     if (initialQuestion && initialQuestion.trim()) {
@@ -122,6 +309,9 @@ Savolingizni yozing yoki quyidagi tayyor so‘rovlardan birini tanlang. Har bir 
   };
 
   const handleClearHistory = () => {
+    handleCancelVoiceRecording();
+    stopCurrentAudio();
+    setVoiceError(null);
     setMessages([
       {
         id: 'msg-welcome',
@@ -130,6 +320,12 @@ Savolingizni yozing yoki quyidagi tayyor so‘rovlardan birini tanlang. Har bir 
         timestamp: new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' }),
       },
     ]);
+  };
+
+  const formatTimer = (sec: number) => {
+    const mins = Math.floor(sec / 60);
+    const rem = sec % 60;
+    return `${mins}:${rem.toString().padStart(2, '0')}`;
   };
 
   const renderFormattedText = (text: string) => {
@@ -216,9 +412,31 @@ Savolingizni yozing yoki quyidagi tayyor so‘rovlardan birini tanlang. Har bir 
         <div className="flex items-center space-x-2 self-end sm:self-auto">
           <button
             type="button"
+            onClick={handleToggleAutoSpeak}
+            title={
+              autoSpeak
+                ? 'Yozma savollarga ham avtomatik ovozli javob yoqilgan'
+                : 'Avtomatik ovozli javobni yoqish'
+            }
+            className={`flex items-center space-x-1.5 rounded-lg border px-2.5 py-1.5 text-xs transition-colors min-h-[34px] ${
+              autoSpeak
+                ? 'border-[#10B981]/40 bg-[#10B981]/10 text-[#10B981]'
+                : 'border-[#1F1F1F] bg-[#0A0A0A] text-[#888888] hover:text-[#FAFAFA] hover:bg-[#141414]'
+            }`}
+          >
+            {autoSpeak ? (
+              <Volume2 className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} />
+            ) : (
+              <VolumeX className="h-3.5 w-3.5 shrink-0" strokeWidth={1.75} />
+            )}
+            <span>Avto-ovoz</span>
+          </button>
+
+          <button
+            type="button"
             onClick={handleClearHistory}
             title="Muloqot tarixini tozalash"
-            className="flex items-center space-x-1.5 rounded-lg border border-[#1F1F1F] bg-[#0A0A0A] px-2.5 py-1.5 text-xs text-[#888888] hover:text-[#FAFAFA] hover:bg-[#141414] transition-colors"
+            className="flex items-center space-x-1.5 rounded-lg border border-[#1F1F1F] bg-[#0A0A0A] px-2.5 py-1.5 text-xs text-[#888888] hover:text-[#FAFAFA] hover:bg-[#141414] transition-colors min-h-[34px]"
           >
             <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} />
             <span>Tozalash</span>
@@ -313,8 +531,16 @@ Savolingizni yozing yoki quyidagi tayyor so‘rovlardan birini tanlang. Har bir 
                 )}
 
                 {isUser && (
-                  <div className="mt-1 text-right text-[10px] text-[#525252] font-mono">
-                    {msg.timestamp}
+                  <div className="mt-1.5 flex items-center justify-end space-x-2 text-[10px] text-[#525252] font-mono">
+                    {msg.isVoice && (
+                      <span className="inline-flex items-center space-x-1 text-[#888888]">
+                        <Mic className="h-2.5 w-2.5 text-[#10B981]" strokeWidth={2} />
+                        <span>
+                          Ovozli savol{typeof msg.durationSec === 'number' ? ` · ${msg.durationSec}s` : ''}
+                        </span>
+                      </span>
+                    )}
+                    <span>{msg.timestamp}</span>
                   </div>
                 )}
               </div>
@@ -342,42 +568,123 @@ Savolingizni yozing yoki quyidagi tayyor so‘rovlardan birini tanlang. Har bir 
       </div>
 
       {/* Input Form Bar */}
-      <div className="pt-2.5 border-t border-[#1F1F1F] bg-black">
-        <form onSubmit={handleSubmit} className="relative flex items-center">
-          <input
-            ref={inputRef}
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Tarkib, sifat yoki qadoq bo‘yicha savol bering..."
-            disabled={isLoading}
-            className="w-full rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] py-3 pl-3.5 pr-24 text-base sm:text-sm text-[#FAFAFA] placeholder-[#525252] focus:border-[#FAFAFA] focus:outline-none transition-colors min-h-[44px]"
-          />
-          <div className="absolute right-1.5 flex items-center space-x-1">
+      <div className="pt-2.5 border-t border-[#1F1F1F] bg-black space-y-1.5">
+        {voiceError && (
+          <div className="flex items-center justify-between gap-2 rounded-lg border border-[#EF4444]/30 bg-[#EF4444]/10 px-3 py-1.5 text-[11px] text-[#FCA5A5]">
+            <span className="flex items-center space-x-1.5">
+              <AlertCircle className="h-3.5 w-3.5 text-[#EF4444] shrink-0" strokeWidth={1.75} />
+              <span>{voiceError}</span>
+            </span>
             <button
-              type="submit"
-              disabled={isLoading || !inputValue.trim()}
-              className="flex items-center space-x-1.5 rounded-lg bg-[#FAFAFA] px-3.5 py-2 text-xs font-semibold text-black hover:bg-[#E5E5E5] disabled:opacity-30 transition-colors shadow-sm min-h-[36px]"
+              type="button"
+              onClick={() => setVoiceError(null)}
+              aria-label="Xabarni yopish"
+              className="text-[#888888] hover:text-white p-0.5"
             >
-              {isLoading ? (
-                <RefreshCw className="h-3.5 w-3.5 animate-spin" strokeWidth={2} />
-              ) : (
-                <>
-                  <span>Yuborish</span>
-                  <Send className="h-3 w-3" strokeWidth={2} />
-                </>
-              )}
+              <X className="h-3 w-3" />
             </button>
           </div>
-        </form>
+        )}
 
-        <div className="mt-1.5 flex items-center justify-between text-[10px] sm:text-[11px] text-[#525252] px-1">
+        {isRecording ? (
+          <div className="flex items-center justify-between gap-2 rounded-xl border border-[#EF4444]/40 bg-gradient-to-b from-[#170D0D] to-[#0A0A0A] px-3 py-2 min-h-[48px] shadow-[0_0_24px_rgba(239,68,68,0.08)]">
+            <div className="flex items-center space-x-2 shrink-0">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#EF4444] opacity-75" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#EF4444]" />
+              </span>
+              <span className="font-mono text-xs font-semibold text-[#FAFAFA] tabular-nums">
+                {formatTimer(recordingSec)}
+                <span className="hidden sm:inline text-[#666666] font-normal">
+                  {' '}
+                  / {formatTimer(MAX_VOICE_DURATION_SEC)}
+                </span>
+              </span>
+              <span className="hidden sm:inline text-xs text-[#A0A0A0]">Gapiring...</span>
+            </div>
+
+            {/* Live Frequency Spectrum Bars */}
+            <div className="flex items-center justify-center gap-1 h-7 flex-1 max-w-[180px]" aria-hidden="true">
+              {voiceLevels.map((lvl, i) => (
+                <span
+                  key={i}
+                  style={{ height: `${Math.max(4, Math.round(lvl * 24))}px` }}
+                  className="w-1 rounded-full bg-gradient-to-t from-zinc-500 to-white transition-[height] duration-75"
+                />
+              ))}
+            </div>
+
+            <div className="flex items-center space-x-1.5 shrink-0">
+              <button
+                type="button"
+                onClick={handleCancelVoiceRecording}
+                title="Ovoz yozishni bekor qilish"
+                aria-label="Bekor qilish"
+                className="flex items-center justify-center rounded-lg border border-[#262626] bg-[#141414] px-2.5 py-2 text-xs text-[#A0A0A0] hover:text-white hover:bg-[#1F1F1F] transition-colors min-h-[36px] min-w-[36px]"
+              >
+                <X className="h-3.5 w-3.5" strokeWidth={2} />
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleStopAndSendVoice()}
+                className="flex items-center space-x-1.5 rounded-lg bg-white px-3 py-2 text-xs font-semibold text-black hover:bg-zinc-200 transition-colors shadow-sm min-h-[36px]"
+              >
+                <span>Yuborish</span>
+                <Send className="h-3 w-3" strokeWidth={2} />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="relative flex items-center gap-2">
+            <div className="relative flex-1 flex items-center">
+              <input
+                ref={inputRef}
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                placeholder="Savol yozing yoki mikrofonga gapiring..."
+                disabled={isLoading}
+                className="w-full rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] py-3 pl-3.5 pr-[136px] sm:pr-[148px] text-base sm:text-sm text-[#FAFAFA] placeholder-[#525252] focus:border-[#FAFAFA] focus:outline-none transition-colors min-h-[46px]"
+              />
+              <div className="absolute right-1.5 flex items-center space-x-1.5">
+                <button
+                  type="button"
+                  onClick={() => void handleStartVoiceRecording()}
+                  disabled={isLoading}
+                  title="Mikrofon orqali o‘zbekcha ovozli savol berish"
+                  aria-label="Ovozli savol berish"
+                  className="flex items-center justify-center rounded-lg border border-[#262626] bg-[#141414] px-2.5 py-2 text-[#D4D4D4] hover:text-white hover:border-[#3A3A3A] hover:bg-[#1C1C1C] disabled:opacity-30 transition-colors min-h-[36px] min-w-[36px]"
+                >
+                  <Mic className="h-4 w-4" strokeWidth={1.85} />
+                </button>
+                <button
+                  type="submit"
+                  disabled={isLoading || !inputValue.trim()}
+                  className="flex items-center space-x-1.5 rounded-lg bg-white px-3 sm:px-3.5 py-2 text-xs font-semibold text-black hover:bg-zinc-200 disabled:opacity-30 transition-colors shadow-sm min-h-[36px]"
+                >
+                  {isLoading ? (
+                    <RefreshCw className="h-3.5 w-3.5 animate-spin" strokeWidth={2} />
+                  ) : (
+                    <>
+                      <span>Yuborish</span>
+                      <Send className="h-3 w-3" strokeWidth={2} />
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </form>
+        )}
+
+        <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-[#525252] px-1">
           <span className="flex items-center space-x-1">
             <CheckCircle2 className="h-3 w-3 text-[#10B981] shrink-0" strokeWidth={1.75} />
-            <span className="truncate">AslCheck AI xolis va ilmiy standartlar asosida javob beradi</span>
+            <span className="truncate">
+              Ovozli savol bering — AslCheck AI tinglab o‘zbek tilida javob beradi
+            </span>
           </span>
           <span className="hidden sm:inline font-mono text-[10px]">
-            AslCheck Intelligence
+            AslCheck Voice AI
           </span>
         </div>
       </div>
