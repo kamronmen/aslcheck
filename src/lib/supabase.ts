@@ -22,8 +22,9 @@ export const supabase = createClient(
   isSupabaseConfigured ? supabaseAnonKey : 'dummy-key',
   {
     auth: {
-      persistSession: false,
-      autoRefreshToken: false,
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
     },
   }
 );

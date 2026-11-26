@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
 import { X, Camera, Image, AlertCircle, RefreshCw } from 'lucide-react';
+import { extractSerialCode } from '../lib/qr';
 
 interface QrScannerModalProps {
   isOpen: boolean;
@@ -19,29 +20,6 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
   const qrScannerRef = useRef<Html5Qrcode | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const qrContainerId = 'aslcheck-qr-reader';
-
-  // Helper to extract serial code from raw text or URL
-  const extractSerialCode = (rawText: string): string => {
-    const text = rawText.trim();
-    try {
-      if (text.includes('?code=') || text.includes('&code=')) {
-        // Try parsing URL
-        const parsedUrl = new URL(text.startsWith('http') ? text : `https://dummy.uz/${text}`);
-        const codeParam = parsedUrl.searchParams.get('code');
-        if (codeParam) return codeParam.trim().toUpperCase();
-      }
-    } catch {
-      // Not a standard URL, continue with regex or raw text
-    }
-
-    // Match ASL-2026-XXX or similar pattern if embedded in text
-    const match = text.match(/[A-Z0-9]{3,}-[0-9]{4}-[A-Z0-9]{3,}/i);
-    if (match) {
-      return match[0].toUpperCase();
-    }
-
-    return text.toUpperCase();
-  };
 
   // Stop camera helper
   const stopCamera = async () => {

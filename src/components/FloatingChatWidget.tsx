@@ -1,14 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  Sparkles,
   X,
   Send,
   RefreshCw,
-  Bot,
   User,
-  ShieldCheck,
   ChevronDown,
 } from 'lucide-react';
+import { AiCoreIcon, VerifiedSealIcon } from './Icons';
 import { askAiAssistant, type ChatMessage } from '../lib/ai';
 
 const QUICK_QUESTIONS = [
@@ -27,7 +25,7 @@ export const FloatingChatWidget: React.FC = () => {
       role: 'assistant',
       text: `Assalomu alaykum! Men **AslCheck AI Yordamchi**man.
 
-Saytimizdan foydalanish, QR-kod skaneri, Anti-Clone himoyasi yoki mahsulotlar haqiqiyligi bo‘yicha istalgan savolingizni bering!`,
+Saytdan foydalanish, QR-kod skaneri, AI Vizual Ekspertiza, Anti-Clone himoyasi yoki mahsulotlar haqiqiyligi bo‘yicha istalgan savolingizni bering.`,
       timestamp: new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
@@ -38,14 +36,12 @@ Saytimizdan foydalanish, QR-kod skaneri, Anti-Clone himoyasi yoki mahsulotlar ha
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-scroll inside chat box
   useEffect(() => {
     if (isOpen) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, isOpen, isLoading]);
 
-  // Focus input when opened
   useEffect(() => {
     if (isOpen) {
       setHasUnread(false);
@@ -73,7 +69,7 @@ Saytimizdan foydalanish, QR-kod skaneri, Anti-Clone himoyasi yoki mahsulotlar ha
         .filter((m) => m.id !== 'welcome')
         .map((m) => ({ role: m.role, text: m.text }));
 
-      const siteContext = `Foydalanuvchi AslCheck veb-platformasida turibdi. Sayt funksiyalari (QR skaner, kod orqali tekshirish, mahsulot pasporti, xaridni band qilish, kontrafakt haqida shikoyat berish, ishlab chiqaruvchi PIN-paneli, partiyali QR chiqarish) va tovarlar xavfsizligi bo'yicha yordam bering.`;
+      const siteContext = `Foydalanuvchi AslCheck veb-platformasida turibdi. Sayt funksiyalari (QR skaner, AI Vizual Ekspertiza, kod orqali tekshirish, mahsulot pasporti, xaridni band qilish, kontrafakt haqida shikoyat berish, ishlab chiqaruvchilar avtorizatsiyasi, partiyali QR chiqarish) bo'yicha yordam bering.`;
 
       const replyText = await askAiAssistant(trimmed, history, siteContext);
 
@@ -112,13 +108,12 @@ Saytimizdan foydalanish, QR-kod skaneri, Anti-Clone himoyasi yoki mahsulotlar ha
       {
         id: 'welcome',
         role: 'assistant',
-        text: `Muloqot tozalandi. Sayt yoki mahsulotlar bo‘yicha qanday savolingiz bor?`,
+        text: 'Muloqot tozalandi. Sayt yoki mahsulotlar bo‘yicha qanday savolingiz bor?',
         timestamp: new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' }),
       },
     ]);
   };
 
-  // Safe formatting for messages
   const renderMessageContent = (text: string) => {
     const lines = text.split('\n');
     return (
@@ -133,10 +128,14 @@ Saytimizdan foydalanish, QR-kod skaneri, Anti-Clone himoyasi yoki mahsulotlar ha
                 <span className="text-[#10B981] font-bold text-[11px]">•</span>
                 <span
                   dangerouslySetInnerHTML={{
-                    __html: clean.replace(
-                      /\*\*(.*?)\*\*/g,
-                      '<strong class="text-[#FAFAFA] font-semibold">$1</strong>'
-                    ),
+                    __html: clean
+                      .replace(/&/g, '&amp;')
+                      .replace(/</g, '&lt;')
+                      .replace(/>/g, '&gt;')
+                      .replace(
+                        /\*\*(.*?)\*\*/g,
+                        '<strong class="text-[#FAFAFA] font-semibold">$1</strong>'
+                      ),
                   }}
                 />
               </div>
@@ -146,10 +145,14 @@ Saytimizdan foydalanish, QR-kod skaneri, Anti-Clone himoyasi yoki mahsulotlar ha
             <p
               key={i}
               dangerouslySetInnerHTML={{
-                __html: trimmed.replace(
-                  /\*\*(.*?)\*\*/g,
-                  '<strong class="text-[#FAFAFA] font-semibold">$1</strong>'
-                ),
+                __html: trimmed
+                  .replace(/&/g, '&amp;')
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;')
+                  .replace(
+                    /\*\*(.*?)\*\*/g,
+                    '<strong class="text-[#FAFAFA] font-semibold">$1</strong>'
+                  ),
               }}
             />
           );
@@ -167,7 +170,7 @@ Saytimizdan foydalanish, QR-kod skaneri, Anti-Clone himoyasi yoki mahsulotlar ha
           <div className="p-3.5 border-b border-[#1F1F1F] bg-[#050505] flex items-center justify-between">
             <div className="flex items-center space-x-2.5">
               <div className="relative flex h-8 w-8 items-center justify-center rounded-lg border border-[#1F1F1F] bg-[#111111] text-[#FAFAFA]">
-                <Sparkles className="h-4 w-4 text-[#10B981]" strokeWidth={2} />
+                <AiCoreIcon className="h-4 w-4 text-[#10B981]" strokeWidth={1.5} />
                 <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-[#10B981] animate-pulse" />
               </div>
               <div>
@@ -175,8 +178,8 @@ Saytimizdan foydalanish, QR-kod skaneri, Anti-Clone himoyasi yoki mahsulotlar ha
                   <h3 className="text-xs font-bold text-[#FAFAFA] tracking-tight">
                     AslCheck AI Yordamchi
                   </h3>
-                  <span className="rounded bg-[#10B981]/20 px-1 py-0.2 text-[9px] font-mono font-semibold text-[#10B981]">
-                    Gemini 3.5
+                  <span className="rounded bg-[#10B981]/15 border border-[#10B981]/30 px-1.5 py-0.2 text-[9px] font-mono font-semibold text-[#10B981]">
+                    ONLINE
                   </span>
                 </div>
                 <p className="text-[10px] text-[#888888]">Sayt va mahsulotlar bo‘yicha konsultatsiya</p>
@@ -239,7 +242,7 @@ Saytimizdan foydalanish, QR-kod skaneri, Anti-Clone himoyasi yoki mahsulotlar ha
                     {isUser ? (
                       <User className="h-3 w-3" strokeWidth={2} />
                     ) : (
-                      <Bot className="h-3 w-3" strokeWidth={2} />
+                      <AiCoreIcon className="h-3.5 w-3.5" strokeWidth={1.5} />
                     )}
                   </div>
 
@@ -271,7 +274,7 @@ Saytimizdan foydalanish, QR-kod skaneri, Anti-Clone himoyasi yoki mahsulotlar ha
             {isLoading && (
               <div className="flex items-start space-x-2">
                 <div className="h-6 w-6 rounded-md flex shrink-0 items-center justify-center border border-[#1F1F1F] bg-[#0E0E0E] text-[#10B981]">
-                  <Sparkles className="h-3 w-3 animate-spin" strokeWidth={2} />
+                  <AiCoreIcon className="h-3.5 w-3.5 animate-spin" strokeWidth={1.5} />
                 </div>
                 <div className="rounded-xl rounded-tl-none border border-[#1F1F1F] bg-[#0E0E0E] p-2.5 text-xs text-[#888888] flex items-center space-x-1.5">
                   <span>Javob tayyorlanmoqda</span>
@@ -310,16 +313,16 @@ Saytimizdan foydalanish, QR-kod skaneri, Anti-Clone himoyasi yoki mahsulotlar ha
             </form>
             <div className="mt-1.5 flex items-center justify-between text-[9px] text-[#525252] px-1">
               <span className="flex items-center space-x-1">
-                <ShieldCheck className="h-2.5 w-2.5 text-[#10B981]" strokeWidth={2} />
+                <VerifiedSealIcon className="h-2.5 w-2.5 text-[#10B981]" strokeWidth={1.75} />
                 <span>AslCheck rasmiy AI yordamchisi</span>
               </span>
-              <span>Enter ↵</span>
+              <span className="font-mono">Enter</span>
             </div>
           </div>
         </div>
       )}
 
-      {/* 2. FLOATING TRIGGER BUTTON (Always visible at bottom right) */}
+      {/* 2. FLOATING TRIGGER BUTTON */}
       <div className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-50 flex items-center space-x-2">
         <button
           type="button"
@@ -331,7 +334,6 @@ Saytimizdan foydalanish, QR-kod skaneri, Anti-Clone himoyasi yoki mahsulotlar ha
           }`}
           aria-label="AI Yordamchini ochish"
         >
-          {/* Status Indicator */}
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#10B981] opacity-75" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-[#10B981]" />
@@ -340,14 +342,13 @@ Saytimizdan foydalanish, QR-kod skaneri, Anti-Clone himoyasi yoki mahsulotlar ha
           {isOpen ? (
             <ChevronDown className="h-4 w-4" strokeWidth={2.5} />
           ) : (
-            <Sparkles className="h-4 w-4 text-[#10B981]" strokeWidth={2} />
+            <AiCoreIcon className="h-4 w-4 text-[#10B981]" strokeWidth={1.75} />
           )}
 
           <span className="text-xs font-semibold tracking-tight">
             {isOpen ? 'Yopish' : 'AI Yordamchi'}
           </span>
 
-          {/* Unread dot */}
           {!isOpen && hasUnread && (
             <span className="absolute -top-1 -right-1 flex h-3 w-3">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#EF4444] opacity-75" />

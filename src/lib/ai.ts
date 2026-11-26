@@ -1,15 +1,20 @@
-import type { ProductWithManufacturer } from '../types';
+import type { ProductWithManufacturer, VisionVerifyResult } from '../types';
 
 export interface ProductAiAnalysis {
   safety_score: 'Yuqori' | "O'rtacha" | 'Past';
+  trust_score: number;
+  days_until_expiry?: number | null;
   ingredients_summary: string;
+  ingredient_tags: string[];
   authenticity_verdict: string;
   buyer_tip: string;
+  physical_checks: string[];
 }
 
 export interface ProducerAiReport {
   risk_level: 'Past' | "O'rtacha" | 'Yuqori';
   executive_summary: string;
+  risky_serial_codes?: string[];
   top_hotspots: string[];
   action_recommendation: string;
 }
@@ -22,7 +27,90 @@ export interface ChatMessage {
 }
 
 /**
- * Interactive Chat with AslCheck AI Assistant (Gemini 3.5 Flash)
+ * Hybrid Vision Forensics verification via /api/ai (vision_verify)
+ */
+export async function verifyImageWithVision(params: {
+  imageBase64: string;
+  mimeType: string;
+  decodedCode: string | null;
+  expectedProduct: ProductWithManufacturer | null;
+}): Promise<VisionVerifyResult> {
+  const { imageBase64, mimeType, decodedCode, expectedProduct } = params;
+
+  try {
+    const response = await fetch('/api/ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mode: 'vision_verify',
+        payload: {
+          imageBase64,
+          mimeType,
+          decodedCode,
+          expectedProduct: expectedProduct
+            ? {
+                serial_code: expectedProduct.serial_code,
+                product_name: expectedProduct.product_name,
+                category: expectedProduct.category,
+                batch_number: expectedProduct.batch_number,
+                manufacturers: expectedProduct.manufacturers
+                  ? {
+                      name: expectedProduct.manufacturers.name,
+                      region: expectedProduct.manufacturers.region,
+                      license_number: expectedProduct.manufacturers.license_number,
+                    }
+                  : null,
+              }
+            : null,
+        },
+      }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data && data.forensic_verdict) {
+        return data as VisionVerifyResult;
+      }
+    }
+  } catch (err) {
+    console.warn('Vision verify call to /api/ai failed:', err);
+  }
+
+  // Fallback if backend is unreachable
+  return {
+    detected_code: decodedCode,
+    confidence_score: decodedCode ? 72 : 35,
+    package_match: "Qisman / Aniqlab bo'lmadi",
+    print_quality: decodedCode ? "O'rtacha sifat" : 'Shubhali (Kserokopiya / Xira)',
+    forensic_verdict: decodedCode
+      ? `QR kod (${decodedCode}) dekoder orqali o‘qildi, biroq server bilan vizual taqqoslash vaqtincha mavjud emas. Qadoqdagi mahsulot nomini pastdagi pasport bilan solishtiring.`
+      : 'Tasvirdan QR-kod yoki seriya raqami aniqlanmadi. Yorug‘roq va fokusli surat yuklang.',
+    forensic_checks: [
+      {
+        label: 'QR bosma aniqligi',
+        status: decodedCode ? 'pass' : 'warn',
+        detail: decodedCode
+          ? 'Matritsa raqamli dekoder orqali muvaffaqiyatli o‘qildi.'
+          : 'Tasvirda o‘qiladigan QR matritsa topilmadi.',
+      },
+      {
+        label: 'Qadoq va pasport mosligi',
+        status: 'warn',
+        detail: expectedProduct
+          ? `Pasportdagi tovar: ${expectedProduct.product_name}. Qo‘lda tekshiring.`
+          : 'Pasport maʼlumoti topilmadi.',
+      },
+      {
+        label: 'Soxtalashtirish belgilari',
+        status: decodedCode ? 'pass' : 'warn',
+        detail: 'Qadoq muhri va himoya yorlig‘ining butunligini ko‘zdan kechiring.',
+      },
+    ],
+  };
+}
+
+/**
+ * Interactive Chat with AslCheck AI Assistant
  */
 export async function askAiAssistant(
   question: string,
@@ -32,7 +120,6 @@ export async function askAiAssistant(
   const trimmed = question.trim();
   if (!trimmed) return '';
 
-  // 1. Call serverless /api/ai
   try {
     const response = await fetch('/api/ai', {
       method: 'POST',
@@ -57,7 +144,6 @@ export async function askAiAssistant(
     console.warn('Call to /api/ai failed, using local guidance fallback:', err);
   }
 
-  // 2. Fallback advice if network or backend is unreachable
   return `AslCheck AI tahlili:
 Mahsulotlarning asl nusxasini tekshirish uchun uning qadog‘idagi unikal seriya kodini AslCheck orqali skanerlang va qadoqdagi himoya stikerining butunligini tekshiring.
 
@@ -98,48 +184,94 @@ export async function analyzeProductWithAi(
     if (response.ok) {
       const data = await response.json();
       if (data && data.safety_score) {
-        return data as ProductAiAnalysis;
+        return {
+          ...data,
+          trust_score: typeof data.trust_score === 'number' ? data.trust_score : 85,
+          ingredient_tags: Array.isArray(data.ingredient_tags) ? data.ingredient_tags : [],
+          physical_checks: Array.isArray(data.physical_checks) ? data.physical_checks : [],
+        } as ProductAiAnalysis;
       }
     }
   } catch (err) {
     console.warn('Network call to /api/ai failed, generating local fallback:', err);
   }
 
-  // Local fallback if running in offline dev
+  let daysUntilExpiry: number | null = null;
+  if (product.expiry_date) {
+    const target = new Date(product.expiry_date);
+    if (!Number.isNaN(target.getTime())) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      target.setHours(0, 0, 0, 0);
+      daysUntilExpiry = Math.round((target.getTime() - today.getTime()) / 86400000);
+    }
+  }
+
   const isSuspicious =
     product.is_flagged || (product.scan_count || 0) > (product.max_safe_scans || 3);
-  const isExpired = product.expiry_date
-    ? new Date(product.expiry_date).getTime() < new Date().setHours(0, 0, 0, 0)
-    : false;
+  const isExpired = daysUntilExpiry !== null && daysUntilExpiry < 0;
 
   let safetyScore: 'Yuqori' | "O'rtacha" | 'Past' = 'Yuqori';
-  let authVerdict = 'Skanerlashlar soni xavfsiz chegarada, nusxalanish alomatlari aniqlanmadi.';
+  let trustScore = 92;
+  let authVerdict = `Kod (${product.scan_count}/${product.max_safe_scans}) xavfsiz chegarada tekshirilgan, nusxalanish alomatlari aniqlanmadi.`;
 
   if (isExpired) {
     safetyScore = 'Past';
-    authVerdict = 'Mahsulot kodining aslligi tasdiqlangan, ammo belgilangan yaroqlilik muddati tugagan!';
+    trustScore = 25;
+    authVerdict = `Mahsulot kodi asl, ammo yaroqlilik muddati ${Math.abs(daysUntilExpiry!)} kun oldin tugagan.`;
   } else if (isSuspicious) {
     safetyScore = "O'rtacha";
-    authVerdict = `Kod xavfsiz chegaradan (${product.max_safe_scans || 3}) ko'p marta skanerlangan. Qadoq nusxalangan bo'lish xavfi yuqori.`;
+    trustScore = 38;
+    authVerdict = `Kod xavfsiz chegaradan (${product.max_safe_scans || 3}) ko‘p marta skanerlangan. Qadoq nusxalangan bo‘lish xavfi yuqori.`;
+  } else if (product.is_claimed) {
+    safetyScore = "O'rtacha";
+    trustScore = 58;
+    authVerdict = 'Mahsulot avval boshqa xaridor tomonidan band qilingan.';
   }
 
   return {
     safety_score: safetyScore,
+    trust_score: trustScore,
+    days_until_expiry: daysUntilExpiry,
     ingredients_summary: product.ingredients
-      ? `Tarkibida tabiiy xomashyolar mavjud (${product.ingredients.slice(0, 70)}...), sun'iy zararli konservantlar ko'rsatilmagan.`
-      : 'Mahsulot tabiiy standartlarga muvofiq ro‘yxatga olingan, zararli qo‘shimchalar qayd etilmagan.',
+      ? `Tarkib: ${product.ingredients}. ${
+          daysUntilExpiry !== null
+            ? daysUntilExpiry >= 0
+              ? `Yaroqlilik muddatigacha ${daysUntilExpiry} kun qoldi.`
+              : `Muddati ${Math.abs(daysUntilExpiry)} kun o‘tgan.`
+            : ''
+        }`
+      : 'Mahsulot tarkibi pasportda batafsil keltirilmagan.',
+    ingredient_tags: product.ingredients
+      ? ['Pasportda ko‘rsatilgan', isExpired ? 'Muddati o‘tgan' : 'Tekshirilgan']
+      : ['Tarkib ko‘rsatilmagan'],
     authenticity_verdict: authVerdict,
     buyer_tip: 'Qadoqdagi himoya halqasi va ishlab chiqaruvchi litsenziya stikerining butunligini tekshiring.',
+    physical_checks: [
+      'Qopqoq ostidagi himoya muhri buzilmaganligini tekshiring',
+      `Partiya sanasi (${product.manufacture_date}) bilan qadoqdagi bosmani solishtiring`,
+      'QR yorliqda kserokopiya yoki qayta yopishtirish izlari yo‘qligiga ishonch hosil qiling',
+    ],
   };
 }
 
 /**
- * Call serverless /api/ai for producer executive report
+ * Call serverless /api/ai for strict multi-tenant producer executive report
  */
 export async function generateProducerAiReport(stats: {
+  company_name: string;
+  region: string;
+  license_number: string;
   total_products: number;
   total_scans: number;
   suspicious_count: number;
+  products_summary: Array<{
+    serial_code: string;
+    product_name: string;
+    scan_count: number;
+    max_safe_scans: number;
+    is_flagged: boolean;
+  }>;
   reports: any[];
 }): Promise<ProducerAiReport> {
   try {
@@ -164,16 +296,32 @@ export async function generateProducerAiReport(stats: {
 
   const suspiciousRatio = stats.suspicious_count / Math.max(1, stats.total_products);
   const riskLevel: 'Past' | "O'rtacha" | 'Yuqori' =
-    suspiciousRatio > 0.3 ? 'Yuqori' : suspiciousRatio > 0 ? "O'rtacha" : 'Past';
+    suspiciousRatio > 0.25 ? 'Yuqori' : suspiciousRatio > 0 || stats.reports.length > 0 ? "O'rtacha" : 'Past';
+
+  const riskyCodes = stats.products_summary
+    .filter((item) => item.is_flagged || item.scan_count > item.max_safe_scans)
+    .map((item) => item.serial_code)
+    .slice(0, 5);
+
+  const reportLocations = Array.from(
+    new Set(
+      stats.reports
+        .map((r) => r.location_note)
+        .filter((loc): loc is string => typeof loc === 'string' && loc.trim().length > 0)
+    )
+  ).slice(0, 4);
 
   return {
     risk_level: riskLevel,
     executive_summary:
-      stats.suspicious_count > 0
-        ? `Tizimda ${stats.suspicious_count} ta mahsulot bo'yicha takroriy skanerlash va soxtalik signallari qayd etildi. Umumiy brend nufuzi nazorat ostida.`
-        : 'Barcha partiyalarda skanerlashlar xavfsiz chegarada amalga oshirilmoqda. Kontrafakt xavfi minimal darajada.',
-    top_hotspots: ['Samarqand, Siyob bozori', 'Toshkent sh., Chorsu bozori'],
+      stats.suspicious_count > 0 || stats.reports.length > 0
+        ? `${stats.company_name} bo‘yicha ${stats.suspicious_count} ta shubhali mahsulot va ${stats.reports.length} ta shikoyat aniqlandi.`
+        : `${stats.company_name} bo‘yicha barcha partiyalarda skanerlashlar xavfsiz chegarada amalga oshirilmoqda.`,
+    risky_serial_codes: riskyCodes,
+    top_hotspots: reportLocations.length > 0 ? reportLocations : ['Shubhali hududlar aniqlanmadi'],
     action_recommendation:
-      'Shubhali belgilangan seriya kodlari partiyasini savdo nuqtalarida maxsus nazoratdan o‘tkazing va xaridorlarga faollashtirish (band qilish) tizimini targ‘ib qiling.',
+      riskyCodes.length > 0
+        ? `Shubhali belgilangan seriya kodlari (${riskyCodes.join(', ')}) bo‘yicha savdo nuqtalarida tekshiruv o‘tkazing.`
+        : 'Mijozlarga xarid paytida QR kodni band qilish funksiyasidan foydalanishni targ‘ib qiling.',
   };
 }

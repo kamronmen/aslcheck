@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
-import { X, Printer, ShieldCheck } from 'lucide-react';
+import { X, Printer } from 'lucide-react';
+import { AslBrandMark } from './Icons';
 import type { ProductWithManufacturer } from '../types';
 
 interface BatchQrModalProps {
@@ -28,7 +29,7 @@ export const BatchQrModal: React.FC<BatchQrModalProps> = ({
         {/* Header (hidden in print) */}
         <div className="no-print flex items-center justify-between border-b border-[#1F1F1F] px-6 py-4 bg-[#0D0D0D]">
           <div className="flex items-center space-x-2.5">
-            <ShieldCheck className="h-5 w-5 text-[#FAFAFA]" strokeWidth={2} />
+            <AslBrandMark className="h-5 w-5 text-[#FAFAFA]" strokeWidth={1.5} />
             <div>
               <h3 className="text-sm font-semibold tracking-tight text-[#FAFAFA]">
                 A4 Chop Etish Uchun Partiyali QR-kodlar ({products.length} ta)
@@ -76,7 +77,7 @@ export const BatchQrModal: React.FC<BatchQrModalProps> = ({
                   className="batch-label-item rounded-xl border border-[#222222] bg-[#050505] p-4 flex flex-col items-center text-center shadow-sm"
                 >
                   <div className="text-[10px] font-mono font-bold tracking-wider uppercase text-[#888888] mb-2 flex items-center space-x-1">
-                    <ShieldCheck className="h-3 w-3 text-[#10B981]" strokeWidth={2} />
+                    <AslBrandMark className="h-3 w-3 text-[#10B981]" strokeWidth={1.75} />
                     <span>AslCheck • Rasmiy Qadoq</span>
                   </div>
 
@@ -100,8 +101,8 @@ export const BatchQrModal: React.FC<BatchQrModalProps> = ({
                         {p.serial_code}
                       </span>
                     </div>
-                    <div className="mt-1 text-[10px] text-[#525252] font-mono">
-                      {p.batch_number} • Chiroqchi MCHJ
+                    <div className="mt-1 text-[10px] text-[#525252] font-mono truncate">
+                      {p.batch_number} • {p.manufacturers?.name || 'AslCheck Hamkor'}
                     </div>
                   </div>
                 </div>
@@ -113,7 +114,7 @@ export const BatchQrModal: React.FC<BatchQrModalProps> = ({
         {/* Footer (hidden in print) */}
         <div className="no-print border-t border-[#1F1F1F] bg-[#050505] px-6 py-3 flex items-center justify-between">
           <span className="text-[11px] text-[#525252]">
-            Maslahat: Printer sozlamalarida "Margins: None" yoki "Minimal" qilib qo‘ying.
+            Maslahat: Printer sozlamalarida &quot;Margins: None&quot; yoki &quot;Minimal&quot; qilib qo‘ying.
           </span>
           <button
             type="button"

@@ -4,7 +4,7 @@ import { VerifyPage } from './components/VerifyPage';
 import { ProducerPage } from './components/ProducerPage';
 import { AiExpertPage } from './components/AiExpertPage';
 import { FloatingChatWidget } from './components/FloatingChatWidget';
-import { ShieldCheck } from 'lucide-react';
+import { AslBrandMark } from './components/Icons';
 
 export function App() {
   const [activeTab, setActiveTab] = useState<NavTab>('verify');
@@ -44,7 +44,7 @@ export function App() {
       <footer className="border-t border-[#1F1F1F] bg-[#050505] py-8 text-xs text-[#525252]">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center space-x-2">
-            <ShieldCheck className="h-4 w-4 text-[#888888]" strokeWidth={1.75} />
+            <AslBrandMark className="h-4 w-4 text-[#888888]" strokeWidth={1.5} />
             <span className="font-semibold text-[#888888]">AslCheck</span>
             <span>—</span>
             <span>Milliy mahsulotlar haqiqiyligi reyestri</span>
@@ -57,6 +57,7 @@ export function App() {
           </div>
         </div>
       </footer>
+
       {/* Floating On-Screen AI Chatbot Widget */}
       {activeTab !== 'ai' && <FloatingChatWidget />}
     </div>

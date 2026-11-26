@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Package,
   Plus,
   QrCode,
-  AlertTriangle,
   CheckCircle2,
   Search,
   RefreshCw,
@@ -11,53 +10,61 @@ import {
   Layers,
   ChevronDown,
   ChevronUp,
-  Lock,
   LogOut,
   Trash2,
-  Flag,
   MapPin,
   Clock,
   Smartphone,
-  Sparkles,
+  BarChart3,
 } from 'lucide-react';
-import type { ProductWithManufacturer, NewProductPayload, ReportWithProduct } from '../types';
+import type {
+  Manufacturer,
+  ProductWithManufacturer,
+  NewProductPayload,
+  ReportWithProduct,
+  ScanTrendPoint,
+} from '../types';
 import {
+  restoreProducerSession,
+  logoutProducerAccount,
   fetchProducerProducts,
   createBatchProducts,
   deleteProduct,
   fetchReports,
+  fetchScanTrend,
 } from '../lib/api';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { generateProducerAiReport, type ProducerAiReport } from '../lib/ai';
+import { ProducerAuth } from './ProducerAuth';
 import { QrLabelCard } from './QrLabelCard';
 import { BatchQrModal } from './BatchQrModal';
-
-const PIN_STORAGE_KEY = 'aslcheck_producer_pin';
-const VALID_PIN = '2026';
+import {
+  AiCoreIcon,
+  VerifiedSealIcon,
+  CloneAlertIcon,
+  BatchGridIcon,
+  ShieldRadarIcon,
+} from './Icons';
 
 export const ProducerPage: React.FC = () => {
-  // PIN Auth State
-  const [isUnlocked, setIsUnlocked] = useState<boolean>(() => {
-    try {
-      return sessionStorage.getItem(PIN_STORAGE_KEY) === VALID_PIN;
-    } catch {
-      return false;
-    }
-  });
-  const [pinInput, setPinInput] = useState('');
-  const [pinError, setPinError] = useState(false);
+  // Multi-Tenant Session State
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
+  const [currentManufacturer, setCurrentManufacturer] = useState<Manufacturer | null>(null);
+  const [isDemoMode, setIsDemoMode] = useState(false);
 
   // Tab State: 'products' | 'reports'
   const [activeSection, setActiveSection] = useState<'products' | 'reports'>('products');
 
-  // Products & Reports State
+  // Tenant-Isolated Products, Reports & 7-Day Trend State
   const [products, setProducts] = useState<ProductWithManufacturer[]>([]);
   const [reports, setReports] = useState<ReportWithProduct[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [scanTrend, setScanTrend] = useState<ScanTrendPoint[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [isReportsLoading, setIsReportsLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
 
-  // Gemini AI Executive Report State (Feature B)
+  // AI Executive Report State
   const [aiReport, setAiReport] = useState<ProducerAiReport | null>(null);
   const [isAiReportLoading, setIsAiReportLoading] = useState(false);
 
@@ -67,8 +74,7 @@ export const ProducerPage: React.FC = () => {
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
 
   // Form State
-  const generateRandomSerial = () =>
-    `ASL-2026-${Math.floor(100 + Math.random() * 900)}`;
+  const generateRandomSerial = () => `ASL-2026-${Math.floor(1000 + Math.random() * 9000)}`;
 
   const [formName, setFormName] = useState('');
   const [formCategory, setFormCategory] = useState('Oziq-ovqat');
@@ -85,27 +91,70 @@ export const ProducerPage: React.FC = () => {
   const [formSerialCode, setFormSerialCode] = useState(generateRandomSerial());
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Load Data
-  const loadData = async () => {
+  // Check active session on mount
+  useEffect(() => {
+    let active = true;
+    const initSession = async () => {
+      setIsCheckingSession(true);
+      try {
+        const restored = await restoreProducerSession();
+        if (active && restored) {
+          setCurrentManufacturer(restored.manufacturer);
+          setIsDemoMode(restored.isDemo);
+        }
+      } finally {
+        if (active) setIsCheckingSession(false);
+      }
+    };
+    initSession();
+
+    if (isSupabaseConfigured) {
+      const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
+        if (event === 'SIGNED_OUT') {
+          setCurrentManufacturer(null);
+          setIsDemoMode(false);
+          setProducts([]);
+          setReports([]);
+          setScanTrend([]);
+          setAiReport(null);
+        }
+      });
+      return () => {
+        active = false;
+        authListener.subscription.unsubscribe();
+      };
+    }
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // Load Tenant-Isolated Data
+  const loadData = useCallback(async () => {
+    if (!currentManufacturer) return;
     setIsLoading(true);
     try {
-      const [items, reps] = await Promise.all([
-        fetchProducerProducts(),
-        fetchReports(),
+      const [items, reps, trend] = await Promise.all([
+        fetchProducerProducts(currentManufacturer.id),
+        fetchReports(currentManufacturer.id),
+        fetchScanTrend(currentManufacturer.id, 7),
       ]);
       setProducts(items);
       setReports(reps);
+      setScanTrend(trend);
     } catch (err) {
       console.error('Failed to load producer data:', err);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentManufacturer]);
 
   const refreshReports = async () => {
+    if (!currentManufacturer) return;
     setIsReportsLoading(true);
     try {
-      const reps = await fetchReports();
+      const reps = await fetchReports(currentManufacturer.id);
       setReports(reps);
     } catch (err) {
       console.error('Failed to refresh reports:', err);
@@ -115,28 +164,45 @@ export const ProducerPage: React.FC = () => {
   };
 
   useEffect(() => {
-    if (isUnlocked) {
+    if (currentManufacturer) {
+      setAiReport(null);
       loadData();
     }
-  }, [isUnlocked]);
+  }, [currentManufacturer, loadData]);
 
-  // Calculate KPIs
+  // Calculate KPIs strictly for currentManufacturer
   const totalProducts = products.length;
   const totalScans = products.reduce((acc, p) => acc + (p.scan_count || 0), 0);
   const suspiciousCount = products.filter(
     (p) => p.is_flagged || (p.scan_count || 0) > (p.max_safe_scans || 3)
   ).length;
 
-  // Run AI Risk Report
+  // Run Tenant-Isolated AI Risk Report
   const handleRunProducerAiReport = async () => {
-    if (isAiReportLoading) return;
+    if (!currentManufacturer || isAiReportLoading) return;
     setIsAiReportLoading(true);
     try {
       const report = await generateProducerAiReport({
+        company_name: currentManufacturer.name,
+        region: currentManufacturer.region,
+        license_number: currentManufacturer.license_number,
         total_products: totalProducts,
         total_scans: totalScans,
         suspicious_count: suspiciousCount,
-        reports: reports.slice(0, 10),
+        products_summary: products.slice(0, 20).map((p) => ({
+          serial_code: p.serial_code,
+          product_name: p.product_name,
+          scan_count: p.scan_count || 0,
+          max_safe_scans: p.max_safe_scans || 3,
+          is_flagged: Boolean(p.is_flagged),
+        })),
+        reports: reports.slice(0, 15).map((r) => ({
+          serial_code: r.product?.serial_code || 'NOMAʼLUM',
+          product_name: r.product?.product_name || 'Mahsulot',
+          location_note: r.location_note,
+          report_message: r.report_message,
+          scanned_at: r.scanned_at,
+        })),
       });
       setAiReport(report);
     } catch (err) {
@@ -146,46 +212,28 @@ export const ProducerPage: React.FC = () => {
     }
   };
 
-  // Handle PIN Submission
-  const handlePinSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (pinInput.trim() === VALID_PIN) {
-      try {
-        sessionStorage.setItem(PIN_STORAGE_KEY, VALID_PIN);
-      } catch (err) {
-        console.warn('sessionStorage failed', err);
-      }
-      setIsUnlocked(true);
-      setPinError(false);
-    } else {
-      setPinError(true);
-      setPinInput('');
-    }
+  const handleLogout = async () => {
+    await logoutProducerAccount();
+    setCurrentManufacturer(null);
+    setIsDemoMode(false);
+    setProducts([]);
+    setReports([]);
+    setScanTrend([]);
+    setAiReport(null);
+    setShowAddForm(false);
   };
 
-  const handleLogout = () => {
-    try {
-      sessionStorage.removeItem(PIN_STORAGE_KEY);
-    } catch (err) {
-      console.warn('sessionStorage failed', err);
-    }
-    setIsUnlocked(false);
-    setPinInput('');
-    setPinError(false);
-  };
-
-  // Handle Product Deletion
   const handleDeleteProduct = async (productId: string, productName: string) => {
+    if (!currentManufacturer) return;
     if (window.confirm(`"${productName}" mahsulotini o‘chirmoqchimisiz?`)) {
-      await deleteProduct(productId);
+      await deleteProduct(productId, currentManufacturer.id);
       await loadData();
     }
   };
 
-  // Handle Add Product (Single or Batch)
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formName.trim() || isSubmitting) return;
+    if (!currentManufacturer || !formName.trim() || isSubmitting) return;
 
     setIsSubmitting(true);
     try {
@@ -201,9 +249,8 @@ export const ProducerPage: React.FC = () => {
       };
 
       const quantity = Math.max(1, Math.min(20, Number(formQuantity) || 1));
-      const createdItems = await createBatchProducts(payload, quantity);
+      const createdItems = await createBatchProducts(payload, quantity, currentManufacturer);
 
-      // Reset form
       setFormName('');
       setFormIngredients('');
       setFormBatch(`BATCH-2026-${Math.floor(10 + Math.random() * 90)}`);
@@ -211,10 +258,8 @@ export const ProducerPage: React.FC = () => {
       setFormQuantity(1);
       setShowAddForm(false);
 
-      // Refresh list
       await loadData();
 
-      // Open modal
       if (createdItems.length > 1) {
         setBatchCreatedProducts(createdItems);
         setIsBatchModalOpen(true);
@@ -228,58 +273,25 @@ export const ProducerPage: React.FC = () => {
     }
   };
 
-  // 1. PIN LOCK SCREEN
-  if (!isUnlocked) {
+  // Loading Session Check
+  if (isCheckingSession) {
     return (
-      <div className="mx-auto max-w-md px-4 py-16 sm:py-24 animate-in fade-in duration-300">
-        <div className="rounded-2xl border border-[#1F1F1F] bg-[#0A0A0A] p-6 sm:p-8 shadow-2xl text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl border border-[#222222] bg-[#111111] text-[#FAFAFA] mb-4">
-            <Lock className="h-6 w-6" strokeWidth={1.75} />
-          </div>
-
-          <h2 className="text-lg font-bold tracking-tight text-[#FAFAFA]">
-            Ishlab Chiqaruvchi Kabinetiga Kirish
-          </h2>
-          <p className="mt-1 text-xs text-[#888888] max-w-xs mx-auto">
-            Xavfsizlik uchun 4 xonali PIN-kodni kiriting
-          </p>
-
-          <form onSubmit={handlePinSubmit} className="mt-6 space-y-4">
-            <div>
-              <input
-                type="password"
-                maxLength={4}
-                autoFocus
-                placeholder="••••"
-                value={pinInput}
-                onChange={(e) => {
-                  setPinInput(e.target.value);
-                  setPinError(false);
-                }}
-                className="w-40 text-center mx-auto tracking-[0.5em] text-2xl font-mono py-2.5 rounded-xl border border-[#262626] bg-[#000000] text-[#FAFAFA] placeholder-[#525252] focus:border-[#FAFAFA] focus:outline-none"
-              />
-            </div>
-
-            {pinError && (
-              <div className="text-xs text-[#EF4444] animate-in fade-in">
-                Noto‘g‘ri PIN-kod. Qaytadan urinib ko‘ring.
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={!pinInput.trim()}
-              className="w-full rounded-xl bg-[#FAFAFA] py-2.5 text-xs font-bold text-black hover:bg-[#E5E5E5] disabled:opacity-40 transition-colors shadow-sm"
-            >
-              Kirish
-            </button>
-          </form>
-
-          <div className="mt-6 pt-4 border-t border-[#141414] text-[11px] text-[#525252] font-mono">
-            Taqdimot demo PIN-kodi: <span className="text-[#888888] font-bold">2026</span>
-          </div>
-        </div>
+      <div className="mx-auto max-w-md px-4 py-20 text-center">
+        <RefreshCw className="h-6 w-6 animate-spin mx-auto text-[#888888]" />
+        <p className="mt-3 text-xs text-[#888888]">Korxona sessiyasi tekshirilmoqda...</p>
       </div>
+    );
+  }
+
+  // Auth Gate when unauthenticated
+  if (!currentManufacturer) {
+    return (
+      <ProducerAuth
+        onAuthenticated={(manufacturer, demo) => {
+          setCurrentManufacturer(manufacturer);
+          setIsDemoMode(demo);
+        }}
+      />
     );
   }
 
@@ -293,22 +305,42 @@ export const ProducerPage: React.FC = () => {
     );
   });
 
+  const maxTrendValue = Math.max(
+    1,
+    ...scanTrend.map((d) => d.scans + d.reports)
+  );
+  const total7DayScans = scanTrend.reduce((sum, d) => sum + d.scans + d.reports, 0);
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
-      {/* Producer Header */}
+      {/* Multi-Tenant Producer Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-[#1F1F1F]">
         <div>
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#FAFAFA]">
-              Ishlab Chiqaruvchi Boshqaruv Paneli
+              {currentManufacturer.name}
             </h1>
-            <span className="rounded border border-[#10B981]/30 bg-[#10B981]/10 px-2 py-0.5 text-[11px] font-medium text-[#10B981]">
-              Tasdiqlangan
-            </span>
+            {currentManufacturer.verified && (
+              <span className="inline-flex items-center space-x-1 rounded border border-[#10B981]/30 bg-[#10B981]/10 px-2 py-0.5 text-[11px] font-medium text-[#10B981]">
+                <VerifiedSealIcon className="h-3 w-3" strokeWidth={1.75} />
+                <span>Tasdiqlangan</span>
+              </span>
+            )}
+            {isDemoMode && (
+              <span className="rounded border border-[#262626] bg-[#141414] px-2 py-0.5 text-[10px] font-mono text-[#888888]">
+                DEMO REJIM
+              </span>
+            )}
           </div>
-          <div className="mt-1 flex items-center space-x-2 text-xs text-[#888888]">
-            <Building2 className="h-3.5 w-3.5 text-[#525252]" strokeWidth={1.75} />
-            <span>Chiroqchi Tog‘ Asali MCHJ (Litsenziya: UZ-CERT-2026-8841)</span>
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#888888]">
+            <span className="inline-flex items-center space-x-1.5">
+              <Building2 className="h-3.5 w-3.5 text-[#525252]" strokeWidth={1.75} />
+              <span>{currentManufacturer.region}</span>
+            </span>
+            <span className="inline-flex items-center space-x-1.5 font-mono text-[11px]">
+              <span className="text-[#525252]">Litsenziya:</span>
+              <span className="text-[#FAFAFA]">{currentManufacturer.license_number}</span>
+            </span>
           </div>
         </div>
 
@@ -330,11 +362,10 @@ export const ProducerPage: React.FC = () => {
             )}
           </button>
 
-          {/* Chiqish (Lock) Button */}
           <button
             type="button"
             onClick={handleLogout}
-            title="Kabinetdan chiqish va qulflash"
+            title="Kabinetdan chiqish"
             className="flex items-center space-x-1.5 rounded-lg border border-[#1F1F1F] bg-[#111111] px-3 py-2 text-xs font-medium text-[#888888] hover:text-[#FAFAFA] hover:bg-[#161616] transition-colors"
           >
             <LogOut className="h-3.5 w-3.5" strokeWidth={1.75} />
@@ -345,7 +376,6 @@ export const ProducerPage: React.FC = () => {
 
       {/* Top KPI Row */}
       <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* KPI 1 */}
         <div className="rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] p-5">
           <div className="flex items-center justify-between text-[#888888]">
             <span className="text-xs font-medium">Jami mahsulotlar</span>
@@ -359,7 +389,6 @@ export const ProducerPage: React.FC = () => {
           </div>
         </div>
 
-        {/* KPI 2 */}
         <div className="rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] p-5">
           <div className="flex items-center justify-between text-[#888888]">
             <span className="text-xs font-medium">Jami tekshiruvlar</span>
@@ -373,11 +402,10 @@ export const ProducerPage: React.FC = () => {
           </div>
         </div>
 
-        {/* KPI 3 */}
         <div className="rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] p-5">
           <div className="flex items-center justify-between text-[#888888]">
             <span className="text-xs font-medium">Shubhali / Shikoyatlar</span>
-            <AlertTriangle className="h-4 w-4 text-[#F59E0B]" strokeWidth={1.75} />
+            <CloneAlertIcon className="h-4 w-4 text-[#F59E0B]" strokeWidth={1.5} />
           </div>
           <div className="mt-3 flex items-baseline space-x-2">
             <span className="text-2xl sm:text-3xl font-bold tracking-tight font-mono text-[#F59E0B]">
@@ -388,12 +416,68 @@ export const ProducerPage: React.FC = () => {
         </div>
       </div>
 
+      {/* 7-Day Tenant-Isolated Scan Activity Chart */}
+      <div className="mt-4 rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] p-5">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+          <div className="flex items-center space-x-2">
+            <BarChart3 className="h-4 w-4 text-[#888888]" strokeWidth={1.75} />
+            <h2 className="text-xs font-semibold tracking-tight text-[#FAFAFA]">
+              7-Kunlik Skanerlash Faolligi
+            </h2>
+          </div>
+          <div className="flex items-center space-x-4 text-[11px] font-mono text-[#525252]">
+            <span className="flex items-center space-x-1.5">
+              <span className="h-2 w-2 rounded-sm bg-[#10B981]" />
+              <span>Tekshiruv</span>
+            </span>
+            <span className="flex items-center space-x-1.5">
+              <span className="h-2 w-2 rounded-sm bg-[#EF4444]" />
+              <span>Shikoyat</span>
+            </span>
+            <span className="text-[#888888]">Jami: {total7DayScans}</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-7 gap-2 sm:gap-3 items-end h-28 pt-2">
+          {scanTrend.map((point) => {
+            const totalDay = point.scans + point.reports;
+            const scanPct = Math.round((point.scans / maxTrendValue) * 100);
+            const reportPct = Math.round((point.reports / maxTrendValue) * 100);
+
+            return (
+              <div key={point.date} className="flex flex-col items-center h-full justify-end">
+                <span className="text-[10px] font-mono text-[#888888] mb-1">
+                  {totalDay}
+                </span>
+                <div className="w-full max-w-[36px] h-16 rounded-md bg-[#111111] border border-[#1A1A1A] flex flex-col justify-end overflow-hidden p-0.5 gap-0.5">
+                  {point.reports > 0 && (
+                    <div
+                      className="w-full rounded-sm bg-[#EF4444]"
+                      style={{ height: `${Math.max(10, reportPct)}%` }}
+                    />
+                  )}
+                  {point.scans > 0 && (
+                    <div
+                      className="w-full rounded-sm bg-[#10B981]"
+                      style={{ height: `${Math.max(10, scanPct)}%` }}
+                    />
+                  )}
+                </div>
+                <span className="mt-1.5 text-[10px] font-mono text-[#525252]">
+                  {point.label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Collapsible Add Product Form (Single or Batch) */}
       {showAddForm && (
         <div className="mt-6 rounded-xl border border-[#2A2A2A] bg-[#0D0D0D] p-5 sm:p-6 shadow-xl animate-in fade-in duration-200">
           <div className="flex items-center justify-between pb-4 border-b border-[#1F1F1F]">
             <div className="flex items-center space-x-2">
-              <Package className="h-4 w-4 text-[#FAFAFA]" strokeWidth={1.75} />
+              <BatchGridIcon className="h-4 w-4 text-[#FAFAFA]" strokeWidth={1.5} />
               <h2 className="text-sm font-semibold text-[#FAFAFA]">
                 Yangi mahsulotni ro‘yxatga olish (Bitta yoki Partiya)
               </h2>
@@ -409,7 +493,6 @@ export const ProducerPage: React.FC = () => {
 
           <form onSubmit={handleAddProduct} className="mt-5 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Product Name */}
               <div>
                 <label className="block text-xs font-medium text-[#888888] mb-1.5">
                   Mahsulot nomi *
@@ -424,7 +507,6 @@ export const ProducerPage: React.FC = () => {
                 />
               </div>
 
-              {/* Category */}
               <div>
                 <label className="block text-xs font-medium text-[#888888] mb-1.5">
                   Kategoriya
@@ -443,7 +525,6 @@ export const ProducerPage: React.FC = () => {
                 </select>
               </div>
 
-              {/* Batch Quantity (Feature 4: Batch QR Generation) */}
               <div>
                 <label className="block text-xs font-medium text-[#FAFAFA] mb-1.5 flex items-center justify-between">
                   <span>Miqdori (nechta unikal QR-kod yaratilsin?) *</span>
@@ -465,7 +546,6 @@ export const ProducerPage: React.FC = () => {
                 </span>
               </div>
 
-              {/* Batch Number */}
               <div>
                 <label className="block text-xs font-medium text-[#888888] mb-1.5">
                   Partiya raqami *
@@ -480,7 +560,6 @@ export const ProducerPage: React.FC = () => {
                 />
               </div>
 
-              {/* Manufacture Date */}
               <div>
                 <label className="block text-xs font-medium text-[#888888] mb-1.5">
                   Ishlab chiqarilgan sana
@@ -494,7 +573,6 @@ export const ProducerPage: React.FC = () => {
                 />
               </div>
 
-              {/* Expiry Date */}
               <div>
                 <label className="block text-xs font-medium text-[#888888] mb-1.5">
                   Yaroqlilik muddati
@@ -508,7 +586,6 @@ export const ProducerPage: React.FC = () => {
                 />
               </div>
 
-              {/* Max Safe Scans */}
               <div className="sm:col-span-2">
                 <label className="block text-xs font-medium text-[#888888] mb-1.5">
                   Xavfsiz skanerlar chegarasi (Anti-Clone chegara)
@@ -526,7 +603,6 @@ export const ProducerPage: React.FC = () => {
                 </span>
               </div>
 
-              {/* Ingredients */}
               <div className="sm:col-span-2">
                 <label className="block text-xs font-medium text-[#888888] mb-1.5">
                   Mahsulot tarkibi va maʼlumotlari
@@ -602,8 +678,8 @@ export const ProducerPage: React.FC = () => {
               : 'border-transparent text-[#888888] hover:text-[#FAFAFA]'
           }`}
         >
-          <Flag className="h-3.5 w-3.5" strokeWidth={1.75} />
-          <span>Kelib Tushgan Shikoyatlar (Jonli Radar)</span>
+          <ShieldRadarIcon className="h-3.5 w-3.5" strokeWidth={1.5} />
+          <span>Kelib tushgan shikoyatlar</span>
           {reports.length > 0 && (
             <span className="rounded bg-[#EF4444]/20 border border-[#EF4444]/30 px-1.5 py-0.2 text-[10px] font-mono font-bold text-[#EF4444]">
               {reports.length} ta
@@ -615,7 +691,6 @@ export const ProducerPage: React.FC = () => {
       {/* SECTION 1: PRODUCTS TABLE */}
       {activeSection === 'products' && (
         <div className="mt-4 rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] overflow-hidden shadow-2xl">
-          {/* Table Controls */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border-b border-[#1F1F1F] gap-3">
             <div className="flex items-center space-x-2">
               <h2 className="text-sm font-semibold tracking-tight text-[#FAFAFA]">
@@ -648,7 +723,6 @@ export const ProducerPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Table Content */}
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="border-b border-[#1F1F1F] bg-[#050505] text-[#525252] font-mono uppercase tracking-wider text-[10px]">
@@ -673,8 +747,8 @@ export const ProducerPage: React.FC = () => {
                   </tr>
                 ) : filteredProducts.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-4 py-8 text-center text-[#525252]">
-                      Mahsulot topilmadi.
+                    <td colSpan={8} className="px-4 py-10 text-center text-[#525252]">
+                      Ushbu korxona hisobida hozircha mahsulotlar mavjud emas. Yangi mahsulot qo‘shing.
                     </td>
                   </tr>
                 ) : (
@@ -683,18 +757,13 @@ export const ProducerPage: React.FC = () => {
                       p.is_flagged || (p.scan_count || 0) > (p.max_safe_scans || 3);
 
                     return (
-                      <tr
-                        key={p.id}
-                        className="hover:bg-[#111111] transition-colors"
-                      >
-                        {/* Serial Code */}
+                      <tr key={p.id} className="hover:bg-[#111111] transition-colors">
                         <td className="px-4 py-3 font-mono font-semibold text-[#FAFAFA]">
                           <span className="rounded bg-[#141414] border border-[#222222] px-2 py-0.5">
                             {p.serial_code}
                           </span>
                         </td>
 
-                        {/* Product Name */}
                         <td className="px-4 py-3 font-medium">
                           <div>{p.product_name}</div>
                           <div className="text-[10px] text-[#525252] sm:hidden mt-0.5">
@@ -702,17 +771,14 @@ export const ProducerPage: React.FC = () => {
                           </div>
                         </td>
 
-                        {/* Category */}
                         <td className="px-4 py-3 text-[#888888] hidden md:table-cell">
                           {p.category}
                         </td>
 
-                        {/* Batch */}
                         <td className="px-4 py-3 font-mono text-[#888888] hidden sm:table-cell">
                           {p.batch_number}
                         </td>
 
-                        {/* Scan Count */}
                         <td className="px-4 py-3 font-mono">
                           <span
                             className={
@@ -729,24 +795,20 @@ export const ProducerPage: React.FC = () => {
                           </span>
                         </td>
 
-                        {/* Claimed Status */}
                         <td className="px-4 py-3">
                           {p.is_claimed ? (
                             <span className="inline-flex items-center space-x-1 rounded border border-[#3B82F6]/30 bg-[#3B82F6]/10 px-1.5 py-0.5 text-[10px] font-medium text-[#60A5FA]">
                               <span>Band qilingan</span>
                             </span>
                           ) : (
-                            <span className="text-[10px] text-[#525252]">
-                              Erkin
-                            </span>
+                            <span className="text-[10px] text-[#525252]">Erkin</span>
                           )}
                         </td>
 
-                        {/* Status */}
                         <td className="px-4 py-3">
                           {isSuspicious ? (
                             <span className="inline-flex items-center space-x-1 rounded border border-[#F59E0B]/30 bg-[#F59E0B]/10 px-2 py-0.5 text-[10px] font-medium text-[#F59E0B]">
-                              <AlertTriangle className="h-3 w-3" strokeWidth={2} />
+                              <CloneAlertIcon className="h-3 w-3" strokeWidth={1.5} />
                               <span>Shubhali</span>
                             </span>
                           ) : (
@@ -757,7 +819,6 @@ export const ProducerPage: React.FC = () => {
                           )}
                         </td>
 
-                        {/* Actions (QR code + Feature 6: Delete trash button) */}
                         <td className="px-4 py-3 text-right">
                           <div className="inline-flex items-center space-x-1.5">
                             <button
@@ -789,30 +850,31 @@ export const ProducerPage: React.FC = () => {
         </div>
       )}
 
-      {/* SECTION 2: LIVE COUNTERFEIT REPORTS RADAR + FEATURE B: GEMINI AI REPORT */}
+      {/* SECTION 2: LIVE COUNTERFEIT REPORTS RADAR + AI EXECUTIVE REPORT */}
       {activeSection === 'reports' && (
         <div className="mt-4 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] gap-3">
             <div>
               <h2 className="text-sm font-semibold tracking-tight text-[#FAFAFA] flex items-center space-x-2">
-                <Flag className="h-4 w-4 text-[#EF4444]" strokeWidth={1.75} />
+                <ShieldRadarIcon className="h-4 w-4 text-[#EF4444]" strokeWidth={1.5} />
                 <span>Jonli Shikoyatlar va Soxtalik Signallari</span>
               </h2>
               <p className="text-xs text-[#888888] mt-0.5">
-                Xaridorlar tomonidan do‘konlar va bozorlardan yuborilgan real vaqt xabarlari
+                Faqat {currentManufacturer.name} mahsulotlari bo‘yicha kelib tushgan real vaqt signallari
               </p>
             </div>
 
             <div className="flex items-center space-x-2">
-              {/* Feature B: Gemini AI Producer Report Trigger */}
               <button
                 type="button"
                 onClick={handleRunProducerAiReport}
                 disabled={isAiReportLoading}
-                className="flex items-center space-x-1.5 rounded-lg border border-[#2A2A2A] bg-[#141414] hover:bg-[#1E1E1E] px-3 py-1.5 text-xs font-medium text-[#FAFAFA] transition-colors shadow-sm"
+                className="flex items-center space-x-1.5 rounded-lg border border-[#262626] bg-[#141414] hover:bg-[#1E1E1E] px-3 py-1.5 text-xs font-medium text-[#FAFAFA] transition-colors shadow-sm"
               >
-                <Sparkles className="h-3.5 w-3.5 text-[#FAFAFA]" strokeWidth={1.75} />
-                <span>{isAiReportLoading ? 'AI hisoboti tayyorlanmoqda...' : 'AI Xavf Hisoboti'}</span>
+                <AiCoreIcon className="h-3.5 w-3.5 text-[#10B981]" strokeWidth={1.5} />
+                <span>
+                  {isAiReportLoading ? 'AI hisoboti tayyorlanmoqda...' : 'AI Xavfsizlik Hisoboti'}
+                </span>
               </button>
 
               <button
@@ -826,14 +888,14 @@ export const ProducerPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Feature B: Gemini AI Executive Briefing Card */}
+          {/* AI Executive Briefing Card */}
           {aiReport && (
             <div className="rounded-xl border border-[#222222] bg-[#0D0D0D] p-5 space-y-3.5 shadow-xl animate-in fade-in duration-300">
               <div className="flex items-center justify-between pb-3 border-b border-[#1A1A1A]">
                 <div className="flex items-center space-x-2">
-                  <Sparkles className="h-4 w-4 text-[#FAFAFA]" strokeWidth={1.75} />
+                  <AiCoreIcon className="h-4 w-4 text-[#10B981]" strokeWidth={1.5} />
                   <h3 className="text-xs font-semibold text-[#FAFAFA] tracking-tight">
-                    Gemini AI: Boshqaruv va Kontrafakt Xavfi Tahlili
+                    AI Boshqaruv va Kontrafakt Xavfi Tahlili
                   </h3>
                 </div>
 
@@ -853,17 +915,35 @@ export const ProducerPage: React.FC = () => {
               <div className="space-y-3 text-xs">
                 <div>
                   <span className="text-[10px] text-[#525252] uppercase font-mono tracking-wider block mb-1">
-                    Boshqaruv Xulosasi (Executive Summary)
+                    Boshqaruv Xulosasi
                   </span>
                   <p className="text-[#888888] leading-relaxed">
                     {aiReport.executive_summary}
                   </p>
                 </div>
 
+                {aiReport.risky_serial_codes && aiReport.risky_serial_codes.length > 0 && (
+                  <div className="pt-2 border-t border-[#141414]">
+                    <span className="text-[10px] text-[#525252] uppercase font-mono tracking-wider block mb-1.5">
+                      Shubhali Seriya Kodlari
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {aiReport.risky_serial_codes.map((code, idx) => (
+                        <span
+                          key={idx}
+                          className="rounded border border-[#F59E0B]/30 bg-[#F59E0B]/10 px-2 py-0.5 font-mono text-[11px] font-semibold text-[#F59E0B]"
+                        >
+                          {code}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {aiReport.top_hotspots && aiReport.top_hotspots.length > 0 && (
                   <div className="pt-2 border-t border-[#141414]">
                     <span className="text-[10px] text-[#525252] uppercase font-mono tracking-wider block mb-1.5">
-                      Aniqlangan Qaynoq Nuqtalar va Xavfli Hududlar
+                      Aniqlangan Hududlar va Bozorlar
                     </span>
                     <div className="flex flex-wrap gap-2">
                       {aiReport.top_hotspots.map((spot, idx) => (
@@ -881,10 +961,10 @@ export const ProducerPage: React.FC = () => {
 
                 <div className="pt-2 border-t border-[#141414]">
                   <span className="text-[10px] text-[#525252] uppercase font-mono tracking-wider block mb-1">
-                    Ishlab Chiqaruvchi Uchun Tavsiya Etilgan Harakatlar
+                    Tavsiya Etilgan B2B Himoya Choralari
                   </span>
                   <p className="text-[#FAFAFA] font-medium leading-relaxed">
-                    🛡️ {aiReport.action_recommendation}
+                    {aiReport.action_recommendation}
                   </p>
                 </div>
               </div>
@@ -898,7 +978,7 @@ export const ProducerPage: React.FC = () => {
                 Hozircha shikoyatlar kelib tushmagan
               </div>
               <p className="text-xs text-[#888888] mt-1">
-                Barcha mahsulotlar toza va kontrafakt signallarisiz aylanmoqda.
+                {currentManufacturer.name} mahsulotlari toza va kontrafakt signallarisiz aylanmoqda.
               </p>
             </div>
           ) : (
@@ -933,7 +1013,6 @@ export const ProducerPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Location & Device */}
                   <div className="text-xs text-[#888888] flex flex-wrap items-center gap-y-1 gap-x-3 pt-1 border-t border-[#141414]">
                     <div className="flex items-center space-x-1 text-[#FAFAFA]">
                       <MapPin className="h-3.5 w-3.5 text-[#EF4444]" strokeWidth={1.75} />
@@ -947,10 +1026,9 @@ export const ProducerPage: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Message */}
                   {r.report_message && (
                     <div className="rounded-lg bg-[#050505] border border-[#141414] p-3 text-xs text-[#FAFAFA] leading-relaxed">
-                      "{r.report_message}"
+                      &quot;{r.report_message}&quot;
                     </div>
                   )}
                 </div>
@@ -967,7 +1045,7 @@ export const ProducerPage: React.FC = () => {
         onClose={() => setSelectedProductForQr(null)}
       />
 
-      {/* Batch A4 QR Modal (Feature 4) */}
+      {/* Batch A4 QR Modal */}
       <BatchQrModal
         products={batchCreatedProducts}
         isOpen={isBatchModalOpen}

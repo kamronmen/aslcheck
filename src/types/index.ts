@@ -5,6 +5,9 @@ export interface Manufacturer {
   license_number: string;
   verified: boolean;
   created_at: string;
+  owner_id?: string | null;
+  email?: string | null;
+  phone?: string | null;
 }
 
 export interface Product {
@@ -44,7 +47,15 @@ export interface ReportWithProduct extends ScanLog {
     id: string;
     serial_code: string;
     product_name: string;
+    manufacturer_id?: string;
   } | null;
+}
+
+export interface ScanTrendPoint {
+  date: string;
+  label: string;
+  scans: number;
+  reports: number;
 }
 
 export type VerificationStatus = 'AUTHENTIC' | 'SUSPICIOUS' | 'NOT_FOUND';
@@ -65,4 +76,28 @@ export interface NewProductPayload {
   ingredients?: string;
   max_safe_scans?: number;
   serial_code?: string;
+}
+
+export interface RegisterCompanyPayload {
+  name: string;
+  region: string;
+  license_number: string;
+  phone: string;
+  email: string;
+  password: string;
+}
+
+export interface ForensicCheckItem {
+  label: string;
+  status: 'pass' | 'warn' | 'fail';
+  detail: string;
+}
+
+export interface VisionVerifyResult {
+  detected_code: string | null;
+  confidence_score: number;
+  package_match: 'Mos keladi' | 'Mos kelmaydi' | "Qisman / Aniqlab bo'lmadi";
+  print_quality: 'Asl zavod bosmasi' | "O'rtacha sifat" | 'Shubhali (Kserokopiya / Xira)';
+  forensic_verdict: string;
+  forensic_checks: ForensicCheckItem[];
 }

@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import {
   CheckCircle,
-  AlertTriangle,
   XCircle,
-  ShieldCheck,
   Building2,
   Calendar,
   Layers,
@@ -17,9 +15,9 @@ import {
   AlertOctagon,
   ShieldAlert,
   ShoppingBag,
-  Sparkles,
   RefreshCw,
 } from 'lucide-react';
+import { AiCoreIcon, CloneAlertIcon, VerifiedSealIcon } from './Icons';
 import type { VerificationResult, ScanLog } from '../types';
 import { reportFakeProduct, claimProduct } from '../lib/api';
 import { analyzeProductWithAi, type ProductAiAnalysis } from '../lib/ai';
@@ -204,7 +202,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
             {isAuthentic ? (
               <CheckCircle className="h-6 w-6" strokeWidth={1.75} />
             ) : (
-              <AlertTriangle className="h-6 w-6" strokeWidth={1.75} />
+              <CloneAlertIcon className="h-6 w-6" strokeWidth={1.5} />
             )}
           </div>
 
@@ -394,27 +392,27 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
           </div>
         </div>
 
-        {/* FEATURE A: Gemini AI Intelligence Box */}
+        {/* FEATURE A: AI Safety & Forensics Intelligence Box */}
         <div>
           {!aiAnalysis && !isAiLoading && (
             <div className="rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] p-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="text-left">
                   <div className="text-xs font-semibold text-[#FAFAFA] flex items-center space-x-1.5">
-                    <Sparkles className="h-3.5 w-3.5 text-[#FAFAFA]" strokeWidth={1.75} />
-                    <span>Gemini AI Tarkib va Xavfsizlik Ekspertizasi</span>
+                    <AiCoreIcon className="h-4 w-4 text-[#10B981]" strokeWidth={1.5} />
+                    <span>AI Tarkib va Xavfsizlik Ekspertizasi</span>
                   </div>
                   <p className="text-[11px] text-[#888888] mt-0.5">
-                    Mahsulot tarkibi, tabiiylik va nusxalanish ehtimolini sunʼiy intellekt orqali chuqur tekshiring
+                    Mahsulot tarkibi, yaroqlilik muddati va nusxalanish ehtimolini sunʼiy intellekt orqali chuqur tekshiring
                   </p>
                 </div>
 
                 <button
                   type="button"
                   onClick={handleRunAiAnalysis}
-                  className="flex items-center justify-center space-x-2 rounded-lg border border-[#2A2A2A] bg-[#141414] hover:bg-[#1E1E1E] px-4 py-2 text-xs font-medium text-[#FAFAFA] transition-colors shrink-0"
+                  className="flex items-center justify-center space-x-2 rounded-lg border border-[#262626] bg-[#141414] hover:bg-[#1C1C1C] hover:border-[#3A3A3A] px-4 py-2 text-xs font-medium text-[#FAFAFA] transition-colors shrink-0"
                 >
-                  <Sparkles className="h-3.5 w-3.5 text-[#FAFAFA]" strokeWidth={1.75} />
+                  <AiCoreIcon className="h-3.5 w-3.5 text-[#FAFAFA]" strokeWidth={1.5} />
                   <span>AI bilan tahlil qilish</span>
                 </button>
               </div>
@@ -425,45 +423,99 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
             <div className="rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] p-6 text-center animate-pulse">
               <RefreshCw className="h-5 w-5 animate-spin mx-auto mb-2 text-[#888888]" />
               <div className="text-xs font-semibold text-[#FAFAFA]">
-                Gemini 2.5 Flash tahlil qilmoqda...
+                AslCheck AI tahlil qilmoqda...
               </div>
               <div className="text-[11px] text-[#525252] mt-0.5">
-                Tarkib, xavfsizlik va kontrafakt ehtimoli hisoblanmoqda
+                Tarkib, qolgan yaroqlilik kunlari va kontrafakt indeksi hisoblanmoqda
               </div>
             </div>
           )}
 
           {aiAnalysis && (
-            <div className="rounded-xl border border-[#222222] bg-[#0A0A0A] p-5 space-y-3.5 shadow-xl animate-in fade-in duration-300">
-              <div className="flex items-center justify-between pb-3 border-b border-[#141414]">
+            <div className="rounded-xl border border-[#222222] bg-[#0A0A0A] p-5 space-y-4 shadow-xl animate-in fade-in duration-300">
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#141414]">
                 <div className="flex items-center space-x-2">
-                  <Sparkles className="h-4 w-4 text-[#FAFAFA]" strokeWidth={1.75} />
+                  <AiCoreIcon className="h-4 w-4 text-[#10B981]" strokeWidth={1.5} />
                   <h3 className="text-xs font-semibold text-[#FAFAFA] tracking-tight">
-                    Gemini AI Xavfsizlik va Tarkib Tahlili
+                    AI Xavfsizlik va Tarkib Ekspertizasi
                   </h3>
                 </div>
 
-                <span
-                  className={`inline-flex items-center space-x-1 rounded px-2 py-0.5 text-[10px] font-mono font-bold ${
-                    aiAnalysis.safety_score === 'Yuqori'
-                      ? 'bg-[#10B981]/15 border border-[#10B981]/30 text-[#10B981]'
-                      : aiAnalysis.safety_score === 'Past'
-                      ? 'bg-[#EF4444]/15 border border-[#EF4444]/30 text-[#EF4444]'
-                      : 'bg-[#F59E0B]/15 border border-[#F59E0B]/30 text-[#F59E0B]'
-                  }`}
-                >
-                  <span>Xavfsizlik darajasi: {aiAnalysis.safety_score}</span>
-                </span>
+                <div className="flex items-center space-x-2">
+                  {typeof aiAnalysis.days_until_expiry === 'number' && (
+                    <span
+                      className={`inline-flex items-center rounded px-2 py-0.5 text-[10px] font-mono font-medium border ${
+                        aiAnalysis.days_until_expiry < 0
+                          ? 'bg-[#EF4444]/10 border-[#EF4444]/30 text-[#EF4444]'
+                          : aiAnalysis.days_until_expiry <= 30
+                          ? 'bg-[#F59E0B]/10 border-[#F59E0B]/30 text-[#F59E0B]'
+                          : 'bg-[#141414] border-[#262626] text-[#888888]'
+                      }`}
+                    >
+                      {aiAnalysis.days_until_expiry < 0
+                        ? `Muddati ${Math.abs(aiAnalysis.days_until_expiry)} kun o‘tgan`
+                        : `Muddatiga ${aiAnalysis.days_until_expiry} kun`}
+                    </span>
+                  )}
+
+                  <span
+                    className={`inline-flex items-center space-x-1 rounded px-2 py-0.5 text-[10px] font-mono font-bold ${
+                      aiAnalysis.safety_score === 'Yuqori'
+                        ? 'bg-[#10B981]/15 border border-[#10B981]/30 text-[#10B981]'
+                        : aiAnalysis.safety_score === 'Past'
+                        ? 'bg-[#EF4444]/15 border border-[#EF4444]/30 text-[#EF4444]'
+                        : 'bg-[#F59E0B]/15 border border-[#F59E0B]/30 text-[#F59E0B]'
+                    }`}
+                  >
+                    <span>Xavfsizlik: {aiAnalysis.safety_score}</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Trust Score Bar */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="font-mono uppercase tracking-wider text-[#525252]">
+                    Ishonchlilik Indeksi (Trust Score)
+                  </span>
+                  <span className="font-mono font-bold text-[#FAFAFA]">
+                    {aiAnalysis.trust_score} / 100
+                  </span>
+                </div>
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#141414]">
+                  <div
+                    className={`h-full transition-all duration-500 ${
+                      aiAnalysis.trust_score >= 75
+                        ? 'bg-[#10B981]'
+                        : aiAnalysis.trust_score >= 45
+                        ? 'bg-[#F59E0B]'
+                        : 'bg-[#EF4444]'
+                    }`}
+                    style={{ width: `${Math.max(0, Math.min(100, aiAnalysis.trust_score))}%` }}
+                  />
+                </div>
               </div>
 
               <div className="space-y-3 text-xs">
                 <div>
                   <span className="text-[10px] text-[#525252] uppercase font-mono tracking-wider block mb-1">
-                    Tarkib va Tabiiylik Bahosi
+                    Tarkib va Allergen Tahlili
                   </span>
                   <p className="text-[#888888] leading-relaxed">
                     {aiAnalysis.ingredients_summary}
                   </p>
+                  {aiAnalysis.ingredient_tags && aiAnalysis.ingredient_tags.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {aiAnalysis.ingredient_tags.map((tag, idx) => (
+                        <span
+                          key={idx}
+                          className="rounded border border-[#222222] bg-[#111111] px-2 py-0.5 text-[10px] font-mono text-[#888888]"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="pt-2 border-t border-[#141414]">
@@ -480,9 +532,25 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
                     Xaridor Uchun Amaliy Tavsiya
                   </span>
                   <p className="text-[#FAFAFA] font-medium leading-relaxed">
-                    💡 {aiAnalysis.buyer_tip}
+                    {aiAnalysis.buyer_tip}
                   </p>
                 </div>
+
+                {aiAnalysis.physical_checks && aiAnalysis.physical_checks.length > 0 && (
+                  <div className="pt-2 border-t border-[#141414]">
+                    <span className="text-[10px] text-[#525252] uppercase font-mono tracking-wider block mb-1.5">
+                      Jismoniy Tekshiruv Nazorat Ro‘yxati
+                    </span>
+                    <ul className="space-y-1 text-[11px] text-[#888888]">
+                      {aiAnalysis.physical_checks.map((chk, i) => (
+                        <li key={i} className="flex items-start space-x-2">
+                          <Check className="h-3.5 w-3.5 text-[#10B981] shrink-0 mt-0.5" strokeWidth={2} />
+                          <span>{chk}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
                 {onAskAiAboutProduct && (
                   <div className="pt-3 border-t border-[#141414] flex justify-end">
@@ -495,7 +563,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
                       }
                       className="inline-flex items-center space-x-1.5 text-xs text-[#10B981] hover:text-[#FAFAFA] transition-colors"
                     >
-                      <Sparkles className="h-3.5 w-3.5" strokeWidth={1.75} />
+                      <AiCoreIcon className="h-3.5 w-3.5" strokeWidth={1.5} />
                       <span>AI Ekspert bilan to‘liq muloqot qilish →</span>
                     </button>
                   </div>
@@ -525,7 +593,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
                       </span>
                       {manufacturer.verified && (
                         <span className="flex items-center space-x-1 rounded border border-[#10B981]/30 bg-[#10B981]/10 px-1.5 py-0.5 text-[10px] font-medium text-[#10B981]">
-                          <ShieldCheck className="h-3 w-3" strokeWidth={2} />
+                          <VerifiedSealIcon className="h-3 w-3" strokeWidth={1.75} />
                           <span>Tasdiqlangan</span>
                         </span>
                       )}

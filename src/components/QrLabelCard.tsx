@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
-import { X, Download, Printer, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { X, Download, Printer } from 'lucide-react';
+import { AslBrandMark, VerifiedSealIcon } from './Icons';
 import type { ProductWithManufacturer } from '../types';
 
 interface QrLabelCardProps {
@@ -43,9 +44,9 @@ export const QrLabelCard: React.FC<QrLabelCardProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="relative w-full max-w-md overflow-hidden rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#1F1F1F] px-5 py-4">
+        <div className="no-print flex items-center justify-between border-b border-[#1F1F1F] px-5 py-4">
           <div className="flex items-center space-x-2">
-            <ShieldCheck className="h-4 w-4 text-[#FAFAFA]" strokeWidth={1.75} />
+            <AslBrandMark className="h-4 w-4 text-[#FAFAFA]" strokeWidth={1.5} />
             <h3 className="text-sm font-semibold tracking-tight text-[#FAFAFA]">
               Chop Etiluvchi QR Yorliq
             </h3>
@@ -66,7 +67,7 @@ export const QrLabelCard: React.FC<QrLabelCardProps> = ({
           >
             {/* Brand Header */}
             <div className="flex items-center space-x-1.5 mb-3">
-              <ShieldCheck className="h-4 w-4 text-[#FAFAFA]" strokeWidth={2} />
+              <AslBrandMark className="h-4 w-4 text-[#FAFAFA]" strokeWidth={1.75} />
               <span className="text-xs font-bold tracking-tight text-[#FAFAFA] uppercase">
                 AslCheck • Rasmiy Pasport
               </span>
@@ -100,6 +101,11 @@ export const QrLabelCard: React.FC<QrLabelCardProps> = ({
                   {product.batch_number}
                 </span>
               </div>
+              {product.manufacturers?.name && (
+                <div className="mt-1.5 text-[11px] text-[#888888] truncate">
+                  {product.manufacturers.name}
+                </div>
+              )}
 
               <div className="mt-3 border-t border-[#141414] pt-2.5 text-[10px] text-[#525252]">
                 Kamerada skanerlab asl nusxasini tekshiring:
@@ -109,7 +115,7 @@ export const QrLabelCard: React.FC<QrLabelCardProps> = ({
               </div>
 
               <div className="mt-2 flex items-center justify-center space-x-1 text-[10px] text-[#10B981]">
-                <CheckCircle2 className="h-3 w-3" strokeWidth={2} />
+                <VerifiedSealIcon className="h-3 w-3" strokeWidth={1.75} />
                 <span>Anti-Clone Texnologiyasi Bilan Himoyalangan</span>
               </div>
             </div>
@@ -117,7 +123,7 @@ export const QrLabelCard: React.FC<QrLabelCardProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="border-t border-[#1F1F1F] bg-[#050505] px-5 py-3.5 flex items-center justify-between gap-3">
+        <div className="no-print border-t border-[#1F1F1F] bg-[#050505] px-5 py-3.5 flex items-center justify-between gap-3">
           <button
             type="button"
             onClick={onClose}

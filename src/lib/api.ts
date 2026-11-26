@@ -1,37 +1,42 @@
 import { supabase, isSupabaseConfigured } from './supabase';
 import type {
-  ProductWithManufacturer,
   Manufacturer,
+  ProductWithManufacturer,
   ScanLog,
   VerificationResult,
   NewProductPayload,
   ReportWithProduct,
+  RegisterCompanyPayload,
+  ScanTrendPoint,
 } from '../types';
 
 export const DEMO_MANUFACTURER_ID = '11111111-1111-1111-1111-111111111111';
+const DEMO_SESSION_KEY = 'aslcheck_demo_manufacturer';
 
-// Seed demo manufacturer
-const DEMO_MANUFACTURER: Manufacturer = {
+export const DEMO_MANUFACTURER: Manufacturer = {
   id: DEMO_MANUFACTURER_ID,
-  name: 'Chiroqchi Tog‘ Asali MCHJ',
+  name: "Chiroqchi Tog' Asali MCHJ",
   region: 'Qashqadaryo, Chiroqchi tumani',
   license_number: 'UZ-CERT-2026-8841',
   verified: true,
-  created_at: '2024-01-01T00:00:00.000Z',
+  created_at: '2026-01-01T00:00:00.000Z',
+  owner_id: null,
+  email: 'demo@aslcheck.uz',
+  phone: '+998 90 123 45 67',
 };
 
-// Seed demo products
+// Seed demo products for fallback when database is offline
 const INITIAL_DEMO_PRODUCTS: ProductWithManufacturer[] = [
   {
     id: '22222222-2222-2222-2222-222222222221',
     manufacturer_id: DEMO_MANUFACTURER_ID,
     serial_code: 'ASL-2026-001',
-    product_name: 'Tabiiy Tog\' Asali (500g)',
+    product_name: "Tabiiy Tog' Asali (500g)",
     category: 'Oziq-ovqat',
     batch_number: 'BATCH-14A',
     manufacture_date: '2026-10-15',
     expiry_date: '2028-10-15',
-    ingredients: '100% tabiiy tog\' gullari nektari, konservantlarsiz',
+    ingredients: "100% tabiiy tog' gullari nektari, konservantlarsiz",
     scan_count: 1,
     max_safe_scans: 3,
     is_flagged: false,
@@ -44,12 +49,12 @@ const INITIAL_DEMO_PRODUCTS: ProductWithManufacturer[] = [
     id: '22222222-2222-2222-2222-222222222222',
     manufacturer_id: DEMO_MANUFACTURER_ID,
     serial_code: 'ASL-2026-999',
-    product_name: 'Qora Sedana Yog\'i (250ml)',
+    product_name: "Qora Sedana Yog'i (250ml)",
     category: 'Salomatlik',
     batch_number: 'BATCH-09B',
     manufacture_date: '2026-09-01',
     expiry_date: '2027-09-01',
-    ingredients: 'Sovuq siqilgan tabiiy qora sedana yog\'i',
+    ingredients: "Sovuq siqilgan tabiiy qora sedana yog'i",
     scan_count: 15,
     max_safe_scans: 3,
     is_flagged: true,
@@ -150,6 +155,38 @@ export function getClientDeviceInfo(): string {
 }
 
 /**
+ * Read-only lookup for a product by serial code (used by Hybrid Vision Forensics before incrementing scan count)
+ */
+export async function lookupProductByCode(
+  rawCode: string
+): Promise<ProductWithManufacturer | null> {
+  const serialCode = rawCode.trim().toUpperCase();
+  if (!serialCode) return null;
+
+  if (isSupabaseConfigured) {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*, manufacturers(*)')
+        .ilike('serial_code', serialCode)
+        .maybeSingle();
+
+      if (!error && data) {
+        return data as unknown as ProductWithManufacturer;
+      }
+      if (!error && !data) {
+        return null;
+      }
+    } catch (err) {
+      console.warn('Read-only lookup failed:', err);
+    }
+  }
+
+  const localProducts = getLocalProducts();
+  return localProducts.find((p) => p.serial_code.toUpperCase() === serialCode) || null;
+}
+
+/**
  * Core Anti-Clone Product Verification
  */
 export async function verifyProduct(rawCode: string): Promise<VerificationResult> {
@@ -164,7 +201,6 @@ export async function verifyProduct(rawCode: string): Promise<VerificationResult
     };
   }
 
-  // If Supabase is configured, try Supabase first
   if (isSupabaseConfigured) {
     try {
       const { data: productData, error: productError } = await supabase
@@ -221,46 +257,41 @@ export async function verifyProduct(rawCode: string): Promise<VerificationResult
           product: {
             ...product,
             scan_count: newScanCount,
-            is_claimed: Boolean(product.is_claimed),
-            claimed_at: product.claimed_at || null,
           },
           logs,
         };
       }
     } catch (err) {
-      console.warn('Error connecting to Supabase, continuing with fallback:', err);
+      console.warn('Network/Supabase error, using local fallback:', err);
     }
   }
 
-  // Resilient Local Engine (Fallback / Presentation Mode)
-  const products = getLocalProducts();
-  const allLogs = getLocalLogs();
-
-  const foundIndex = products.findIndex(
-    (p) => p.serial_code.trim().toUpperCase() === serialCode
+  // Fallback to localStorage simulation
+  const localProducts = getLocalProducts();
+  const foundIdx = localProducts.findIndex(
+    (p) => p.serial_code.toUpperCase() === serialCode
   );
 
-  if (foundIndex === -1) {
+  if (foundIdx === -1) {
     return {
       status: 'NOT_FOUND',
       product: null,
       logs: [],
-      errorMessage: 'Ushbu seriya kodi rasmiy AslCheck reyestrida topilmadi.',
+      errorMessage: 'Ushbu seriya kodi rasmiy bazada ro‘yxatdan o‘tmagan.',
     };
   }
 
-  const existingProduct = products[foundIndex];
-  const newScanCount = existingProduct.scan_count + 1;
+  const foundProduct = localProducts[foundIdx];
+  const newScanCount = (foundProduct.scan_count || 0) + 1;
+
   const updatedProduct: ProductWithManufacturer = {
-    ...existingProduct,
+    ...foundProduct,
     scan_count: newScanCount,
-    is_claimed: Boolean(existingProduct.is_claimed),
-    claimed_at: existingProduct.claimed_at || null,
   };
+  localProducts[foundIdx] = updatedProduct;
+  saveLocalProducts(localProducts);
 
-  products[foundIndex] = updatedProduct;
-  saveLocalProducts(products);
-
+  const allLogs = getLocalLogs();
   const newLog: ScanLog = {
     id: `log-${Date.now()}`,
     product_id: updatedProduct.id,
@@ -287,7 +318,7 @@ export async function verifyProduct(rawCode: string): Promise<VerificationResult
 }
 
 /**
- * Claim ownership of a product ("Sotib oldim — Kodni o‘zimga band qilish")
+ * Claim ownership of a product ("Sotib oldim — Kodni band qilish")
  */
 export async function claimProduct(
   productId: string
@@ -305,7 +336,7 @@ export async function claimProduct(
         .eq('id', productId);
 
       if (error) {
-        console.warn('Supabase claim update error (column may need SQL migration):', error.message);
+        console.warn('Supabase claim update error:', error.message);
       }
     } catch (err) {
       console.warn('Error claiming product in Supabase:', err);
@@ -388,34 +419,308 @@ export async function reportFakeProduct(
   return true;
 }
 
+// ============================================================================
+// MULTI-TENANT PRODUCER AUTH & SESSION MANAGEMENT
+// ============================================================================
+
+function translateAuthError(message: string): string {
+  const lower = message.toLowerCase();
+  if (lower.includes('invalid login credentials')) {
+    return 'Email yoki parol noto‘g‘ri kiritildi.';
+  }
+  if (lower.includes('email not confirmed')) {
+    return 'Email manzilingiz hali tasdiqlanmagan. Pochtadagi tasdiqlash havolasini bosing.';
+  }
+  if (lower.includes('already registered') || lower.includes('user already exists')) {
+    return 'Ushbu email manzili bilan korxona allaqachon ro‘yxatdan o‘tgan.';
+  }
+  if (lower.includes('password') && lower.includes('6')) {
+    return 'Parol kamida 6 ta belgidan iborat bo‘lishi kerak.';
+  }
+  if (lower.includes('rate limit') || lower.includes('too many requests')) {
+    return 'Juda ko‘p urinish qilindi. Biroz kutib qaytadan urinib ko‘ring.';
+  }
+  return message;
+}
+
+export async function fetchManufacturerById(id: string): Promise<Manufacturer | null> {
+  if (isSupabaseConfigured) {
+    try {
+      const { data, error } = await supabase
+        .from('manufacturers')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle();
+
+      if (!error && data) {
+        return data as Manufacturer;
+      }
+    } catch (err) {
+      console.warn('Error fetching manufacturer by id:', err);
+    }
+  }
+
+  if (id === DEMO_MANUFACTURER_ID) {
+    return DEMO_MANUFACTURER;
+  }
+  return null;
+}
+
+export async function fetchManufacturerByOwner(ownerId: string): Promise<Manufacturer | null> {
+  if (!isSupabaseConfigured) return null;
+  try {
+    const { data, error } = await supabase
+      .from('manufacturers')
+      .select('*')
+      .eq('owner_id', ownerId)
+      .maybeSingle();
+
+    if (!error && data) {
+      return data as Manufacturer;
+    }
+  } catch (err) {
+    console.warn('Error fetching manufacturer by owner:', err);
+  }
+  return null;
+}
+
+async function ensureManufacturerRecordForUser(user: any): Promise<Manufacturer> {
+  const existing = await fetchManufacturerByOwner(user.id);
+  if (existing) return existing;
+
+  // Recover pending registration metadata from user_metadata or localStorage
+  let meta: any = user.user_metadata || {};
+  try {
+    const cached = localStorage.getItem(`aslcheck_pending_mfr_${user.id}`);
+    if (cached) {
+      meta = { ...meta, ...JSON.parse(cached) };
+    }
+  } catch {
+    // Ignore storage read error
+  }
+
+  const insertRow = {
+    owner_id: user.id,
+    name: String(meta.company_name || meta.name || user.email?.split('@')[0] || 'Yangi Korxona'),
+    region: String(meta.region || 'O‘zbekiston'),
+    license_number: String(meta.license_number || `UZ-CERT-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`),
+    email: user.email || meta.email || null,
+    phone: meta.phone ? String(meta.phone) : null,
+    verified: true,
+  };
+
+  const { data: inserted, error: insertError } = await supabase
+    .from('manufacturers')
+    .insert(insertRow)
+    .select('*')
+    .single();
+
+  if (insertError) {
+    throw new Error(`Korxona profilini yaratib bo‘lmadi: ${insertError.message}`);
+  }
+
+  try {
+    localStorage.removeItem(`aslcheck_pending_mfr_${user.id}`);
+  } catch {
+    // Ignore
+  }
+
+  return inserted as Manufacturer;
+}
+
+export async function restoreProducerSession(): Promise<{
+  manufacturer: Manufacturer;
+  isDemo: boolean;
+} | null> {
+  if (isSupabaseConfigured) {
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const user = sessionData?.session?.user;
+      if (user) {
+        const manufacturer = await ensureManufacturerRecordForUser(user);
+        return { manufacturer, isDemo: false };
+      }
+    } catch (err) {
+      console.warn('Error restoring Supabase auth session:', err);
+    }
+  }
+
+  try {
+    if (sessionStorage.getItem(DEMO_SESSION_KEY) === DEMO_MANUFACTURER_ID) {
+      const demo = (await fetchManufacturerById(DEMO_MANUFACTURER_ID)) || DEMO_MANUFACTURER;
+      return { manufacturer: demo, isDemo: true };
+    }
+  } catch {
+    // Ignore sessionStorage error
+  }
+
+  return null;
+}
+
+export async function loginProducerAccount(
+  email: string,
+  password: string
+): Promise<Manufacturer> {
+  if (!isSupabaseConfigured) {
+    throw new Error('Supabase ulanishi sozlanmagan.');
+  }
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: email.trim(),
+    password,
+  });
+
+  if (error || !data.user) {
+    throw new Error(translateAuthError(error?.message || 'Kirishda xatolik yuz berdi.'));
+  }
+
+  const manufacturer = await ensureManufacturerRecordForUser(data.user);
+
+  try {
+    sessionStorage.removeItem(DEMO_SESSION_KEY);
+  } catch {
+    // Ignore
+  }
+
+  return manufacturer;
+}
+
+export async function registerProducerAccount(
+  payload: RegisterCompanyPayload
+): Promise<{
+  manufacturer: Manufacturer | null;
+  requiresEmailConfirmation: boolean;
+}> {
+  if (!isSupabaseConfigured) {
+    throw new Error('Supabase ulanishi sozlanmagan.');
+  }
+
+  const { data: authData, error: authError } = await supabase.auth.signUp({
+    email: payload.email.trim(),
+    password: payload.password,
+    options: {
+      data: {
+        company_name: payload.name.trim(),
+        region: payload.region.trim(),
+        license_number: payload.license_number.trim().toUpperCase(),
+        phone: payload.phone.trim(),
+      },
+    },
+  });
+
+  if (authError || !authData.user) {
+    throw new Error(translateAuthError(authError?.message || 'Ro‘yxatdan o‘tishda xatolik yuz berdi.'));
+  }
+
+  const user = authData.user;
+  const companyRow = {
+    owner_id: user.id,
+    name: payload.name.trim(),
+    region: payload.region.trim(),
+    license_number: payload.license_number.trim().toUpperCase(),
+    email: payload.email.trim(),
+    phone: payload.phone.trim(),
+    verified: true,
+  };
+
+  try {
+    localStorage.setItem(`aslcheck_pending_mfr_${user.id}`, JSON.stringify(companyRow));
+  } catch {
+    // Ignore storage error
+  }
+
+  // Attempt immediate manufacturer creation
+  const { data: inserted, error: insertError } = await supabase
+    .from('manufacturers')
+    .insert(companyRow)
+    .select('*')
+    .maybeSingle();
+
+  if (insertError) {
+    console.warn('Manufacturer insert after signup:', insertError.message);
+    if (!authData.session) {
+      return { manufacturer: null, requiresEmailConfirmation: true };
+    }
+    throw new Error(`Korxonani saqlashda xatolik: ${insertError.message}`);
+  }
+
+  if (!authData.session) {
+    return { manufacturer: null, requiresEmailConfirmation: true };
+  }
+
+  try {
+    localStorage.removeItem(`aslcheck_pending_mfr_${user.id}`);
+    sessionStorage.removeItem(DEMO_SESSION_KEY);
+  } catch {
+    // Ignore
+  }
+
+  return {
+    manufacturer: (inserted as Manufacturer) || (await ensureManufacturerRecordForUser(user)),
+    requiresEmailConfirmation: false,
+  };
+}
+
+export async function enterDemoProducerMode(): Promise<Manufacturer> {
+  try {
+    sessionStorage.setItem(DEMO_SESSION_KEY, DEMO_MANUFACTURER_ID);
+  } catch {
+    // Ignore
+  }
+  return (await fetchManufacturerById(DEMO_MANUFACTURER_ID)) || DEMO_MANUFACTURER;
+}
+
+export async function logoutProducerAccount(): Promise<void> {
+  try {
+    sessionStorage.removeItem(DEMO_SESSION_KEY);
+    sessionStorage.removeItem('aslcheck_producer_pin');
+  } catch {
+    // Ignore
+  }
+
+  if (isSupabaseConfigured) {
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.warn('Sign out warning:', err);
+    }
+  }
+}
+
+// ============================================================================
+// STRICTLY MULTI-TENANT ISOLATED PRODUCER QUERIES
+// ============================================================================
+
 /**
- * Fetch all products for the producer dashboard
+ * Fetch products belonging strictly to manufacturerId
  */
-export async function fetchProducerProducts(): Promise<ProductWithManufacturer[]> {
+export async function fetchProducerProducts(
+  manufacturerId: string
+): Promise<ProductWithManufacturer[]> {
   if (isSupabaseConfigured) {
     try {
       const { data, error } = await supabase
         .from('products')
         .select(`*, manufacturers(*)`)
+        .eq('manufacturer_id', manufacturerId)
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.warn('Supabase fetch error, using local products cache:', error.message);
-      } else if (data && data.length > 0) {
-        return data as unknown as ProductWithManufacturer[];
+      if (!error) {
+        return (data || []) as unknown as ProductWithManufacturer[];
       }
+      console.warn('Supabase fetch error, using tenant-filtered local cache:', error.message);
     } catch (err) {
       console.warn('Error fetching from Supabase:', err);
     }
   }
 
-  return getLocalProducts();
+  return getLocalProducts().filter((p) => p.manufacturer_id === manufacturerId);
 }
 
 /**
- * Fetch all counterfeit reports for the live radar
+ * Fetch counterfeit reports strictly belonging to manufacturerId
  */
-export async function fetchReports(): Promise<ReportWithProduct[]> {
+export async function fetchReports(manufacturerId: string): Promise<ReportWithProduct[]> {
   if (isSupabaseConfigured) {
     try {
       const { data, error } = await supabase
@@ -428,19 +733,19 @@ export async function fetchReports(): Promise<ReportWithProduct[]> {
           location_note,
           is_report,
           report_message,
-          products (
+          products!inner (
             id,
             serial_code,
-            product_name
+            product_name,
+            manufacturer_id
           )
         `)
         .eq('is_report', true)
+        .eq('products.manufacturer_id', manufacturerId)
         .order('scanned_at', { ascending: false })
         .limit(30);
 
-      if (error) {
-        console.warn('Supabase fetch reports error, using local cache:', error.message);
-      } else if (data) {
+      if (!error && data) {
         return data.map((item: any) => ({
           id: item.id,
           product_id: item.product_id,
@@ -452,14 +757,17 @@ export async function fetchReports(): Promise<ReportWithProduct[]> {
           product: item.products || null,
         }));
       }
+      if (error) {
+        console.warn('Supabase fetch reports error, using local cache:', error.message);
+      }
     } catch (err) {
       console.warn('Error fetching reports from Supabase:', err);
     }
   }
 
-  // Local fallback reports
+  // Local fallback strictly isolated to manufacturerId
   const allLogs = getLocalLogs();
-  const products = getLocalProducts();
+  const products = getLocalProducts().filter((p) => p.manufacturer_id === manufacturerId);
   const productMap = new Map(products.map((p) => [p.id, p]));
 
   const reports: ReportWithProduct[] = [];
@@ -467,16 +775,17 @@ export async function fetchReports(): Promise<ReportWithProduct[]> {
     logList.forEach((log) => {
       if (log.is_report) {
         const prod = productMap.get(log.product_id);
-        reports.push({
-          ...log,
-          product: prod
-            ? {
-                id: prod.id,
-                serial_code: prod.serial_code,
-                product_name: prod.product_name,
-              }
-            : null,
-        });
+        if (prod) {
+          reports.push({
+            ...log,
+            product: {
+              id: prod.id,
+              serial_code: prod.serial_code,
+              product_name: prod.product_name,
+              manufacturer_id: prod.manufacturer_id,
+            },
+          });
+        }
       }
     });
   });
@@ -487,16 +796,95 @@ export async function fetchReports(): Promise<ReportWithProduct[]> {
 }
 
 /**
- * Delete a product from Supabase & local cache
+ * Fetch 7-day scan activity strictly isolated to manufacturerId
  */
-export async function deleteProduct(productId: string): Promise<boolean> {
+export async function fetchScanTrend(
+  manufacturerId: string,
+  days: number = 7
+): Promise<ScanTrendPoint[]> {
+  const dayBuckets = new Map<string, { scans: number; reports: number; label: string }>();
+  const now = new Date();
+  const monthsUz = ['yan', 'fev', 'mar', 'apr', 'may', 'iyn', 'iyl', 'avg', 'sen', 'okt', 'noy', 'dek'];
+
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(now.getDate() - i);
+    const key = d.toISOString().split('T')[0];
+    const label = `${d.getDate()}-${monthsUz[d.getMonth()]}`;
+    dayBuckets.set(key, { scans: 0, reports: 0, label });
+  }
+
+  const startDate = new Date(now);
+  startDate.setDate(now.getDate() - (days - 1));
+  startDate.setHours(0, 0, 0, 0);
+
+  let rawLogs: Array<{ scanned_at: string; is_report: boolean }> = [];
+
   if (isSupabaseConfigured) {
     try {
-      const { error } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', productId);
+      const { data, error } = await supabase
+        .from('scan_logs')
+        .select('scanned_at, is_report, products!inner(manufacturer_id)')
+        .eq('products.manufacturer_id', manufacturerId)
+        .gte('scanned_at', startDate.toISOString())
+        .order('scanned_at', { ascending: true });
 
+      if (!error && data) {
+        rawLogs = data.map((row: any) => ({
+          scanned_at: row.scanned_at,
+          is_report: Boolean(row.is_report),
+        }));
+      }
+    } catch (err) {
+      console.warn('Failed to fetch 7-day scan trend:', err);
+    }
+  } else {
+    const allLogs = getLocalLogs();
+    const myProductIds = new Set(
+      getLocalProducts()
+        .filter((p) => p.manufacturer_id === manufacturerId)
+        .map((p) => p.id)
+    );
+    Object.values(allLogs).forEach((list) => {
+      list.forEach((l) => {
+        if (myProductIds.has(l.product_id)) {
+          rawLogs.push({ scanned_at: l.scanned_at, is_report: l.is_report });
+        }
+      });
+    });
+  }
+
+  for (const log of rawLogs) {
+    const key = String(log.scanned_at).split('T')[0];
+    const bucket = dayBuckets.get(key);
+    if (bucket) {
+      if (log.is_report) bucket.reports += 1;
+      else bucket.scans += 1;
+    }
+  }
+
+  return Array.from(dayBuckets.entries()).map(([date, val]) => ({
+    date,
+    label: val.label,
+    scans: val.scans,
+    reports: val.reports,
+  }));
+}
+
+/**
+ * Delete a product strictly scoped to manufacturerId
+ */
+export async function deleteProduct(
+  productId: string,
+  manufacturerId?: string
+): Promise<boolean> {
+  if (isSupabaseConfigured) {
+    try {
+      let query = supabase.from('products').delete().eq('id', productId);
+      if (manufacturerId) {
+        query = query.eq('manufacturer_id', manufacturerId);
+      }
+      const { error } = await query;
       if (error) {
         console.warn('Supabase delete error:', error.message);
       }
@@ -507,22 +895,25 @@ export async function deleteProduct(productId: string): Promise<boolean> {
 
   // Local cache delete
   const products = getLocalProducts();
-  const filtered = products.filter((p) => p.id !== productId);
+  const filtered = products.filter(
+    (p) => !(p.id === productId && (!manufacturerId || p.manufacturer_id === manufacturerId))
+  );
   saveLocalProducts(filtered);
 
   return true;
 }
 
 /**
- * Create a single or batch of products in the registry
+ * Create a single or batch of products owned by the active manufacturer
  */
 export async function createBatchProducts(
   payload: NewProductPayload,
-  count: number = 1
+  count: number = 1,
+  manufacturer: Manufacturer = DEMO_MANUFACTURER
 ): Promise<ProductWithManufacturer[]> {
   const safeCount = Math.max(1, Math.min(20, count));
-  const baseSerialPrefix = `ASL-2026-`;
-  const startNum = Math.floor(100 + Math.random() * 800);
+  const baseSerialPrefix = 'ASL-2026-';
+  const startNum = Math.floor(1000 + Math.random() * 8000);
 
   const newProducts: ProductWithManufacturer[] = [];
 
@@ -533,12 +924,15 @@ export async function createBatchProducts(
         : `${baseSerialPrefix}${startNum + i}`;
 
     const prod: ProductWithManufacturer = {
-      id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `prod-${Date.now()}-${i}`,
-      manufacturer_id: DEMO_MANUFACTURER_ID,
+      id:
+        typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `prod-${Date.now()}-${i}`,
+      manufacturer_id: manufacturer.id,
       serial_code: code,
       product_name: payload.product_name.trim(),
       category: payload.category || 'Boshqa',
-      batch_number: payload.batch_number.trim() || `BATCH-2026-X1`,
+      batch_number: payload.batch_number.trim() || 'BATCH-2026-X1',
       manufacture_date: payload.manufacture_date,
       expiry_date: payload.expiry_date,
       ingredients: payload.ingredients?.trim() || null,
@@ -548,7 +942,7 @@ export async function createBatchProducts(
       is_claimed: false,
       claimed_at: null,
       created_at: new Date().toISOString(),
-      manufacturers: DEMO_MANUFACTURER,
+      manufacturers: manufacturer,
     };
     newProducts.push(prod);
   }
@@ -556,7 +950,7 @@ export async function createBatchProducts(
   if (isSupabaseConfigured) {
     try {
       const rowsToInsert = newProducts.map((p) => ({
-        manufacturer_id: DEMO_MANUFACTURER_ID,
+        manufacturer_id: manufacturer.id,
         serial_code: p.serial_code,
         product_name: p.product_name,
         category: p.category,
@@ -592,7 +986,10 @@ export async function createBatchProducts(
   return newProducts;
 }
 
-export async function createProduct(payload: NewProductPayload): Promise<ProductWithManufacturer> {
-  const result = await createBatchProducts(payload, 1);
+export async function createProduct(
+  payload: NewProductPayload,
+  manufacturer: Manufacturer = DEMO_MANUFACTURER
+): Promise<ProductWithManufacturer> {
+  const result = await createBatchProducts(payload, 1, manufacturer);
   return result[0];
 }

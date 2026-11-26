@@ -1,5 +1,6 @@
 import React from 'react';
-import { ShieldCheck, CheckCircle2, Factory, Sparkles } from 'lucide-react';
+import { CheckCircle2, Factory } from 'lucide-react';
+import { AslBrandMark, AiCoreIcon } from './Icons';
 
 export type NavTab = 'verify' | 'ai' | 'producer';
 
@@ -18,7 +19,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
           className="flex cursor-pointer items-center space-x-3 transition-opacity hover:opacity-90"
         >
           <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#1F1F1F] bg-[#0A0A0A]">
-            <ShieldCheck className="h-5 w-5 text-[#FAFAFA]" strokeWidth={1.75} />
+            <AslBrandMark className="h-5 w-5 text-[#FAFAFA]" strokeWidth={1.5} />
           </div>
           <div className="flex flex-col">
             <div className="flex items-center space-x-2">
@@ -26,7 +27,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
                 AslCheck
               </span>
               <span className="hidden rounded border border-[#2A2A2A] bg-[#141414] px-1.5 py-0.5 text-[10px] font-medium tracking-wide text-[#888888] sm:inline-block">
-                VERIFY
+                PRO
               </span>
             </div>
             <span className="hidden text-[11px] text-[#525252] sm:block">
@@ -62,11 +63,13 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
                   : 'text-[#888888] hover:text-[#FAFAFA] hover:bg-[#141414]'
               }`}
             >
-              <Sparkles className="h-3.5 w-3.5 text-[#10B981]" strokeWidth={2} />
+              <AiCoreIcon
+                className={`h-3.5 w-3.5 ${
+                  activeTab === 'ai' ? 'text-black' : 'text-[#10B981]'
+                }`}
+                strokeWidth={1.75}
+              />
               <span>AI Ekspert</span>
-              <span className="hidden sm:inline-block rounded bg-[#10B981]/20 px-1 py-0.2 text-[9px] font-bold text-[#10B981] ml-0.5">
-                NEW
-              </span>
             </button>
 
             {/* 3. Ishlab chiqaruvchi Tab */}
@@ -81,7 +84,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
             >
               <Factory className="h-3.5 w-3.5" strokeWidth={1.75} />
               <span className="hidden sm:inline">Ishlab chiqaruvchi</span>
-              <span className="sm:hidden">Zavod</span>
+              <span className="sm:hidden">Kabinet</span>
             </button>
           </nav>
 

@@ -1,15 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  Sparkles,
   Send,
   RefreshCw,
   Trash2,
-  Bot,
   User,
-  Lightbulb,
-  ShieldCheck,
   CheckCircle2,
 } from 'lucide-react';
+import { AiCoreIcon, VerifiedSealIcon } from './Icons';
 import { askAiAssistant, type ChatMessage } from '../lib/ai';
 
 interface AiExpertPageProps {
@@ -34,15 +31,15 @@ export const AiExpertPage: React.FC<AiExpertPageProps> = ({
       {
         id: 'msg-welcome',
         role: 'assistant',
-        text: `Assalomu alaykum! Men **AslCheck AI Ekspert** — mahsulotlar sifati, tabiiyligi va kontrafaktdan himoyalanish bo‘yicha rasmiy intellektual maslahatchiman (Google Gemini 3.5 Flash asosida).
+        text: `Assalomu alaykum! Men **AslCheck AI Ekspert** — mahsulotlar sifati, tarkibi va kontrafaktdan himoyalanish bo‘yicha rasmiy tahlilchiman.
 
-Quyidagi masalalarda yordam bera olaman:
+Quyidagi masalalarda aniq yordam bera olaman:
 • Qadoqdagi tarkib va E-qo‘shimchalar (allergenlar, konservantlar) tahlili
-• Asal, yog‘, choy va dorivor giyohlarning soxtasini aniqlash usullari
+• Asal, yog‘, choy va dorivor giyohlarning soxtasini aniqlash mezonlari
 • AslCheck QR pasporti va seriya raqamlari qanday ishlashi
-• Sotib olingan mahsulot yaroqlilik muddati o‘tganda nima qilish kerakligi
+• Muddati o‘tgan yoki klonlangan mahsulot aniqlanganda ko‘riladigan choralar
 
-Istalgan savolingizni yozing yoki quyidagi tayyor savollardan birini tanlang.`,
+Savolingizni yozing yoki quyidagi tayyor so‘rovlardan birini tanlang.`,
         timestamp: new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' }),
       },
     ];
@@ -53,7 +50,6 @@ Istalgan savolingizni yozing yoki quyidagi tayyor savollardan birini tanlang.`,
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-scroll to bottom
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -62,7 +58,54 @@ Istalgan savolingizni yozing yoki quyidagi tayyor savollardan birini tanlang.`,
     scrollToBottom();
   }, [messages, isLoading]);
 
-  // Handle incoming initialQuestion (e.g. from verification card)
+  const handleSendMessage = useCallback(
+    async (textToSend: string) => {
+      const trimmed = textToSend.trim();
+      if (!trimmed || isLoading) return;
+
+      const userMessage: ChatMessage = {
+        id: `user-${Date.now()}`,
+        role: 'user',
+        text: trimmed,
+        timestamp: new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' }),
+      };
+
+      setMessages((prev) => [...prev, userMessage]);
+      setInputValue('');
+      setIsLoading(true);
+
+      try {
+        const history = messages
+          .filter((m) => m.id !== 'msg-welcome')
+          .map((m) => ({ role: m.role, text: m.text }));
+
+        const replyText = await askAiAssistant(trimmed, history);
+
+        const aiMessage: ChatMessage = {
+          id: `ai-${Date.now()}`,
+          role: 'assistant',
+          text: replyText,
+          timestamp: new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' }),
+        };
+
+        setMessages((prev) => [...prev, aiMessage]);
+      } catch (err) {
+        console.error('AI chat error:', err);
+        const errorMessage: ChatMessage = {
+          id: `err-${Date.now()}`,
+          role: 'assistant',
+          text: "Kechirasiz, javob olishda uzilish yuz berdi. Iltimos, qaytadan urinib ko'ring.",
+          timestamp: new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' }),
+        };
+        setMessages((prev) => [...prev, errorMessage]);
+      } finally {
+        setIsLoading(false);
+        setTimeout(() => inputRef.current?.focus(), 100);
+      }
+    },
+    [isLoading, messages]
+  );
+
   useEffect(() => {
     if (initialQuestion && initialQuestion.trim()) {
       handleSendMessage(initialQuestion.trim());
@@ -70,53 +113,7 @@ Istalgan savolingizni yozing yoki quyidagi tayyor savollardan birini tanlang.`,
         onClearInitialQuestion();
       }
     }
-  }, [initialQuestion]);
-
-  const handleSendMessage = async (textToSend: string) => {
-    const trimmed = textToSend.trim();
-    if (!trimmed || isLoading) return;
-
-    const userMessage: ChatMessage = {
-      id: `user-${Date.now()}`,
-      role: 'user',
-      text: trimmed,
-      timestamp: new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' }),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-    setInputValue('');
-    setIsLoading(true);
-
-    try {
-      // Build history for multi-turn Gemini conversation
-      const history = messages
-        .filter((m) => m.id !== 'msg-welcome')
-        .map((m) => ({ role: m.role, text: m.text }));
-
-      const replyText = await askAiAssistant(trimmed, history);
-
-      const aiMessage: ChatMessage = {
-        id: `ai-${Date.now()}`,
-        role: 'assistant',
-        text: replyText,
-        timestamp: new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' }),
-      };
-
-      setMessages((prev) => [...prev, aiMessage]);
-    } catch (err) {
-      console.error('AI chat error:', err);
-      const errorMessage: ChatMessage = {
-        id: `err-${Date.now()}`,
-        role: 'assistant',
-        text: "Kechirasiz, javob olishda uzilish yuz berdi. Iltimos, qaytadan urinib ko'ring.",
-        timestamp: new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' }),
-      };
-      setMessages((prev) => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
-      setTimeout(() => inputRef.current?.focus(), 100);
-    }
-  };
+  }, [initialQuestion, handleSendMessage, onClearInitialQuestion]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,13 +125,12 @@ Istalgan savolingizni yozing yoki quyidagi tayyor savollardan birini tanlang.`,
       {
         id: 'msg-welcome',
         role: 'assistant',
-        text: `Muloqot tozalandi. Mahsulotlar haqiqiyligi, tarkibi yoki xavfsizligi bo‘yicha yangi savolingiz bormi?`,
+        text: 'Muloqot tozalandi. Mahsulotlar haqiqiyligi, tarkibi yoki xavfsizligi bo‘yicha yangi savolingiz bormi?',
         timestamp: new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' }),
       },
     ]);
   };
 
-  // Helper to format AI markdown-like text nicely
   const renderFormattedText = (text: string) => {
     const lines = text.split('\n');
     return (
@@ -145,7 +141,6 @@ Istalgan savolingizni yozing yoki quyidagi tayyor savollardan birini tanlang.`,
             return <div key={idx} className="h-1.5" />;
           }
 
-          // Bullet points
           if (trimmed.startsWith('•') || trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
             const content = trimmed.replace(/^([•\-*]\s*)/, '');
             return (
@@ -156,7 +151,6 @@ Istalgan savolingizni yozing yoki quyidagi tayyor savollardan birini tanlang.`,
             );
           }
 
-          // Numbered list
           if (/^\d+\.\s/.test(trimmed)) {
             return (
               <div
@@ -167,7 +161,6 @@ Istalgan savolingizni yozing yoki quyidagi tayyor savollardan birini tanlang.`,
             );
           }
 
-          // Headers
           if (trimmed.startsWith('### ')) {
             return (
               <h4
@@ -186,7 +179,6 @@ Istalgan savolingizni yozing yoki quyidagi tayyor savollardan birini tanlang.`,
     );
   };
 
-  // Simple safe bold parser for **bold text**
   const parseBold = (str: string) => {
     return str
       .replace(/&/g, '&amp;')
@@ -202,16 +194,16 @@ Istalgan savolingizni yozing yoki quyidagi tayyor savollardan birini tanlang.`,
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-[#1F1F1F]">
         <div className="flex items-center space-x-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] text-[#FAFAFA] shadow-inner">
-            <Sparkles className="h-5 w-5 text-[#FAFAFA]" strokeWidth={1.75} />
+            <AiCoreIcon className="h-5 w-5 text-[#10B981]" strokeWidth={1.5} />
           </div>
           <div>
             <div className="flex items-center space-x-2">
               <h1 className="text-base sm:text-lg font-bold tracking-tight text-[#FAFAFA]">
                 AslCheck AI Ekspert
               </h1>
-              <span className="inline-flex items-center space-x-1 rounded-full border border-[#10B981]/30 bg-[#10B981]/10 px-2 py-0.5 text-[10px] font-medium text-[#10B981]">
+              <span className="inline-flex items-center space-x-1 rounded-full border border-[#10B981]/30 bg-[#10B981]/10 px-2 py-0.5 text-[10px] font-mono font-medium text-[#10B981]">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#10B981] animate-pulse" />
-                <span>Gemini 3.5</span>
+                <span>FAOL</span>
               </span>
             </div>
             <p className="text-xs text-[#888888]">
@@ -235,9 +227,9 @@ Istalgan savolingizni yozing yoki quyidagi tayyor savollardan birini tanlang.`,
 
       {/* Quick Prompts Bar */}
       <div className="py-3 overflow-x-auto no-scrollbar flex items-center space-x-2 border-b border-[#141414]">
-        <div className="flex items-center space-x-1 text-[11px] text-[#525252] shrink-0 font-medium">
-          <Lightbulb className="h-3 w-3 text-[#F59E0B]" strokeWidth={2} />
-          <span>Mashhur savollar:</span>
+        <div className="flex items-center space-x-1.5 text-[11px] text-[#525252] shrink-0 font-mono uppercase tracking-wider">
+          <AiCoreIcon className="h-3 w-3 text-[#888888]" strokeWidth={1.5} />
+          <span>Tezkor so‘rovlar:</span>
         </div>
         <div className="flex items-center space-x-1.5 shrink-0">
           {DEFAULT_SUGGESTIONS.map((suggestion, index) => (
@@ -265,7 +257,6 @@ Istalgan savolingizni yozing yoki quyidagi tayyor savollardan birini tanlang.`,
                 isUser ? 'flex-row-reverse space-x-reverse' : ''
               } animate-in fade-in duration-200`}
             >
-              {/* Avatar */}
               <div
                 className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-xs ${
                   isUser
@@ -276,11 +267,10 @@ Istalgan savolingizni yozing yoki quyidagi tayyor savollardan birini tanlang.`,
                 {isUser ? (
                   <User className="h-4 w-4" strokeWidth={1.75} />
                 ) : (
-                  <Bot className="h-4 w-4" strokeWidth={1.75} />
+                  <AiCoreIcon className="h-4 w-4" strokeWidth={1.5} />
                 )}
               </div>
 
-              {/* Message Bubble */}
               <div
                 className={`max-w-[85%] sm:max-w-[78%] rounded-2xl p-3.5 sm:p-4 text-xs sm:text-sm shadow-sm ${
                   isUser
@@ -292,7 +282,7 @@ Istalgan savolingizni yozing yoki quyidagi tayyor savollardan birini tanlang.`,
                   <div className="flex items-center space-x-2 mb-2 pb-1.5 border-b border-[#141414]">
                     <span className="font-semibold text-xs text-[#FAFAFA] flex items-center space-x-1">
                       <span>AslCheck AI</span>
-                      <ShieldCheck className="h-3 w-3 text-[#10B981]" strokeWidth={2} />
+                      <VerifiedSealIcon className="h-3 w-3 text-[#10B981]" strokeWidth={1.75} />
                     </span>
                     <span className="text-[10px] text-[#525252] font-mono">{msg.timestamp}</span>
                   </div>
@@ -316,14 +306,13 @@ Istalgan savolingizni yozing yoki quyidagi tayyor savollardan birini tanlang.`,
           );
         })}
 
-        {/* Loading Bubble */}
         {isLoading && (
           <div className="flex items-start space-x-2.5 sm:space-x-3 animate-in fade-in">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#1F1F1F] bg-[#0A0A0A] text-[#10B981]">
-              <Sparkles className="h-4 w-4 animate-spin text-[#10B981]" strokeWidth={1.75} />
+              <AiCoreIcon className="h-4 w-4 animate-spin text-[#10B981]" strokeWidth={1.5} />
             </div>
             <div className="rounded-2xl rounded-tl-sm border border-[#1F1F1F] bg-[#0A0A0A] p-3.5 text-xs text-[#888888] shadow-sm flex items-center space-x-2">
-              <span className="text-[#888888]">Gemini 3.5 tahlil qilmoqda</span>
+              <span className="text-[#888888]">Tahlil qilinmoqda</span>
               <span className="flex space-x-1">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#10B981] animate-bounce" />
                 <span className="h-1.5 w-1.5 rounded-full bg-[#10B981] animate-bounce [animation-delay:0.2s]" />
@@ -372,7 +361,7 @@ Istalgan savolingizni yozing yoki quyidagi tayyor savollardan birini tanlang.`,
             <span>AslCheck AI xolis va ilmiy standartlar asosida javob beradi</span>
           </span>
           <span className="hidden sm:inline font-mono text-[10px]">
-            Google Gemini 3.5 Flash
+            AslCheck Intelligence
           </span>
         </div>
       </div>
