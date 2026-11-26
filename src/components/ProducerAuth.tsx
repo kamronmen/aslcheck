@@ -15,6 +15,7 @@ import { AslBrandMark, VerifiedSealIcon } from './Icons';
 import {
   loginProducerAccount,
   registerProducerAccount,
+  resendConfirmationEmail,
   enterDemoProducerMode,
 } from '../lib/api';
 import type { Manufacturer } from '../types';
@@ -41,8 +42,24 @@ export const ProducerAuth: React.FC<ProducerAuthProps> = ({ onAuthenticated }) =
   // Status
   const [isLoading, setIsLoading] = useState(false);
   const [isDemoLoading, setIsDemoLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [infoMsg, setInfoMsg] = useState<string | null>(null);
+
+  const handleResendEmail = async () => {
+    const emailToResend = (loginEmail || regEmail).trim();
+    if (!emailToResend || isResending) return;
+    setIsResending(true);
+    setErrorMsg(null);
+    try {
+      await resendConfirmationEmail(emailToResend);
+      setInfoMsg(`Tasdiqlash havolasi ${emailToResend} manziliga qayta yuborildi.`);
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Xatni qayta yuborishda xatolik yuz berdi.');
+    } finally {
+      setIsResending(false);
+    }
+  };
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -165,16 +182,40 @@ export const ProducerAuth: React.FC<ProducerAuthProps> = ({ onAuthenticated }) =
 
         {/* Error / Info Alerts */}
         {errorMsg && (
-          <div className="mb-4 flex items-start space-x-2 rounded-lg border border-[#EF4444]/30 bg-[#EF4444]/10 p-3 text-xs text-[#EF4444] animate-in fade-in">
-            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" strokeWidth={1.75} />
-            <span className="leading-relaxed">{errorMsg}</span>
+          <div className="mb-4 rounded-lg border border-[#EF4444]/30 bg-[#EF4444]/10 p-3 text-xs text-[#EF4444] animate-in fade-in space-y-2">
+            <div className="flex items-start space-x-2">
+              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" strokeWidth={1.75} />
+              <span className="leading-relaxed">{errorMsg}</span>
+            </div>
+            {errorMsg.includes('tasdiqlanmagan') && (loginEmail || regEmail).trim() && (
+              <button
+                type="button"
+                onClick={handleResendEmail}
+                disabled={isResending}
+                className="underline underline-offset-2 text-[11px] font-medium text-[#FAFAFA] hover:opacity-80 disabled:opacity-50"
+              >
+                {isResending ? 'Yuborilmoqda...' : 'Tasdiqlash xatini qayta yuborish'}
+              </button>
+            )}
           </div>
         )}
 
         {infoMsg && (
-          <div className="mb-4 flex items-start space-x-2 rounded-lg border border-[#10B981]/30 bg-[#10B981]/10 p-3 text-xs text-[#10B981] animate-in fade-in">
-            <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" strokeWidth={1.75} />
-            <span className="leading-relaxed">{infoMsg}</span>
+          <div className="mb-4 rounded-lg border border-[#10B981]/30 bg-[#10B981]/10 p-3 text-xs text-[#10B981] animate-in fade-in space-y-2">
+            <div className="flex items-start space-x-2">
+              <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" strokeWidth={1.75} />
+              <span className="leading-relaxed">{infoMsg}</span>
+            </div>
+            {(loginEmail || regEmail).trim() && (
+              <button
+                type="button"
+                onClick={handleResendEmail}
+                disabled={isResending}
+                className="underline underline-offset-2 text-[11px] font-medium text-[#FAFAFA] hover:opacity-80 disabled:opacity-50"
+              >
+                {isResending ? 'Yuborilmoqda...' : 'Xat kelmadimi? Qayta yuborish'}
+              </button>
+            )}
           </div>
         )}
 

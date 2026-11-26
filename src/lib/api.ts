@@ -595,10 +595,14 @@ export async function registerProducerAccount(
     throw new Error('Supabase ulanishi sozlanmagan.');
   }
 
+  const redirectUrl =
+    typeof window !== 'undefined' ? `${window.location.origin}/?tab=producer` : undefined;
+
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email: payload.email.trim(),
     password: payload.password,
     options: {
+      emailRedirectTo: redirectUrl,
       data: {
         company_name: payload.name.trim(),
         region: payload.region.trim(),
@@ -659,6 +663,27 @@ export async function registerProducerAccount(
     manufacturer: (inserted as Manufacturer) || (await ensureManufacturerRecordForUser(user)),
     requiresEmailConfirmation: false,
   };
+}
+
+export async function resendConfirmationEmail(email: string): Promise<void> {
+  if (!isSupabaseConfigured) {
+    throw new Error('Supabase ulanishi sozlanmagan.');
+  }
+
+  const redirectUrl =
+    typeof window !== 'undefined' ? `${window.location.origin}/?tab=producer` : undefined;
+
+  const { error } = await supabase.auth.resend({
+    type: 'signup',
+    email: email.trim(),
+    options: {
+      emailRedirectTo: redirectUrl,
+    },
+  });
+
+  if (error) {
+    throw new Error(translateAuthError(error.message));
+  }
 }
 
 export async function enterDemoProducerMode(): Promise<Manufacturer> {

@@ -109,7 +109,7 @@ export const ProducerPage: React.FC = () => {
     initSession();
 
     if (isSupabaseConfigured) {
-      const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
+      const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
         if (event === 'SIGNED_OUT') {
           setCurrentManufacturer(null);
           setIsDemoMode(false);
@@ -117,6 +117,16 @@ export const ProducerPage: React.FC = () => {
           setReports([]);
           setScanTrend([]);
           setAiReport(null);
+        } else if (event === 'SIGNED_IN' && session?.user) {
+          const restored = await restoreProducerSession();
+          if (active && restored) {
+            setCurrentManufacturer(restored.manufacturer);
+            setIsDemoMode(restored.isDemo);
+          }
+          // Clean auth fragments/params from URL after email confirmation redirect
+          if (window.location.hash.includes('access_token=') || window.location.search.includes('code=')) {
+            window.history.replaceState({}, '', `${window.location.origin}/?tab=producer`);
+          }
         }
       });
       return () => {

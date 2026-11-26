@@ -63,11 +63,15 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
     }
   };
 
-  // URL Auto-Verify: On page load, check for ?code=...
+  // URL Auto-Verify: On page load, check for ?code=... (skipping Supabase auth UUID callbacks)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const codeParam = params.get('code');
-    if (codeParam) {
+    const isAuthTab = params.get('tab') === 'producer';
+    const isUuidAuthCode = Boolean(
+      codeParam && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(codeParam.trim())
+    );
+    if (codeParam && !isAuthTab && !isUuidAuthCode) {
       const cleaned = codeParam.trim().toUpperCase();
       setInputCode(cleaned);
       handleVerify(cleaned);

@@ -1,13 +1,55 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navbar, type NavTab } from './components/Navbar';
 import { VerifyPage } from './components/VerifyPage';
 import { ProducerPage } from './components/ProducerPage';
 import { AiExpertPage } from './components/AiExpertPage';
 import { AslBrandMark } from './components/Icons';
+import { supabase, isSupabaseConfigured } from './lib/supabase';
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function getInitialTabFromUrl(): NavTab {
+  if (typeof window === 'undefined') return 'verify';
+  const params = new URLSearchParams(window.location.search);
+  const hash = window.location.hash || '';
+
+  if (
+    params.get('tab') === 'producer' ||
+    hash.includes('access_token=') ||
+    hash.includes('type=signup') ||
+    hash.includes('type=recovery') ||
+    UUID_REGEX.test(params.get('code') || '')
+  ) {
+    return 'producer';
+  }
+  return 'verify';
+}
 
 export function App() {
-  const [activeTab, setActiveTab] = useState<NavTab>('verify');
+  const [activeTab, setActiveTab] = useState<NavTab>(getInitialTabFromUrl);
   const [initialAiQuestion, setInitialAiQuestion] = useState<string>('');
+
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+
+    const { data: listener } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN') {
+        const hash = window.location.hash || '';
+        const params = new URLSearchParams(window.location.search);
+        if (
+          hash.includes('access_token=') ||
+          params.get('tab') === 'producer' ||
+          UUID_REGEX.test(params.get('code') || '')
+        ) {
+          setActiveTab('producer');
+        }
+      }
+    });
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
+  }, []);
 
   const handleNavigateToAi = (question?: string) => {
     if (question) {
