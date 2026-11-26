@@ -32,7 +32,7 @@ export async function askAiAssistant(
   const trimmed = question.trim();
   if (!trimmed) return '';
 
-  // 1. Try serverless /api/ai
+  // 1. Call serverless /api/ai
   try {
     const response = await fetch('/api/ai', {
       method: 'POST',
@@ -54,72 +54,10 @@ export async function askAiAssistant(
       }
     }
   } catch (err) {
-    console.warn('Call to /api/ai failed, attempting direct Gemini client fallback:', err);
+    console.warn('Call to /api/ai failed, using local guidance fallback:', err);
   }
 
-  // 2. Client-side fallback if running in offline Vite dev
-  const clientKey =
-    import.meta.env.VITE_GEMINI_API_KEY ||
-    import.meta.env.GEMINI_API_KEY ||
-    '';
-
-  if (clientKey && clientKey.length > 10) {
-    try {
-      const contents: Array<{ role: string; parts: Array<{ text: string }> }> = [
-        {
-          role: 'user',
-          parts: [
-            {
-              text: `Siz "AslCheck" milliy mahsulotlar reyestri va kontrafaktga qarshi kurashish platformasining rasmiy AI maslahatchisisiz. Sof o'zbek tilida (lotin alifbosida), professional, amaliy va qisqa formatda javob bering.${
-                context ? `\nJoriy kontekst: ${context}` : ''
-              }`,
-            },
-          ],
-        },
-        {
-          role: 'model',
-          parts: [{ text: 'Assalomu alaykum! AslCheck bo‘yicha har qanday savolingizga javob berishga tayyorman.' }],
-        },
-      ];
-
-      for (const msg of history.slice(-4)) {
-        contents.push({
-          role: msg.role === 'assistant' ? 'model' : 'user',
-          parts: [{ text: msg.text }],
-        });
-      }
-
-      contents.push({
-        role: 'user',
-        parts: [{ text: trimmed }],
-      });
-
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${clientKey}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents,
-            generationConfig: {
-              temperature: 0.7,
-              maxOutputTokens: 900,
-            },
-          }),
-        }
-      );
-
-      if (res.ok) {
-        const data = await res.json();
-        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) return text;
-      }
-    } catch (directErr) {
-      console.warn('Direct Gemini fallback failed:', directErr);
-    }
-  }
-
-  // 3. Fallback advice
+  // 2. Fallback advice if network or backend is unreachable
   return `AslCheck AI tahlili:
 Mahsulotlarning asl nusxasini tekshirish uchun uning qadog‘idagi unikal seriya kodini AslCheck orqali skanerlang va qadoqdagi himoya stikerining butunligini tekshiring.
 

@@ -38,12 +38,36 @@ export default async function handler(req: any, res?: any) {
 
   const { mode, payload } = body || {};
 
-  // Gemini API Key from server environment
+  // Gemini API Key from server environment strictly
   const apiKey =
     process.env.GEMINI_API_KEY ||
     process.env.GOOGLE_API_KEY ||
-    process.env.VITE_GEMINI_API_KEY ||
     '';
+
+  // Helper to call Gemini models with fallback
+  const callGemini = async (bodyPayload: any) => {
+    if (!apiKey || apiKey.length < 10) return null;
+
+    const models = ['gemini-2.5-flash', 'gemini-3.5-flash-lite'];
+    for (const model of models) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(bodyPayload),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          return data;
+        }
+      } catch (err) {
+        console.warn(`Model ${model} call failed:`, err);
+      }
+    }
+    return null;
+  };
 
   try {
     // 1. GENERAL AI EXPERT CHAT MODE (Interactive conversation)
@@ -97,25 +121,15 @@ ${context ? `Joriy mahsulot konteksti: ${context}` : ''}`;
 
       if (apiKey && apiKey.length > 10) {
         try {
-          const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`;
-          const response = await fetch(geminiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents,
-              generationConfig: {
-                temperature: 0.7,
-                maxOutputTokens: 1000,
-              },
-            }),
+          const data = await callGemini({
+            contents,
+            generationConfig: {
+              temperature: 0.7,
+              maxOutputTokens: 1000,
+            },
           });
-
-          if (response.ok) {
-            const data = await response.json();
+          if (data) {
             replyText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-          } else {
-            const errData = await response.text();
-            console.warn('Gemini chat response not ok:', response.status, errData);
           }
         } catch (callErr) {
           console.warn('Gemini chat call failed:', callErr);
@@ -166,21 +180,14 @@ Qat'iy ravishda quyidagi JSON formatida javob bering (boshqa hech qanday soʻz, 
 
       if (apiKey && apiKey.length > 10) {
         try {
-          const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`;
-          const response = await fetch(geminiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: prompt }] }],
-              generationConfig: {
-                temperature: 0.2,
-                responseMimeType: 'application/json',
-              },
-            }),
+          const data = await callGemini({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+              temperature: 0.2,
+              responseMimeType: 'application/json',
+            },
           });
-
-          if (response.ok) {
-            const data = await response.json();
+          if (data) {
             const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
             if (rawText) {
               const cleaned = rawText.replace(/```json\n?|\n?```/g, '').trim();
@@ -248,21 +255,14 @@ Qat'iy ravishda quyidagi JSON formatida javob bering (faqat valid JSON):
 
       if (apiKey && apiKey.length > 10) {
         try {
-          const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`;
-          const response = await fetch(geminiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: prompt }] }],
-              generationConfig: {
-                temperature: 0.2,
-                responseMimeType: 'application/json',
-              },
-            }),
+          const data = await callGemini({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: {
+              temperature: 0.2,
+              responseMimeType: 'application/json',
+            },
           });
-
-          if (response.ok) {
-            const data = await response.json();
+          if (data) {
             const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
             if (rawText) {
               const cleaned = rawText.replace(/```json\n?|\n?```/g, '').trim();
