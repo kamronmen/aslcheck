@@ -33,6 +33,17 @@ export interface VoiceChatResponse {
   reply: string;
 }
 
+export interface SmartFillProductItem {
+  product_name: string;
+  category: string;
+  batch_number: string;
+  quantity: number;
+  max_safe_scans: number;
+  manufacture_date: string;
+  expiry_date: string;
+  ingredients: string;
+}
+
 /**
  * Hybrid Vision Forensics verification via /api/ai (vision_verify)
  */
@@ -204,6 +215,61 @@ export async function askAiWithVoice(params: {
     reply:
       "Kechirasiz, ovozli xabarni qayta ishlashda vaqtinchalik uzilish yuz berdi. Iltimos, qaytadan urinib ko'ring.",
   };
+}
+
+/**
+ * Extract 1 or more structured product drafts from natural text or a label photo via /api/ai
+ */
+export async function extractProductsWithAi(params: {
+  promptText?: string;
+  imageBase64?: string;
+  mimeType?: string;
+}): Promise<SmartFillProductItem[]> {
+  const { promptText = '', imageBase64, mimeType } = params;
+  const trimmed = promptText.trim();
+  if (!trimmed && !imageBase64) return [];
+
+  try {
+    const response = await fetch('/api/ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mode: 'smart_fill_product',
+        payload: {
+          promptText: trimmed,
+          imageBase64,
+          mimeType,
+        },
+      }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (Array.isArray(data?.items) && data.items.length > 0) {
+        return data.items as SmartFillProductItem[];
+      }
+    }
+  } catch (err) {
+    console.warn('Smart fill call to /api/ai failed, using local fallback:', err);
+  }
+
+  const today = new Date();
+  const nextYear = new Date(today);
+  nextYear.setFullYear(today.getFullYear() + 1);
+  const qtyMatch = trimmed.match(/(\d+)\s*(?:ta|dona|sht|pcs)/i);
+
+  return [
+    {
+      product_name: trimmed ? trimmed.split(',')[0].trim() : 'Yangi mahsulot',
+      category: 'Oziq-ovqat',
+      batch_number: `BATCH-${today.getFullYear()}-01`,
+      quantity: qtyMatch ? Math.max(1, Math.min(100, Number(qtyMatch[1]))) : 1,
+      max_safe_scans: 3,
+      manufacture_date: today.toISOString().split('T')[0],
+      expiry_date: nextYear.toISOString().split('T')[0],
+      ingredients: trimmed,
+    },
+  ];
 }
 
 /**

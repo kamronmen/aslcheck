@@ -929,48 +929,83 @@ export async function deleteProduct(
 }
 
 /**
- * Create a single or batch of products owned by the active manufacturer
+ * Create a single or batch of products owned by the active manufacturer (1 to 100 codes)
  */
 export async function createBatchProducts(
   payload: NewProductPayload,
   count: number = 1,
   manufacturer: Manufacturer = DEMO_MANUFACTURER
 ): Promise<ProductWithManufacturer[]> {
-  const safeCount = Math.max(1, Math.min(20, count));
-  const baseSerialPrefix = 'ASL-2026-';
-  const startNum = Math.floor(1000 + Math.random() * 8000);
+  return createMultiSkuProducts([{ payload, quantity: count }], manufacturer);
+}
 
+/**
+ * Create multiple distinct SKUs (each with its own quantity) in a single atomic batch insert.
+ * Caps total generated QR items at 100 per operation for fast A4 rendering and DB safety.
+ */
+export async function createMultiSkuProducts(
+  entries: Array<{ payload: NewProductPayload; quantity: number }>,
+  manufacturer: Manufacturer = DEMO_MANUFACTURER
+): Promise<ProductWithManufacturer[]> {
+  const MAX_BULK_QR = 100;
+  const existingCodes = new Set(getLocalProducts().map((p) => p.serial_code.toUpperCase()));
   const newProducts: ProductWithManufacturer[] = [];
 
-  for (let i = 0; i < safeCount; i++) {
-    const code =
-      safeCount === 1 && payload.serial_code?.trim()
-        ? payload.serial_code.trim().toUpperCase()
-        : `${baseSerialPrefix}${startNum + i}`;
+  const allocateUniqueSerial = (preferred?: string): string => {
+    if (preferred) {
+      const upper = preferred.trim().toUpperCase();
+      if (upper && !existingCodes.has(upper)) {
+        existingCodes.add(upper);
+        return upper;
+      }
+    }
+    for (let attempt = 0; attempt < 200; attempt++) {
+      const candidate = `ASL-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+      if (!existingCodes.has(candidate)) {
+        existingCodes.add(candidate);
+        return candidate;
+      }
+    }
+    const fallback = `ASL-2026-${Date.now().toString().slice(-6)}`;
+    existingCodes.add(fallback);
+    return fallback;
+  };
 
-    const prod: ProductWithManufacturer = {
-      id:
-        typeof crypto !== 'undefined' && crypto.randomUUID
-          ? crypto.randomUUID()
-          : `prod-${Date.now()}-${i}`,
-      manufacturer_id: manufacturer.id,
-      serial_code: code,
-      product_name: payload.product_name.trim(),
-      category: payload.category || 'Boshqa',
-      batch_number: payload.batch_number.trim() || 'BATCH-2026-X1',
-      manufacture_date: payload.manufacture_date,
-      expiry_date: payload.expiry_date,
-      ingredients: payload.ingredients?.trim() || null,
-      scan_count: 0,
-      max_safe_scans: payload.max_safe_scans || 3,
-      is_flagged: false,
-      is_claimed: false,
-      claimed_at: null,
-      created_at: new Date().toISOString(),
-      manufacturers: manufacturer,
-    };
-    newProducts.push(prod);
+  for (const entry of entries) {
+    if (newProducts.length >= MAX_BULK_QR) break;
+    const remainingBudget = MAX_BULK_QR - newProducts.length;
+    const safeCount = Math.max(1, Math.min(remainingBudget, Number(entry.quantity) || 1));
+    const p = entry.payload;
+
+    for (let i = 0; i < safeCount; i++) {
+      const code = allocateUniqueSerial(i === 0 ? p.serial_code : undefined);
+      const idx = newProducts.length;
+
+      newProducts.push({
+        id:
+          typeof crypto !== 'undefined' && crypto.randomUUID
+            ? crypto.randomUUID()
+            : `prod-${Date.now()}-${idx}`,
+        manufacturer_id: manufacturer.id,
+        serial_code: code,
+        product_name: p.product_name.trim(),
+        category: p.category || 'Boshqa',
+        batch_number: p.batch_number?.trim() || 'BATCH-2026-X1',
+        manufacture_date: p.manufacture_date,
+        expiry_date: p.expiry_date,
+        ingredients: p.ingredients?.trim() || null,
+        scan_count: 0,
+        max_safe_scans: p.max_safe_scans || 3,
+        is_flagged: false,
+        is_claimed: false,
+        claimed_at: null,
+        created_at: new Date().toISOString(),
+        manufacturers: manufacturer,
+      });
+    }
   }
+
+  if (newProducts.length === 0) return [];
 
   if (isSupabaseConfigured) {
     try {

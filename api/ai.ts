@@ -205,6 +205,7 @@ Surattagi bosma aniqligi, qadoq yaxlitligi, kserokopiya/ekrandan rasm olinganlik
       const { question, history, context } = payload || {};
 
       const systemPrompt = `Siz "AslCheck" milliy mahsulotlar reyestri va kontrafaktga qarshi kurashish platformasining rasmiy AI ekspertisiz.
+AslCheck — brauzer va telefon kamerasi orqali ishlaydigan QR-kod hamda seriya raqami (masalan, ASL-2026-001) asosidagi raqamli mahsulot pasporti veb-platformasi (alohida ilova yoki DataMatrix talab qilmaydi).
 Vazifangiz: iste'molchilar va ishlab chiqaruvchilarga tovarlar sifati, tarkibi, E-qo'shimchalar, yaroqlilik muddati va kontrafakt qadoqlarni aniqlash bo'yicha aniq, ilmiy va professional maslahat berish.
 
 Qoidalar:
@@ -275,6 +276,7 @@ Asosiy mezonlar:
       const cleanMime = String(mimeType || 'audio/webm').split(';')[0].trim().toLowerCase() || 'audio/webm';
 
       const voiceSystemPrompt = `Siz "AslCheck" milliy mahsulotlar reyestri va kontrafaktga qarshi kurashish platformasining ovozli AI ekspertisiz.
+Muhim fakt: AslCheck — har qanday telefon kamerasi yoki brauzerda ishlaydigan QR-kod va seriya raqami (ASL-2026-XXX) asosidagi raqamli pasport veb-tizimi (alohida mobil ilova yuklash shart emas, DataMatrix emas — QR-kod ishlatiladi).
 Foydalanuvchi sizga o'zbek tilida (yoki aralash nutqda) ovozli savol yubordi.
 
 Vazifangiz:
@@ -510,6 +512,165 @@ Faqat valid JSON qaytaring:
       }
 
       return sendJson(aiResult, 200);
+    }
+
+    // 5. SMART PRODUCT FILL / MULTI-SKU EXTRACTION (Text or Label Photo -> Structured Product JSON)
+    if (mode === 'smart_fill_product') {
+      const { promptText, imageBase64, mimeType } = payload || {};
+      const cleanedPrompt = typeof promptText === 'string' ? promptText.trim() : '';
+
+      if (!cleanedPrompt && (!imageBase64 || typeof imageBase64 !== 'string')) {
+        return sendJson({ error: 'Tahlil uchun matn yoki qadoq rasmini kiriting.' }, 400);
+      }
+
+      const today = new Date();
+      const todayStr = today.toISOString().split('T')[0];
+      const nextYear = new Date(today);
+      nextYear.setFullYear(today.getFullYear() + 1);
+      const nextYearStr = nextYear.toISOString().split('T')[0];
+
+      const smartPrompt = `Siz "AslCheck" ishlab chiqaruvchi kabineti uchun mahsulot ma'lumotlarini avtomatik to'ldiruvchi AI tahlilchisiz.
+Bugungi sana: ${todayStr}.
+Foydalanuvchi mahsulot tavsifi matni${imageBase64 ? ' va/yoki mahsulot qadog‘i suratini' : ''} taqdim etdi:
+${cleanedPrompt ? `Matn: "${cleanedPrompt}"` : 'Matn kiritilmagan — suratdagi yorliqdan oling.'}
+
+Vazifa: Matn va/yoki suratdan 1 ta yoki bir nechta alohida mahsulotni ajratib oling (maksimum 25 ta) va har biri uchun quyidagi maydonlarni sof o'zbek tilida (lotin alifbosi) to'ldiring:
+- "product_name": mahsulotning to'liq nomi va hajmi/vazni (masalan: "Tabiiy Tog' Asali (500g)")
+- "category": FAQAT quyidagilardan bittasi: "Oziq-ovqat" | "Salomatlik" | "Ichimlik" | "Kosmetika" | "Hunarmandchilik" | "Boshqa"
+- "batch_number": partiya raqami (agar ko'rsatilmasa "BATCH-${today.getFullYear()}-01")
+- "quantity": nechta unikal QR-kod yaratish (1 dan 100 gacha butun son, ko'rsatilmasa 1)
+- "max_safe_scans": xavfsiz skaner limiti (1 dan 20 gacha, odatda 3)
+- "manufacture_date": "YYYY-MM-DD" (ko'rsatilmasa "${todayStr}")
+- "expiry_date": "YYYY-MM-DD" (agar "2 yil" yoki "6 oy" deyilsa manufacture_date dan hisoblang; ko'rsatilmasa "${nextYearStr}")
+- "ingredients": tarkibi va xomashyosi (o'zbek lotinida qisqa aniq matn)
+
+FAQAT valid JSON qaytaring (hech qanday emoji yoki markdownsiz):
+{
+  "items": [
+    {
+      "product_name": "...",
+      "category": "Oziq-ovqat",
+      "batch_number": "BATCH-2026-01",
+      "quantity": 1,
+      "max_safe_scans": 3,
+      "manufacture_date": "${todayStr}",
+      "expiry_date": "${nextYearStr}",
+      "ingredients": "..."
+    }
+  ]
+}`;
+
+      const parts: Array<any> = [{ text: smartPrompt }];
+      if (imageBase64 && typeof imageBase64 === 'string') {
+        parts.push({
+          inlineData: {
+            mimeType: mimeType || 'image/jpeg',
+            data: imageBase64,
+          },
+        });
+      }
+
+      const data = await callGemini({
+        contents: [{ role: 'user', parts }],
+        generationConfig: {
+          temperature: 0.15,
+          maxOutputTokens: 1400,
+          responseMimeType: 'application/json',
+        },
+      });
+
+      const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      const parsed = extractCleanJson(rawText);
+      const allowedCategories = new Set([
+        'Oziq-ovqat',
+        'Salomatlik',
+        'Ichimlik',
+        'Kosmetika',
+        'Hunarmandchilik',
+        'Boshqa',
+      ]);
+
+      const rawItems = Array.isArray(parsed?.items)
+        ? parsed.items
+        : parsed && parsed.product_name
+        ? [parsed]
+        : null;
+
+      if (rawItems && rawItems.length > 0) {
+        const sanitized = rawItems
+          .filter((item: any) => item && typeof item.product_name === 'string' && item.product_name.trim())
+          .slice(0, 25)
+          .map((item: any) => ({
+            product_name: String(item.product_name).trim(),
+            category: allowedCategories.has(item.category) ? item.category : 'Boshqa',
+            batch_number:
+              typeof item.batch_number === 'string' && item.batch_number.trim()
+                ? item.batch_number.trim()
+                : `BATCH-${today.getFullYear()}-01`,
+            quantity: Math.max(1, Math.min(100, Number(item.quantity) || 1)),
+            max_safe_scans: Math.max(1, Math.min(20, Number(item.max_safe_scans) || 3)),
+            manufacture_date:
+              typeof item.manufacture_date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(item.manufacture_date)
+                ? item.manufacture_date
+                : todayStr,
+            expiry_date:
+              typeof item.expiry_date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(item.expiry_date)
+                ? item.expiry_date
+                : nextYearStr,
+            ingredients:
+              typeof item.ingredients === 'string' ? item.ingredients.trim() : '',
+          }));
+
+        if (sanitized.length > 0) {
+          return sendJson({ items: sanitized, source: 'gemini' }, 200);
+        }
+      }
+
+      // Deterministic local heuristic fallback
+      const qtyMatch = cleanedPrompt.match(/(\d+)\s*(?:ta|dona|sht|pcs|qadoq)/i);
+      const qty = qtyMatch ? Math.max(1, Math.min(100, Number(qtyMatch[1]))) : 1;
+      const yearMatch = cleanedPrompt.match(/(\d+)\s*yil/i);
+      const monthMatch = cleanedPrompt.match(/(\d+)\s*oy/i);
+      const expDate = new Date(today);
+      if (yearMatch) {
+        expDate.setFullYear(today.getFullYear() + Math.min(10, Number(yearMatch[1])));
+      } else if (monthMatch) {
+        expDate.setMonth(today.getMonth() + Math.min(120, Number(monthMatch[1])));
+      } else {
+        expDate.setFullYear(today.getFullYear() + 1);
+      }
+
+      const lower = cleanedPrompt.toLowerCase();
+      let category = 'Boshqa';
+      if (/asal|yog|choy|sut|non|murabbo|shokolad|qand|oziq/.test(lower)) category = 'Oziq-ovqat';
+      else if (/dori|vitamin|sedana|kapsula|sirop|shifo|balzam/.test(lower)) category = 'Salomatlik';
+      else if (/suv|sharbat|limonad|ichimlik|kvas|ayron/.test(lower)) category = 'Ichimlik';
+      else if (/krem|shampun|sovun|atir|losyon|kosmet/.test(lower)) category = 'Kosmetika';
+      else if (/sopol|atlas|adras|gilam|yog'och|hunar/.test(lower)) category = 'Hunarmandchilik';
+
+      const cleanName = cleanedPrompt
+        .split(',')[0]
+        .replace(/(\d+)\s*(?:ta|dona|sht|pcs)/gi, '')
+        .trim();
+
+      return sendJson(
+        {
+          items: [
+            {
+              product_name: cleanName || 'Yangi mahsulot',
+              category,
+              batch_number: `BATCH-${today.getFullYear()}-01`,
+              quantity: qty,
+              max_safe_scans: 3,
+              manufacture_date: todayStr,
+              expiry_date: expDate.toISOString().split('T')[0],
+              ingredients: cleanedPrompt || 'Qadoq yorlig‘i asosida kiritilgan',
+            },
+          ],
+          source: 'fallback',
+        },
+        200
+      );
     }
 
     return sendJson({ error: 'Noto‘g‘ri rejim (mode) ko‘rsatildi.' }, 400);

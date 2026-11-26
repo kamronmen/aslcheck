@@ -15,11 +15,12 @@ import {
   MapPin,
   Clock,
   Smartphone,
+  Copy,
+  Printer,
 } from 'lucide-react';
 import type {
   Manufacturer,
   ProductWithManufacturer,
-  NewProductPayload,
   ReportWithProduct,
   ScanTrendPoint,
 } from '../types';
@@ -27,14 +28,15 @@ import {
   restoreProducerSession,
   logoutProducerAccount,
   fetchProducerProducts,
-  createBatchProducts,
   deleteProduct,
   fetchReports,
   fetchScanTrend,
 } from '../lib/api';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { generateProducerAiReport, type ProducerAiReport } from '../lib/ai';
+import type { BulkDraftItem } from '../lib/csvImport';
 import { ProducerAuth } from './ProducerAuth';
+import { ProducerQuickAddPanel } from './ProducerQuickAddPanel';
 import { QrLabelCard } from './QrLabelCard';
 import { BatchQrModal } from './BatchQrModal';
 import { AudioPlayerButton } from './AudioPlayerButton';
@@ -43,7 +45,6 @@ import {
   AiCoreIcon,
   VerifiedSealIcon,
   CloneAlertIcon,
-  BatchGridIcon,
   ShieldRadarIcon,
 } from './Icons';
 
@@ -69,28 +70,12 @@ export const ProducerPage: React.FC = () => {
   const [aiReport, setAiReport] = useState<ProducerAiReport | null>(null);
   const [isAiReportLoading, setIsAiReportLoading] = useState(false);
 
-  // Modals
+  // Modals & Quick-Add Prefill
   const [selectedProductForQr, setSelectedProductForQr] = useState<ProductWithManufacturer | null>(null);
   const [batchCreatedProducts, setBatchCreatedProducts] = useState<ProductWithManufacturer[]>([]);
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
-
-  // Form State
-  const generateRandomSerial = () => `ASL-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-
-  const [formName, setFormName] = useState('');
-  const [formCategory, setFormCategory] = useState('Oziq-ovqat');
-  const [formBatch, setFormBatch] = useState('BATCH-2026-N1');
-  const [formManufactureDate, setFormManufactureDate] = useState(
-    new Date().toISOString().split('T')[0]
-  );
-  const [formExpiryDate, setFormExpiryDate] = useState(
-    new Date(Date.now() + 86400000 * 365).toISOString().split('T')[0]
-  );
-  const [formIngredients, setFormIngredients] = useState('');
-  const [formMaxSafeScans, setFormMaxSafeScans] = useState(3);
-  const [formQuantity, setFormQuantity] = useState(1);
-  const [formSerialCode, setFormSerialCode] = useState(generateRandomSerial());
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [prefillDraft, setPrefillDraft] = useState<BulkDraftItem | null>(null);
+  const [panelInstanceKey, setPanelInstanceKey] = useState(0);
 
   // Check active session on mount
   useEffect(() => {
@@ -225,49 +210,36 @@ export const ProducerPage: React.FC = () => {
     }
   };
 
-  // Add Product(s)
-  const handleAddProduct = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formName.trim() || isSubmitting || !currentManufacturer) return;
-
-    setIsSubmitting(true);
-    try {
-      const basePayload: NewProductPayload = {
-        serial_code: formSerialCode.trim().toUpperCase(),
-        product_name: formName.trim(),
-        category: formCategory,
-        batch_number: formBatch.trim(),
-        manufacture_date: formManufactureDate,
-        expiry_date: formExpiryDate,
-        ingredients: formIngredients.trim() || null,
-        max_safe_scans: Number(formMaxSafeScans) || 3,
-        manufacturer_id: currentManufacturer.id,
-      };
-
-      const qty = Math.max(1, Math.min(20, Number(formQuantity) || 1));
-      const createdItems = await createBatchProducts(basePayload, qty, currentManufacturer);
-
-      if (createdItems && createdItems.length > 0) {
-        if (createdItems.length === 1) {
-          setSelectedProductForQr(createdItems[0]);
-        } else {
-          setBatchCreatedProducts(createdItems);
-          setIsBatchModalOpen(true);
-        }
-
-        // Reset form
-        setFormName('');
-        setFormIngredients('');
-        setFormQuantity(1);
-        setFormSerialCode(generateRandomSerial());
-        setShowAddForm(false);
-        loadData();
-      }
-    } catch (err) {
-      console.error('Failed to add products:', err);
-    } finally {
-      setIsSubmitting(false);
+  // Handle products created from ProducerQuickAddPanel (single, batch, or multi-SKU import)
+  const handleProductsCreated = (createdItems: ProductWithManufacturer[]) => {
+    if (createdItems.length === 1) {
+      setSelectedProductForQr(createdItems[0]);
+    } else if (createdItems.length > 1) {
+      setBatchCreatedProducts(createdItems);
+      setIsBatchModalOpen(true);
     }
+    setShowAddForm(false);
+    loadData();
+  };
+
+  // Duplicate existing product into quick-add panel
+  const handleDuplicateProduct = (product: ProductWithManufacturer) => {
+    setPrefillDraft({
+      id: `copy-${product.id}`,
+      product_name: product.product_name,
+      category: product.category,
+      batch_number: `${product.batch_number}-2`,
+      quantity: 5,
+      max_safe_scans: product.max_safe_scans || 3,
+      manufacture_date: new Date().toISOString().split('T')[0],
+      expiry_date:
+        product.expiry_date ||
+        new Date(Date.now() + 86400000 * 365).toISOString().split('T')[0],
+      ingredients: product.ingredients || '',
+    });
+    setPanelInstanceKey((k) => k + 1);
+    setShowAddForm(true);
+    window.scrollTo({ top: 180, behavior: 'smooth' });
   };
 
   // Delete product
@@ -361,8 +333,11 @@ export const ProducerPage: React.FC = () => {
           <button
             type="button"
             onClick={() => {
+              if (!showAddForm) {
+                setPrefillDraft(null);
+                setPanelInstanceKey((k) => k + 1);
+              }
               setShowAddForm(!showAddForm);
-              if (!showAddForm) setFormSerialCode(generateRandomSerial());
             }}
             className="flex items-center justify-center space-x-2 rounded-lg bg-white px-4 py-2.5 text-xs font-semibold text-black hover:bg-zinc-200 transition-colors shadow-[0_1px_14px_rgba(255,255,255,0.14)] min-h-[40px]"
           >
@@ -455,186 +430,18 @@ export const ProducerPage: React.FC = () => {
         <ScanAnalyticsChart data={scanTrend} />
       </div>
 
-      {/* Collapsible Add Product Form (Single or Batch) */}
+      {/* Collapsible Fast Add Panel (AI Smart Fill, Batch, & Excel/CSV Import) */}
       {showAddForm && (
-        <div className="mt-6 rounded-xl border border-white/[0.08] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] p-4 sm:p-6 shadow-[0_20px_50px_rgba(0,0,0,0.8)] animate-in fade-in duration-200">
-          <div className="flex items-center justify-between pb-4 border-b border-[#1F1F1F]">
-            <div className="flex items-center space-x-2">
-              <BatchGridIcon className="h-4 w-4 text-[#FAFAFA]" strokeWidth={1.5} />
-              <h2 className="text-sm font-semibold text-[#FAFAFA]">
-                Yangi mahsulotni ro‘yxatga olish (Bitta yoki Partiya)
-              </h2>
-            </div>
-            <button
-              type="button"
-              onClick={() => setShowAddForm(false)}
-              className="text-xs text-[#888888] hover:text-[#FAFAFA]"
-            >
-              Bekor qilish
-            </button>
-          </div>
-
-          <form onSubmit={handleAddProduct} className="mt-5 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-[#888888] mb-1.5">
-                  Mahsulot nomi *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Masalan: Tabiiy Tog' Asali (1 kg)"
-                  value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
-                  className="w-full rounded-lg border border-[#1F1F1F] bg-[#000000] px-3.5 py-2.5 text-xs sm:text-sm text-[#FAFAFA] placeholder-[#525252] focus:border-[#FAFAFA] focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-[#888888] mb-1.5">
-                  Kategoriya
-                </label>
-                <select
-                  value={formCategory}
-                  onChange={(e) => setFormCategory(e.target.value)}
-                  className="w-full rounded-lg border border-[#1F1F1F] bg-[#000000] px-3.5 py-2.5 text-xs sm:text-sm text-[#FAFAFA] focus:border-[#FAFAFA] focus:outline-none"
-                >
-                  <option value="Oziq-ovqat">Oziq-ovqat</option>
-                  <option value="Salomatlik">Salomatlik</option>
-                  <option value="Ichimlik">Ichimlik</option>
-                  <option value="Kosmetika">Kosmetika</option>
-                  <option value="Hunarmandchilik">Hunarmandchilik</option>
-                  <option value="Boshqa">Boshqa</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-[#FAFAFA] mb-1.5 flex items-center justify-between">
-                  <span>Miqdori (nechta unikal QR-kod yaratilsin?) *</span>
-                  <span className="text-[10px] text-[#888888]">1 dan 20 gacha</span>
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  max={20}
-                  required
-                  value={formQuantity}
-                  onChange={(e) => setFormQuantity(Number(e.target.value))}
-                  className="w-full rounded-lg border border-[#262626] bg-[#000000] px-3.5 py-2.5 font-mono text-xs sm:text-sm font-bold text-[#FAFAFA] focus:border-[#FAFAFA] focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-[#888888] mb-1.5 flex items-center justify-between">
-                  <span>Boshlang‘ich Seriya Kodi</span>
-                  <span className="text-[10px] text-[#525252] font-mono">ASL-2026-XXXX</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formSerialCode}
-                  onChange={(e) => setFormSerialCode(e.target.value.toUpperCase())}
-                  className="w-full rounded-lg border border-[#1F1F1F] bg-[#000000] px-3.5 py-2.5 font-mono text-xs sm:text-sm text-[#FAFAFA] focus:border-[#FAFAFA] focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-[#888888] mb-1.5">
-                  Partiya raqami
-                </label>
-                <input
-                  type="text"
-                  value={formBatch}
-                  onChange={(e) => setFormBatch(e.target.value)}
-                  className="w-full rounded-lg border border-[#1F1F1F] bg-[#000000] px-3.5 py-2.5 font-mono text-xs sm:text-sm text-[#FAFAFA] focus:border-[#FAFAFA] focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-[#888888] mb-1.5">
-                  Maksimal xavfsiz skanerlar
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  max={20}
-                  value={formMaxSafeScans}
-                  onChange={(e) => setFormMaxSafeScans(Number(e.target.value))}
-                  className="w-full rounded-lg border border-[#1F1F1F] bg-[#000000] px-3.5 py-2.5 font-mono text-xs sm:text-sm text-[#FAFAFA] focus:border-[#FAFAFA] focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-[#888888] mb-1.5">
-                  Ishlab chiqarilgan sana
-                </label>
-                <input
-                  type="date"
-                  value={formManufactureDate}
-                  onChange={(e) => setFormManufactureDate(e.target.value)}
-                  className="w-full rounded-lg border border-[#1F1F1F] bg-[#000000] px-3.5 py-2.5 font-mono text-xs sm:text-sm text-[#FAFAFA] focus:border-[#FAFAFA] focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-[#888888] mb-1.5">
-                  Yaroqlilik muddati
-                </label>
-                <input
-                  type="date"
-                  value={formExpiryDate}
-                  onChange={(e) => setFormExpiryDate(e.target.value)}
-                  className="w-full rounded-lg border border-[#1F1F1F] bg-[#000000] px-3.5 py-2.5 font-mono text-xs sm:text-sm text-[#FAFAFA] focus:border-[#FAFAFA] focus:outline-none"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-xs font-medium text-[#888888] mb-1.5">
-                  Tarkibi va xomashyosi
-                </label>
-                <textarea
-                  rows={2}
-                  placeholder="Masalan: 100% tabiiy tog' asal mumi, glyukozasiz, hech qanday konservant qo'shilmagan."
-                  value={formIngredients}
-                  onChange={(e) => setFormIngredients(e.target.value)}
-                  className="w-full rounded-lg border border-[#1F1F1F] bg-[#000000] px-3.5 py-2.5 text-xs sm:text-sm text-[#FAFAFA] placeholder-[#525252] focus:border-[#FAFAFA] focus:outline-none resize-none"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row justify-end gap-2 pt-3 border-t border-[#1F1F1F]">
-              <button
-                type="button"
-                onClick={() => setShowAddForm(false)}
-                className="rounded-lg border border-[#1F1F1F] bg-[#141414] px-4 py-2.5 text-xs font-medium text-[#888888] hover:text-[#FAFAFA] min-h-[40px]"
-              >
-                Bekor qilish
-              </button>
-
-              <button
-                type="submit"
-                disabled={isSubmitting || !formName.trim()}
-                className="flex items-center justify-center space-x-2 rounded-lg bg-[#FAFAFA] px-5 py-2.5 text-xs font-bold text-black hover:bg-[#E5E5E5] disabled:opacity-40 transition-colors shadow-sm min-h-[40px]"
-              >
-                {isSubmitting ? (
-                  <>
-                    <RefreshCw className="h-3.5 w-3.5 animate-spin" strokeWidth={2} />
-                    <span>Yaratilmoqda...</span>
-                  </>
-                ) : (
-                  <>
-                    <Plus className="h-3.5 w-3.5" strokeWidth={2} />
-                    <span>
-                      {formQuantity > 1
-                        ? `${formQuantity} ta QR-kod va A4 varaq yaratish`
-                        : 'Saqlash va QR-kod yaratish'}
-                    </span>
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
-        </div>
+        <ProducerQuickAddPanel
+          key={panelInstanceKey}
+          manufacturer={currentManufacturer}
+          initialDraft={prefillDraft}
+          onClose={() => {
+            setShowAddForm(false);
+            setPrefillDraft(null);
+          }}
+          onCreated={handleProductsCreated}
+        />
       )}
 
       {/* Sub-Tab Navigation: Products vs Reports Radar */}
@@ -698,6 +505,20 @@ export const ProducerPage: React.FC = () => {
                   className="w-full rounded-lg border border-[#1F1F1F] bg-[#000000] py-2 pl-9 pr-3 text-xs sm:text-sm text-[#FAFAFA] placeholder-[#525252] focus:border-[#FAFAFA] focus:outline-none"
                 />
               </div>
+              {filteredProducts.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setBatchCreatedProducts(filteredProducts.slice(0, 100));
+                    setIsBatchModalOpen(true);
+                  }}
+                  title="Ro‘yxatdagi mahsulotlar uchun A4 QR varaq ochish"
+                  className="inline-flex items-center space-x-1.5 rounded-lg border border-[#262626] bg-[#111111] px-2.5 py-2 text-xs font-medium text-[#FAFAFA] hover:bg-[#1A1A1A] transition-colors shrink-0"
+                >
+                  <Printer className="h-3.5 w-3.5 text-[#10B981]" strokeWidth={1.75} />
+                  <span className="hidden sm:inline">A4 QR</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={loadData}
@@ -784,7 +605,17 @@ export const ProducerPage: React.FC = () => {
                         )}
                       </div>
 
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-1.5">
+                        <button
+                          type="button"
+                          onClick={() => handleDuplicateProduct(p)}
+                          title="Ushbu mahsulotdan nusxa olib tez qo‘shish"
+                          className="inline-flex items-center space-x-1 rounded-lg border border-[#222222] bg-[#0D0D0D] px-2.5 py-1.5 text-xs text-[#A0A0A0] hover:text-[#FAFAFA] hover:bg-[#1A1A1A] transition-colors"
+                        >
+                          <Copy className="h-3.5 w-3.5" strokeWidth={1.75} />
+                          <span>Nusxa</span>
+                        </button>
+
                         <button
                           type="button"
                           onClick={() => setSelectedProductForQr(p)}
@@ -906,6 +737,16 @@ export const ProducerPage: React.FC = () => {
 
                         <td className="px-4 py-3 text-right">
                           <div className="inline-flex items-center space-x-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleDuplicateProduct(p)}
+                              title="Nusxa olish"
+                              className="inline-flex items-center space-x-1 rounded-md border border-[#1F1F1F] bg-[#0B0B0B] px-2 py-1 text-xs text-[#888888] hover:text-[#FAFAFA] hover:bg-[#181818] transition-colors"
+                            >
+                              <Copy className="h-3.5 w-3.5" strokeWidth={1.75} />
+                              <span>Nusxa</span>
+                            </button>
+
                             <button
                               type="button"
                               onClick={() => setSelectedProductForQr(p)}
