@@ -120,8 +120,8 @@ export const ProducerAuth: React.FC<ProducerAuthProps> = ({ onAuthenticated }) =
       <div className="rounded-2xl border border-[#1F1F1F] bg-[#0A0A0A] p-6 sm:p-7 shadow-2xl">
         {/* Header */}
         <div className="text-center mb-6">
-          <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl border border-[#222222] bg-[#111111] text-[#FAFAFA] mb-3.5">
-            <AslBrandMark className="h-5 w-5" strokeWidth={1.5} />
+          <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl border border-[#262626] bg-[#141414] text-[#FAFAFA] mb-3.5">
+            <AslBrandMark className="h-5 w-5 text-[#FAFAFA]" strokeWidth={1.75} />
           </div>
           <h2 className="text-lg font-bold tracking-tight text-[#FAFAFA]">
             Ishlab Chiqaruvchi Kabineti

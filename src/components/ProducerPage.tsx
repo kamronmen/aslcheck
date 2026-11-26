@@ -871,7 +871,7 @@ export const ProducerPage: React.FC = () => {
                 disabled={isAiReportLoading}
                 className="flex items-center space-x-1.5 rounded-lg border border-[#262626] bg-[#141414] hover:bg-[#1E1E1E] px-3 py-1.5 text-xs font-medium text-[#FAFAFA] transition-colors shadow-sm"
               >
-                <AiCoreIcon className="h-3.5 w-3.5 text-[#10B981]" strokeWidth={1.5} />
+                <AiCoreIcon className="h-3.5 w-3.5 text-zinc-300" strokeWidth={1.75} />
                 <span>
                   {isAiReportLoading ? 'AI hisoboti tayyorlanmoqda...' : 'AI Xavfsizlik Hisoboti'}
                 </span>
@@ -893,7 +893,7 @@ export const ProducerPage: React.FC = () => {
             <div className="rounded-xl border border-[#222222] bg-[#0D0D0D] p-5 space-y-3.5 shadow-xl animate-in fade-in duration-300">
               <div className="flex items-center justify-between pb-3 border-b border-[#1A1A1A]">
                 <div className="flex items-center space-x-2">
-                  <AiCoreIcon className="h-4 w-4 text-[#10B981]" strokeWidth={1.5} />
+                  <AiCoreIcon className="h-4 w-4 text-zinc-300" strokeWidth={1.75} />
                   <h3 className="text-xs font-semibold text-[#FAFAFA] tracking-tight">
                     AI Boshqaruv va Kontrafakt Xavfi Tahlili
                   </h3>

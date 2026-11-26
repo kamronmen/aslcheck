@@ -18,8 +18,8 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
           onClick={() => setActiveTab('verify')}
           className="flex cursor-pointer items-center space-x-3 transition-opacity hover:opacity-90"
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#1F1F1F] bg-[#0A0A0A]">
-            <AslBrandMark className="h-5 w-5 text-[#FAFAFA]" strokeWidth={1.5} />
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#262626] bg-[#141414]">
+            <AslBrandMark className="h-5 w-5 text-[#FAFAFA]" strokeWidth={1.75} />
           </div>
           <div className="flex flex-col">
             <div className="flex items-center space-x-2">
@@ -65,7 +65,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
             >
               <AiCoreIcon
                 className={`h-3.5 w-3.5 ${
-                  activeTab === 'ai' ? 'text-black' : 'text-[#10B981]'
+                  activeTab === 'ai' ? 'text-black' : 'text-zinc-300'
                 }`}
                 strokeWidth={1.75}
               />

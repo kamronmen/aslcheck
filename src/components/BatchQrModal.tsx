@@ -77,7 +77,7 @@ export const BatchQrModal: React.FC<BatchQrModalProps> = ({
                   className="batch-label-item rounded-xl border border-[#222222] bg-[#050505] p-4 flex flex-col items-center text-center shadow-sm"
                 >
                   <div className="text-[10px] font-mono font-bold tracking-wider uppercase text-[#888888] mb-2 flex items-center space-x-1">
-                    <AslBrandMark className="h-3 w-3 text-[#10B981]" strokeWidth={1.75} />
+                    <AslBrandMark className="h-3 w-3 text-[#FAFAFA]" strokeWidth={1.75} />
                     <span>AslCheck • Rasmiy Qadoq</span>
                   </div>
 

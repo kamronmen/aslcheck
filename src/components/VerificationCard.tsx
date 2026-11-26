@@ -292,7 +292,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
           <div className="rounded-xl border border-[#1F1F1F] bg-[#0D0D0D] p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <div className="text-xs font-semibold text-[#FAFAFA] flex items-center space-x-1.5">
-                <ShoppingBag className="h-3.5 w-3.5 text-[#10B981]" strokeWidth={2} />
+                <ShoppingBag className="h-3.5 w-3.5 text-zinc-300" strokeWidth={1.75} />
                 <span>Ushbu mahsulotni xarid qildingizmi?</span>
               </div>
               <p className="text-[11px] text-[#888888] mt-0.5">
@@ -399,7 +399,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="text-left">
                   <div className="text-xs font-semibold text-[#FAFAFA] flex items-center space-x-1.5">
-                    <AiCoreIcon className="h-4 w-4 text-[#10B981]" strokeWidth={1.5} />
+                    <AiCoreIcon className="h-4 w-4 text-zinc-300" strokeWidth={1.75} />
                     <span>AI Tarkib va Xavfsizlik Ekspertizasi</span>
                   </div>
                   <p className="text-[11px] text-[#888888] mt-0.5">
@@ -435,7 +435,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
             <div className="rounded-xl border border-[#222222] bg-[#0A0A0A] p-5 space-y-4 shadow-xl animate-in fade-in duration-300">
               <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#141414]">
                 <div className="flex items-center space-x-2">
-                  <AiCoreIcon className="h-4 w-4 text-[#10B981]" strokeWidth={1.5} />
+                  <AiCoreIcon className="h-4 w-4 text-zinc-300" strokeWidth={1.75} />
                   <h3 className="text-xs font-semibold text-[#FAFAFA] tracking-tight">
                     AI Xavfsizlik va Tarkib Ekspertizasi
                   </h3>
@@ -561,9 +561,9 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
                           `Menda "${product.product_name}" mahsuloti bor (Kodi: ${product.serial_code}). Tarkibi: ${product.ingredients || 'ko\'rsatilmagan'}. Ushbu mahsulotning tabiiyligi va haqiqiyligi bo'yicha yana nimalarga e'tibor berishim kerak?`
                         )
                       }
-                      className="inline-flex items-center space-x-1.5 text-xs text-[#10B981] hover:text-[#FAFAFA] transition-colors"
+                      className="inline-flex items-center space-x-1.5 text-xs text-zinc-300 hover:text-[#FAFAFA] transition-colors"
                     >
-                      <AiCoreIcon className="h-3.5 w-3.5" strokeWidth={1.5} />
+                      <AiCoreIcon className="h-3.5 w-3.5" strokeWidth={1.75} />
                       <span>AI Ekspert bilan to‘liq muloqot qilish →</span>
                     </button>
                   </div>

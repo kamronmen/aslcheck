@@ -251,9 +251,9 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
               className="flex w-full items-center justify-center space-x-2 rounded-xl border border-[#262626] bg-[#111111] py-2.5 sm:py-3 text-xs sm:text-sm font-medium text-[#FAFAFA] hover:bg-[#181818] hover:border-[#444444] disabled:opacity-40 transition-colors"
             >
               {isVisionLoading ? (
-                <RefreshCw className="h-4 w-4 animate-spin text-[#10B981]" strokeWidth={1.75} />
+                <RefreshCw className="h-4 w-4 animate-spin text-zinc-300" strokeWidth={1.75} />
               ) : (
-                <VisionLensIcon className="h-4 w-4 text-[#10B981]" strokeWidth={1.5} />
+                <VisionLensIcon className="h-4 w-4 text-zinc-300" strokeWidth={1.75} />
               )}
               <span>AI Vizual Ekspertiza</span>
             </button>
@@ -304,14 +304,15 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
       {/* Prominent AI Assistant Banner */}
       <div className="mt-5 mx-auto max-w-2xl rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-lg">
         <div className="flex items-start space-x-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#10B981]/30 bg-[#10B981]/10 text-[#10B981]">
-            <AiCoreIcon className="h-4.5 w-4.5" strokeWidth={1.5} />
+          <div className="flex w-10 h-10 shrink-0 items-center justify-center rounded-xl bg-zinc-900 border border-zinc-800 text-[#FAFAFA]">
+            <AiCoreIcon className="w-5 h-5 text-[#FAFAFA]" strokeWidth={1.75} />
           </div>
           <div>
-            <div className="text-xs font-semibold text-[#FAFAFA] flex items-center space-x-1.5">
+            <div className="text-xs font-semibold text-[#FAFAFA] flex items-center space-x-2">
               <span>AslCheck AI Ekspert</span>
-              <span className="inline-flex items-center rounded bg-[#10B981]/15 px-1.5 py-0.2 text-[9px] font-mono font-bold text-[#10B981]">
-                ONLINE
+              <span className="inline-flex items-center space-x-1 rounded-full border border-[#10B981]/30 bg-[#10B981]/10 px-1.5 py-0.5 text-[9px] font-mono font-medium text-[#10B981]">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
+                <span>ONLINE</span>
               </span>
             </div>
             <p className="text-[11px] text-[#888888] mt-0.5 leading-relaxed">
@@ -325,7 +326,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
           onClick={() => onNavigateToAi?.()}
           className="shrink-0 flex items-center justify-center space-x-1.5 rounded-lg border border-[#262626] bg-[#141414] px-3.5 py-2 text-xs font-semibold text-[#FAFAFA] hover:bg-[#1E1E1E] hover:border-[#444444] transition-colors"
         >
-          <AiCoreIcon className="h-3.5 w-3.5 text-[#10B981]" strokeWidth={1.5} />
+          <AiCoreIcon className="h-3.5 w-3.5 text-zinc-300" strokeWidth={1.75} />
           <span>AI bilan maslahat</span>
           <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
         </button>
@@ -334,7 +335,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
       {/* Vision Forensics Loading State */}
       {isVisionLoading && (
         <div className="mt-8 mx-auto max-w-2xl rounded-xl border border-[#262626] bg-[#0A0A0A] p-6 text-center space-y-2.5 animate-in fade-in">
-          <VisionLensIcon className="h-6 w-6 mx-auto text-[#10B981] animate-pulse" strokeWidth={1.5} />
+          <VisionLensIcon className="h-6 w-6 mx-auto text-zinc-300 animate-pulse" strokeWidth={1.75} />
           <div className="text-xs font-semibold text-[#FAFAFA]">{visionStageText}</div>
           <div className="text-[11px] text-[#525252] font-mono">
             Hybrid QR Decode + Gemini Vision Cross-Verification
@@ -356,7 +357,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
           {/* Header */}
           <div className="flex items-center justify-between border-b border-[#1F1F1F] bg-[#0D0D0D] px-5 py-3.5">
             <div className="flex items-center space-x-2">
-              <VisionLensIcon className="h-4 w-4 text-[#10B981]" strokeWidth={1.5} />
+              <VisionLensIcon className="h-4 w-4 text-zinc-300" strokeWidth={1.75} />
               <h3 className="text-xs font-semibold uppercase tracking-wider text-[#FAFAFA]">
                 AI Vizual Kriminalistika Ekspertizasi
               </h3>

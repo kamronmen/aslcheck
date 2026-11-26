@@ -145,7 +145,7 @@ Savolingizni yozing yoki quyidagi tayyor so‘rovlardan birini tanlang.`,
             const content = trimmed.replace(/^([•\-*]\s*)/, '');
             return (
               <div key={idx} className="flex items-start space-x-2 pl-1">
-                <span className="text-[#10B981] font-bold text-xs mt-0.5">•</span>
+                <span className="text-zinc-400 font-bold text-xs mt-0.5">•</span>
                 <span dangerouslySetInnerHTML={{ __html: parseBold(content) }} />
               </div>
             );
@@ -193,8 +193,8 @@ Savolingizni yozing yoki quyidagi tayyor so‘rovlardan birini tanlang.`,
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-[#1F1F1F]">
         <div className="flex items-center space-x-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] text-[#FAFAFA] shadow-inner">
-            <AiCoreIcon className="h-5 w-5 text-[#10B981]" strokeWidth={1.5} />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900 text-[#FAFAFA] shadow-inner">
+            <AiCoreIcon className="h-5 w-5 text-[#FAFAFA]" strokeWidth={1.75} />
           </div>
           <div>
             <div className="flex items-center space-x-2">
@@ -261,13 +261,13 @@ Savolingizni yozing yoki quyidagi tayyor so‘rovlardan birini tanlang.`,
                 className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border text-xs ${
                   isUser
                     ? 'border-[#2E2E2E] bg-[#1A1A1A] text-[#FAFAFA]'
-                    : 'border-[#1F1F1F] bg-[#0A0A0A] text-[#10B981]'
+                    : 'border-zinc-800 bg-zinc-900 text-zinc-200'
                 }`}
               >
                 {isUser ? (
                   <User className="h-4 w-4" strokeWidth={1.75} />
                 ) : (
-                  <AiCoreIcon className="h-4 w-4" strokeWidth={1.5} />
+                  <AiCoreIcon className="h-4 w-4" strokeWidth={1.75} />
                 )}
               </div>
 
@@ -308,15 +308,15 @@ Savolingizni yozing yoki quyidagi tayyor so‘rovlardan birini tanlang.`,
 
         {isLoading && (
           <div className="flex items-start space-x-2.5 sm:space-x-3 animate-in fade-in">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#1F1F1F] bg-[#0A0A0A] text-[#10B981]">
-              <AiCoreIcon className="h-4 w-4 animate-spin text-[#10B981]" strokeWidth={1.5} />
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300">
+              <AiCoreIcon className="h-4 w-4 animate-pulse text-zinc-200" strokeWidth={1.75} />
             </div>
             <div className="rounded-2xl rounded-tl-sm border border-[#1F1F1F] bg-[#0A0A0A] p-3.5 text-xs text-[#888888] shadow-sm flex items-center space-x-2">
               <span className="text-[#888888]">Tahlil qilinmoqda</span>
               <span className="flex space-x-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#10B981] animate-bounce" />
-                <span className="h-1.5 w-1.5 rounded-full bg-[#10B981] animate-bounce [animation-delay:0.2s]" />
-                <span className="h-1.5 w-1.5 rounded-full bg-[#10B981] animate-bounce [animation-delay:0.4s]" />
+                <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce" />
+                <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce [animation-delay:0.2s]" />
+                <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce [animation-delay:0.4s]" />
               </span>
             </div>
           </div>
