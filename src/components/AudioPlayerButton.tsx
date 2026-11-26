@@ -1,6 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useId } from 'react';
 import { Volume2, VolumeX, RefreshCw } from 'lucide-react';
-import { playTextToSpeech, stopCurrentAudio, type AudioPlayState } from '../lib/tts';
+import {
+  playTextToSpeech,
+  stopCurrentAudio,
+  stopAudioIfOwned,
+  subscribePlaybackState,
+  type AudioPlayState,
+} from '../lib/tts';
 
 interface AudioPlayerButtonProps {
   text: string;
@@ -17,20 +23,18 @@ export const AudioPlayerButton: React.FC<AudioPlayerButtonProps> = ({
   label = 'Ovozli eshitish',
   className = '',
 }) => {
+  const reactId = useId();
+  const playerId = id || `tts-${reactId}`;
   const [playState, setPlayState] = useState<AudioPlayState>('idle');
-  const playerId = React.useMemo(
-    () => id || `tts-${Math.random().toString(36).slice(2, 9)}`,
-    [id]
-  );
 
+  // Subscribe strictly by playerId; only stop on real unmount if this button owns active audio
   useEffect(() => {
+    const unsubscribe = subscribePlaybackState(playerId, setPlayState);
     return () => {
-      // Cleanup on unmount if this button was playing
-      if (playState === 'playing' || playState === 'loading') {
-        stopCurrentAudio();
-      }
+      unsubscribe();
+      stopAudioIfOwned(playerId);
     };
-  }, [playState]);
+  }, [playerId]);
 
   const handleTogglePlay = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -38,49 +42,57 @@ export const AudioPlayerButton: React.FC<AudioPlayerButtonProps> = ({
 
     if (playState === 'playing' || playState === 'loading') {
       stopCurrentAudio();
-      setPlayState('idle');
       return;
     }
 
-    await playTextToSpeech(text, playerId, (state) => {
-      setPlayState(state);
-    });
+    await playTextToSpeech(text, playerId);
   };
 
-  // 1. Compact variant (icon only for chat bubbles and tight spaces)
   if (variant === 'compact') {
     return (
       <button
         type="button"
         onClick={handleTogglePlay}
-        title={playState === 'playing' ? 'Ovozni to‘xtatish' : label}
-        className={`inline-flex items-center justify-center p-1.5 rounded-md transition-colors ${
+        title={
+          playState === 'playing'
+            ? 'Ovozni to‘xtatish'
+            : playState === 'loading'
+            ? 'Ovoz tayyorlanmoqda... (bekor qilish uchun bosing)'
+            : label
+        }
+        aria-label={playState === 'playing' ? 'Ovozni to‘xtatish' : label}
+        className={`inline-flex items-center space-x-1.5 px-2 py-1 rounded-md transition-colors ${
           playState === 'playing'
             ? 'bg-[#10B981]/15 text-[#10B981] border border-[#10B981]/30'
             : playState === 'loading'
             ? 'bg-[#1A1A1A] text-[#FAFAFA] border border-[#2A2A2A]'
-            : 'text-[#888888] hover:text-[#FAFAFA] hover:bg-[#141414]'
+            : 'text-[#888888] hover:text-[#FAFAFA] hover:bg-[#141414] border border-transparent hover:border-[#222222]'
         } ${className}`}
       >
         {playState === 'loading' ? (
-          <RefreshCw className="h-3.5 w-3.5 animate-spin text-zinc-300" strokeWidth={2} />
+          <>
+            <RefreshCw className="h-3.5 w-3.5 animate-spin text-zinc-300" strokeWidth={2} />
+            <span className="text-[10px]">Yuklanmoqda...</span>
+          </>
         ) : playState === 'playing' ? (
-          <div className="flex items-center space-x-1">
+          <>
             <span className="flex items-end space-x-0.5 h-3">
               <span className="w-0.5 h-2 bg-[#10B981] animate-pulse" />
               <span className="w-0.5 h-3 bg-[#10B981] animate-pulse [animation-delay:0.15s]" />
               <span className="w-0.5 h-1.5 bg-[#10B981] animate-pulse [animation-delay:0.3s]" />
             </span>
             <VolumeX className="h-3.5 w-3.5 text-[#10B981]" strokeWidth={2} />
-          </div>
+          </>
         ) : (
-          <Volume2 className="h-3.5 w-3.5" strokeWidth={1.75} />
+          <>
+            <Volume2 className="h-3.5 w-3.5" strokeWidth={1.75} />
+            <span className="text-[10px] font-medium">Eshitish</span>
+          </>
         )}
       </button>
     );
   }
 
-  // 2. Pill variant (default, button with text)
   return (
     <button
       type="button"
