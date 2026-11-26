@@ -134,7 +134,7 @@ export const ProducerAuth: React.FC<ProducerAuthProps> = ({ onAuthenticated }) =
 
   return (
     <div className="mx-auto max-w-md px-4 py-10 sm:py-16 animate-in fade-in duration-300">
-      <div className="rounded-2xl border border-[#1F1F1F] bg-[#0A0A0A] p-6 sm:p-7 shadow-2xl">
+      <div className="rounded-2xl border border-white/[0.06] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] p-6 sm:p-7 shadow-[0_24px_60px_rgba(0,0,0,0.85)]">
         {/* Header */}
         <div className="text-center mb-6">
           <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-xl border border-[#262626] bg-[#141414] text-[#FAFAFA] mb-3.5">
@@ -259,8 +259,8 @@ export const ProducerAuth: React.FC<ProducerAuthProps> = ({ onAuthenticated }) =
 
             <button
               type="submit"
-              disabled={isLoading || !loginEmail.trim() || !loginPassword}
-              className="mt-2 flex w-full items-center justify-center space-x-2 rounded-xl bg-[#FAFAFA] py-3 text-xs font-bold text-black hover:bg-[#E5E5E5] disabled:opacity-40 transition-colors shadow-sm min-h-[44px]"
+              disabled={isLoading}
+              className="mt-2 flex w-full items-center justify-center space-x-2 rounded-xl bg-white py-3 text-xs font-semibold text-black hover:bg-zinc-200 disabled:opacity-60 transition-colors shadow-[0_1px_16px_rgba(255,255,255,0.16)] min-h-[44px]"
             >
               {isLoading ? (
                 <>
@@ -386,7 +386,7 @@ export const ProducerAuth: React.FC<ProducerAuthProps> = ({ onAuthenticated }) =
             <button
               type="submit"
               disabled={isLoading}
-              className="mt-2 flex w-full items-center justify-center space-x-2 rounded-xl bg-[#FAFAFA] py-3 text-xs font-bold text-black hover:bg-[#E5E5E5] disabled:opacity-40 transition-colors shadow-sm min-h-[44px]"
+              className="mt-2 flex w-full items-center justify-center space-x-2 rounded-xl bg-white py-3 text-xs font-semibold text-black hover:bg-zinc-200 disabled:opacity-60 transition-colors shadow-[0_1px_16px_rgba(255,255,255,0.16)] min-h-[44px]"
             >
               {isLoading ? (
                 <>
@@ -409,7 +409,7 @@ export const ProducerAuth: React.FC<ProducerAuthProps> = ({ onAuthenticated }) =
             <div className="w-full border-t border-[#1A1A1A]" />
           </div>
           <div className="relative flex justify-center text-[10px] uppercase tracking-wider font-mono">
-            <span className="bg-[#0A0A0A] px-2.5 text-[#525252]">yoki tezkor sinov</span>
+            <span className="bg-[#0B0B0B] px-2.5 text-[#525252]">yoki tezkor sinov</span>
           </div>
         </div>
 

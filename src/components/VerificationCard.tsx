@@ -130,9 +130,11 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
   // 1. NOT FOUND / FAKE STATE
   if (currentStatus === 'NOT_FOUND' || !product) {
     return (
-      <div className="w-full max-w-2xl mx-auto overflow-hidden rounded-xl border border-[#EF4444]/40 bg-[#0A0A0A] shadow-2xl animate-in fade-in duration-300">
+      <div className="w-full max-w-2xl mx-auto overflow-hidden rounded-xl border border-[#EF4444]/35 border-t-[#EF4444]/60 bg-gradient-to-b from-[#121212] to-[#080808] shadow-[0_24px_60px_rgba(0,0,0,0.85)] animate-in fade-in duration-300">
+        {/* Top Accent Glow Line */}
+        <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-[#EF4444]/85 to-transparent" />
         {/* Banner */}
-        <div className="border-b border-[#EF4444]/30 bg-[#EF4444]/10 p-4 sm:p-6">
+        <div className="border-b border-[#EF4444]/30 bg-gradient-to-b from-[#EF4444]/15 to-[#EF4444]/5 p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-3.5">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[#EF4444]/30 bg-[#EF4444]/15 text-[#EF4444]">
               <XCircle className="h-6 w-6" strokeWidth={1.75} />
@@ -183,13 +185,25 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
   const manufacturer = product.manufacturers;
 
   return (
-    <div className="w-full max-w-2xl mx-auto overflow-hidden rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] shadow-2xl animate-in fade-in duration-300">
+    <div className="w-full max-w-2xl mx-auto overflow-hidden rounded-xl border border-white/[0.06] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] shadow-[0_24px_60px_rgba(0,0,0,0.85)] animate-in fade-in duration-300">
+      {/* Top Accent Glow Bar inside Passport Header */}
+      <div
+        className={`h-[2px] w-full bg-gradient-to-r from-transparent ${
+          isExpired
+            ? 'via-[#EF4444]/90'
+            : isAuthentic
+            ? 'via-[#10B981]/85'
+            : 'via-[#F59E0B]/85'
+        } to-transparent`}
+      />
       {/* Top Status Banner */}
       <div
-        className={`border-b p-4 sm:p-6 transition-colors ${
-          isAuthentic
-            ? 'border-[#10B981]/30 bg-[#10B981]/10'
-            : 'border-[#F59E0B]/30 bg-[#F59E0B]/10'
+        className={`relative border-b p-4 sm:p-6 transition-colors ${
+          isExpired
+            ? 'border-[#EF4444]/30 bg-gradient-to-b from-[#EF4444]/15 to-[#EF4444]/5'
+            : isAuthentic
+            ? 'border-[#10B981]/30 bg-gradient-to-b from-[#10B981]/14 to-[#10B981]/[0.03]'
+            : 'border-[#F59E0B]/30 bg-gradient-to-b from-[#F59E0B]/14 to-[#F59E0B]/[0.03]'
         }`}
       >
         <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-3.5">
@@ -444,7 +458,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
           )}
 
           {aiAnalysis && (
-            <div className="rounded-xl border border-[#222222] bg-[#0A0A0A] p-4 sm:p-5 space-y-4 shadow-xl animate-in fade-in duration-300">
+            <div className="rounded-xl border border-white/[0.08] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] p-4 sm:p-5 space-y-4 shadow-[0_18px_45px_rgba(0,0,0,0.75)] animate-in fade-in duration-300">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 pb-3 border-b border-[#141414]">
                 <div className="flex items-center space-x-2">
                   <AiCoreIcon className="h-4 w-4 text-zinc-300" strokeWidth={1.75} />
@@ -492,27 +506,48 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
                 </div>
               </div>
 
-              {/* Trust Score Bar */}
-              <div className="space-y-1.5">
+              {/* Precision Segmented Trust Score Meter */}
+              <div className="space-y-2">
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="font-mono uppercase tracking-wider text-[#525252]">
+                  <span className="font-mono uppercase tracking-wider text-[#737373]">
                     Ishonchlilik Indeksi (Trust Score)
                   </span>
-                  <span className="font-mono font-bold text-[#FAFAFA]">
-                    {aiAnalysis.trust_score} / 100
+                  <span className="font-mono font-bold text-[#FAFAFA] tabular-nums">
+                    {aiAnalysis.trust_score} <span className="text-[#525252] font-normal">/ 100</span>
                   </span>
                 </div>
-                <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#141414]">
-                  <div
-                    className={`h-full transition-all duration-500 ${
-                      aiAnalysis.trust_score >= 75
-                        ? 'bg-[#10B981]'
-                        : aiAnalysis.trust_score >= 45
-                        ? 'bg-[#F59E0B]'
-                        : 'bg-[#EF4444]'
-                    }`}
-                    style={{ width: `${Math.max(0, Math.min(100, aiAnalysis.trust_score))}%` }}
-                  />
+
+                {/* 10-segment precision gauge */}
+                <div className="grid grid-cols-10 gap-1" aria-label={`Trust score ${aiAnalysis.trust_score} out of 100`}>
+                  {Array.from({ length: 10 }).map((_, idx) => {
+                    const segThreshold = (idx + 1) * 10;
+                    const prevThreshold = idx * 10;
+                    const score = Math.max(0, Math.min(100, aiAnalysis.trust_score));
+                    const isFilled = score >= segThreshold;
+                    const isPartial = !isFilled && score > prevThreshold;
+                    const activeColor =
+                      score >= 75
+                        ? 'bg-gradient-to-r from-[#10B981] to-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.45)]'
+                        : score >= 45
+                        ? 'bg-gradient-to-r from-[#F59E0B] to-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.4)]'
+                        : 'bg-gradient-to-r from-[#EF4444] to-rose-400 shadow-[0_0_8px_rgba(239,68,68,0.45)]';
+
+                    return (
+                      <div
+                        key={idx}
+                        className="h-2 overflow-hidden rounded-[3px] bg-white/[0.06] border border-white/[0.04]"
+                      >
+                        {(isFilled || isPartial) && (
+                          <div
+                            className={`h-full transition-all duration-500 ${activeColor}`}
+                            style={{
+                              width: isFilled ? '100%' : `${((score - prevThreshold) / 10) * 100}%`,
+                            }}
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 

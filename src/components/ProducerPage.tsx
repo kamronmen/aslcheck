@@ -15,7 +15,6 @@ import {
   MapPin,
   Clock,
   Smartphone,
-  BarChart3,
 } from 'lucide-react';
 import type {
   Manufacturer,
@@ -39,6 +38,7 @@ import { ProducerAuth } from './ProducerAuth';
 import { QrLabelCard } from './QrLabelCard';
 import { BatchQrModal } from './BatchQrModal';
 import { AudioPlayerButton } from './AudioPlayerButton';
+import { ScanAnalyticsChart } from './ScanAnalyticsChart';
 import {
   AiCoreIcon,
   VerifiedSealIcon,
@@ -245,7 +245,7 @@ export const ProducerPage: React.FC = () => {
       };
 
       const qty = Math.max(1, Math.min(20, Number(formQuantity) || 1));
-      const createdItems = await createBatchProducts(basePayload, qty);
+      const createdItems = await createBatchProducts(basePayload, qty, currentManufacturer);
 
       if (createdItems && createdItems.length > 0) {
         if (createdItems.length === 1) {
@@ -274,7 +274,7 @@ export const ProducerPage: React.FC = () => {
   const handleDeleteProduct = async (id: string, name: string) => {
     if (!window.confirm(`"${name}" mahsulotini o‘chirishni tasdiqlaysizmi?`)) return;
     try {
-      const ok = await deleteProduct(id);
+      const ok = await deleteProduct(id, currentManufacturer?.id);
       if (ok) {
         setProducts((prev) => prev.filter((p) => p.id !== id));
       }
@@ -324,12 +324,6 @@ export const ProducerPage: React.FC = () => {
     );
   });
 
-  const maxTrendValue = Math.max(
-    1,
-    ...scanTrend.map((d) => d.scans + d.reports)
-  );
-  const total7DayScans = scanTrend.reduce((sum, d) => sum + d.scans + d.reports, 0);
-
   return (
     <div className="mx-auto max-w-6xl px-3 py-6 sm:px-6 sm:py-10">
       {/* Multi-Tenant Producer Header */}
@@ -370,7 +364,7 @@ export const ProducerPage: React.FC = () => {
               setShowAddForm(!showAddForm);
               if (!showAddForm) setFormSerialCode(generateRandomSerial());
             }}
-            className="flex items-center justify-center space-x-2 rounded-lg bg-[#FAFAFA] px-4 py-2.5 text-xs font-semibold text-black hover:bg-[#E5E5E5] transition-colors shadow-sm min-h-[40px]"
+            className="flex items-center justify-center space-x-2 rounded-lg bg-white px-4 py-2.5 text-xs font-semibold text-black hover:bg-zinc-200 transition-colors shadow-[0_1px_14px_rgba(255,255,255,0.14)] min-h-[40px]"
           >
             <Plus className="h-4 w-4" strokeWidth={2} />
             <span>Yangi Mahsulot Qo‘shish</span>
@@ -395,39 +389,60 @@ export const ProducerPage: React.FC = () => {
 
       {/* Top KPI Row */}
       <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-        <div className="rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] p-4 sm:p-5">
-          <div className="flex items-center justify-between text-[#888888]">
+        <div className="relative overflow-hidden rounded-xl border border-white/[0.06] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] p-4 sm:p-5 shadow-[0_14px_36px_rgba(0,0,0,0.65)]">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/[0.06] blur-2xl"
+          />
+          <div className="relative flex items-center justify-between text-[#888888]">
             <span className="text-xs font-medium">Jami mahsulotlar</span>
             <Package className="h-4 w-4 text-[#FAFAFA]" strokeWidth={1.75} />
           </div>
-          <div className="mt-3 flex items-baseline space-x-2">
-            <span className="text-2xl sm:text-3xl font-bold tracking-tight font-mono text-[#FAFAFA]">
+          <div className="relative mt-3 flex items-baseline space-x-2">
+            <span className="text-2xl sm:text-3xl font-bold tracking-tight font-mono text-[#FAFAFA] tabular-nums">
               {totalProducts}
             </span>
             <span className="text-xs text-[#525252]">ta ro‘yxatda</span>
           </div>
         </div>
 
-        <div className="rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] p-4 sm:p-5">
-          <div className="flex items-center justify-between text-[#888888]">
+        <div className="relative overflow-hidden rounded-xl border border-white/[0.06] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] p-4 sm:p-5 shadow-[0_14px_36px_rgba(0,0,0,0.65)]">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-[#10B981]/[0.1] blur-2xl"
+          />
+          <div className="relative flex items-center justify-between text-[#888888]">
             <span className="text-xs font-medium">Jami tekshiruvlar</span>
-            <Layers className="h-4 w-4 text-[#FAFAFA]" strokeWidth={1.75} />
+            <Layers className="h-4 w-4 text-[#10B981]" strokeWidth={1.75} />
           </div>
-          <div className="mt-3 flex items-baseline space-x-2">
-            <span className="text-2xl sm:text-3xl font-bold tracking-tight font-mono text-[#FAFAFA]">
+          <div className="relative mt-3 flex items-baseline space-x-2">
+            <span className="text-2xl sm:text-3xl font-bold tracking-tight font-mono text-[#FAFAFA] tabular-nums">
               {totalScans}
             </span>
             <span className="text-xs text-[#525252]">marta skanerlandi</span>
           </div>
         </div>
 
-        <div className="rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] p-4 sm:p-5">
-          <div className="flex items-center justify-between text-[#888888]">
+        <div className="relative overflow-hidden rounded-xl border border-white/[0.06] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] p-4 sm:p-5 shadow-[0_14px_36px_rgba(0,0,0,0.65)]">
+          <div
+            aria-hidden="true"
+            className={`pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full blur-2xl ${
+              suspiciousCount > 0 ? 'bg-[#EF4444]/[0.12]' : 'bg-[#F59E0B]/[0.08]'
+            }`}
+          />
+          <div className="relative flex items-center justify-between text-[#888888]">
             <span className="text-xs font-medium">Shubhali / Shikoyatlar</span>
-            <CloneAlertIcon className="h-4 w-4 text-[#F59E0B]" strokeWidth={1.5} />
+            <CloneAlertIcon
+              className={`h-4 w-4 ${suspiciousCount > 0 ? 'text-[#EF4444]' : 'text-[#F59E0B]'}`}
+              strokeWidth={1.5}
+            />
           </div>
-          <div className="mt-3 flex items-baseline space-x-2">
-            <span className="text-2xl sm:text-3xl font-bold tracking-tight font-mono text-[#F59E0B]">
+          <div className="relative mt-3 flex items-baseline space-x-2">
+            <span
+              className={`text-2xl sm:text-3xl font-bold tracking-tight font-mono tabular-nums ${
+                suspiciousCount > 0 ? 'text-[#F59E0B]' : 'text-[#FAFAFA]'
+              }`}
+            >
               {suspiciousCount}
             </span>
             <span className="text-xs text-[#525252]">ta ogohlantirish</span>
@@ -435,65 +450,14 @@ export const ProducerPage: React.FC = () => {
         </div>
       </div>
 
-      {/* 7-Day Tenant-Isolated Scan Activity Chart */}
-      <div className="mt-4 rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] p-4 sm:p-5">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-          <div className="flex items-center space-x-2">
-            <BarChart3 className="h-4 w-4 text-[#888888]" strokeWidth={1.75} />
-            <h2 className="text-xs font-semibold tracking-tight text-[#FAFAFA]">
-              7-Kunlik Skanerlash Faolligi
-            </h2>
-          </div>
-          <div className="flex flex-wrap items-center gap-3 text-[11px] font-mono text-[#525252]">
-            <span className="flex items-center space-x-1.5">
-              <span className="h-2 w-2 rounded-sm bg-[#10B981]" />
-              <span>Tekshiruv</span>
-            </span>
-            <span className="flex items-center space-x-1.5">
-              <span className="h-2 w-2 rounded-sm bg-[#EF4444]" />
-              <span>Shikoyat</span>
-            </span>
-            <span className="text-[#888888]">Jami: {total7DayScans}</span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-7 gap-1.5 sm:gap-3 items-end h-28 pt-2">
-          {scanTrend.map((point) => {
-            const totalDay = point.scans + point.reports;
-            const scanPct = Math.round((point.scans / maxTrendValue) * 100);
-            const reportPct = Math.round((point.reports / maxTrendValue) * 100);
-
-            return (
-              <div key={point.date} className="flex flex-col items-center h-full justify-end">
-                <span className="text-[10px] font-mono text-[#888888] mb-1">
-                  {totalDay}
-                </span>
-                <div className="w-full max-w-[36px] h-16 rounded-md bg-[#111111] border border-[#1A1A1A] flex flex-col justify-end overflow-hidden p-0.5 gap-0.5">
-                  {point.reports > 0 && (
-                    <div
-                      className="w-full rounded-sm bg-[#EF4444]"
-                      style={{ height: `${Math.max(10, reportPct)}%` }}
-                    />
-                  )}
-                  {point.scans > 0 && (
-                    <div
-                      className="w-full rounded-sm bg-[#10B981]"
-                      style={{ height: `${Math.max(10, scanPct)}%` }}
-                    />
-                  )}
-                </div>
-                <span className="mt-1.5 text-[9px] sm:text-[10px] font-mono text-[#525252] truncate">
-                  {point.label}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+      {/* 7-Day Smooth SVG Area Spline Chart */}
+      <div className="mt-4">
+        <ScanAnalyticsChart data={scanTrend} />
       </div>
 
       {/* Collapsible Add Product Form (Single or Batch) */}
       {showAddForm && (
-        <div className="mt-6 rounded-xl border border-[#2A2A2A] bg-[#0D0D0D] p-4 sm:p-6 shadow-xl animate-in fade-in duration-200">
+        <div className="mt-6 rounded-xl border border-white/[0.08] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] p-4 sm:p-6 shadow-[0_20px_50px_rgba(0,0,0,0.8)] animate-in fade-in duration-200">
           <div className="flex items-center justify-between pb-4 border-b border-[#1F1F1F]">
             <div className="flex items-center space-x-2">
               <BatchGridIcon className="h-4 w-4 text-[#FAFAFA]" strokeWidth={1.5} />
@@ -712,7 +676,7 @@ export const ProducerPage: React.FC = () => {
 
       {/* SECTION 1: PRODUCTS (MOBILE CARD LIST + DESKTOP TABLE) */}
       {activeSection === 'products' && (
-        <div className="mt-4 rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] overflow-hidden shadow-2xl">
+        <div className="mt-4 rounded-xl border border-white/[0.06] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.75)]">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border-b border-[#1F1F1F] gap-3">
             <div className="flex items-center space-x-2">
               <h2 className="text-sm font-semibold tracking-tight text-[#FAFAFA]">
@@ -974,7 +938,7 @@ export const ProducerPage: React.FC = () => {
       {/* SECTION 2: LIVE COUNTERFEIT REPORTS RADAR + AI EXECUTIVE REPORT */}
       {activeSection === 'reports' && (
         <div className="mt-4 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 rounded-xl border border-white/[0.06] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] gap-3 shadow-lg">
             <div>
               <h2 className="text-sm font-semibold tracking-tight text-[#FAFAFA] flex items-center space-x-2">
                 <ShieldRadarIcon className="h-4 w-4 text-[#EF4444]" strokeWidth={1.5} />
@@ -1011,7 +975,7 @@ export const ProducerPage: React.FC = () => {
 
           {/* AI Executive Briefing Card */}
           {aiReport && (
-            <div className="rounded-xl border border-[#222222] bg-[#0D0D0D] p-4 sm:p-5 space-y-3.5 shadow-xl animate-in fade-in duration-300">
+            <div className="rounded-xl border border-white/[0.08] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] p-4 sm:p-5 space-y-3.5 shadow-[0_18px_45px_rgba(0,0,0,0.75)] animate-in fade-in duration-300">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 pb-3 border-b border-[#1A1A1A]">
                 <div className="flex items-center space-x-2">
                   <AiCoreIcon className="h-4 w-4 text-zinc-300" strokeWidth={1.75} />

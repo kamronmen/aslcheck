@@ -35,6 +35,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
   const [verificationResult, setVerificationResult] = useState<VerificationResult | null>(null);
 
   // Hybrid Vision Forensics state
+  const codeInputRef = useRef<HTMLInputElement | null>(null);
   const visionFileInputRef = useRef<HTMLInputElement | null>(null);
   const [isVisionLoading, setIsVisionLoading] = useState(false);
   const [visionStageText, setVisionStageText] = useState('Surat tahlil qilinmoqda...');
@@ -81,6 +82,10 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!inputCode.trim()) {
+      codeInputRef.current?.focus();
+      return;
+    }
     setVisionResult(null);
     setVisionPreviewUrl(null);
     setVisionError(null);
@@ -179,7 +184,25 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
   };
 
   return (
-    <div className="mx-auto max-w-4xl px-3 py-6 sm:px-6 sm:py-12">
+    <div className="relative overflow-hidden">
+      {/* Subtle Architectural Dot-Grid & Ambient Spotlight */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[420px]"
+        style={{
+          backgroundImage: 'radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)',
+          backgroundSize: '24px 24px',
+          maskImage: 'radial-gradient(ellipse 85% 75% at 50% 0%, black 35%, transparent 100%)',
+          WebkitMaskImage:
+            'radial-gradient(ellipse 85% 75% at 50% 0%, black 35%, transparent 100%)',
+        }}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute left-1/2 top-8 -translate-x-1/2 h-56 w-[90%] max-w-xl rounded-full bg-gradient-to-r from-white via-emerald-400 to-white opacity-[0.07] blur-3xl"
+      />
+
+      <div className="relative mx-auto max-w-4xl px-3 py-6 sm:px-6 sm:py-12">
       {/* Hidden input & temp decoder mount for Hybrid Vision Forensics */}
       <input
         ref={visionFileInputRef}
@@ -192,20 +215,20 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
 
       {/* Hero / Header */}
       <div className="text-center mb-6 sm:mb-10">
-        <div className="inline-flex items-center space-x-1.5 rounded-full border border-[#1F1F1F] bg-[#0A0A0A] px-3 py-1 text-xs text-[#888888] mb-3 sm:mb-4">
+        <div className="inline-flex items-center space-x-1.5 rounded-full border border-white/10 bg-[#0C0C0C]/90 px-3 py-1 text-xs text-[#A0A0A0] mb-3 sm:mb-4 shadow-sm backdrop-blur-sm">
           <AslBrandMark className="h-3.5 w-3.5 text-[#FAFAFA]" strokeWidth={1.5} />
           <span>Litsenziyalangan Mahsulot Reyestri</span>
         </div>
-        <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-[#FAFAFA]">
+        <h1 className="text-2xl sm:text-4xl font-bold tracking-tight bg-gradient-to-b from-white to-zinc-300 bg-clip-text text-transparent">
           Mahsulot Haqiqiyligini Tekshirish
         </h1>
-        <p className="mt-2 text-xs sm:text-sm text-[#888888] max-w-md mx-auto leading-relaxed">
+        <p className="mt-2.5 text-xs sm:text-sm text-[#888888] max-w-md mx-auto leading-relaxed">
           Qadoqdagi unikal AslCheck seriya kodini kiriting, QR-kodni skanerlang yoki qadoq suratini AI Vizual Ekspertizaga yuboring.
         </p>
       </div>
 
       {/* Main Verification Input Box */}
-      <div className="mx-auto max-w-2xl rounded-2xl border border-[#1F1F1F] bg-[#0A0A0A] p-4 sm:p-6 shadow-2xl">
+      <div className="mx-auto max-w-2xl rounded-2xl border border-white/[0.06] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] p-4 sm:p-6 shadow-[0_24px_60px_rgba(0,0,0,0.85)]">
         <form onSubmit={handleFormSubmit} className="space-y-3">
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="relative flex-1">
@@ -213,18 +236,19 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
                 <Search className="h-4 w-4 text-[#525252]" strokeWidth={1.75} />
               </div>
               <input
+                ref={codeInputRef}
                 type="text"
                 value={inputCode}
                 onChange={(e) => setInputCode(e.target.value.toUpperCase())}
                 placeholder="Masalan: ASL-2026-001"
                 disabled={isLoading || isVisionLoading}
-                className="w-full rounded-xl border border-[#1F1F1F] bg-[#000000] py-3 pl-10 pr-3 font-mono text-base font-medium tracking-wide text-[#FAFAFA] placeholder-[#525252] focus:border-[#FAFAFA] focus:outline-none transition-colors min-h-[44px]"
+                className="w-full rounded-xl border border-white/10 bg-[#050505] py-3 pl-10 pr-3 font-mono text-base font-medium tracking-wide text-[#FAFAFA] placeholder-[#525252] focus:border-white/50 focus:outline-none transition-colors min-h-[44px]"
               />
             </div>
             <button
               type="submit"
-              disabled={isLoading || isVisionLoading || !inputCode.trim()}
-              className="flex items-center justify-center space-x-1.5 rounded-xl bg-[#FAFAFA] px-5 py-3 text-sm font-semibold text-black hover:bg-[#E5E5E5] disabled:opacity-40 transition-colors shadow-sm min-h-[44px] shrink-0"
+              disabled={isLoading || isVisionLoading}
+              className="flex items-center justify-center space-x-1.5 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-black hover:bg-zinc-200 disabled:opacity-60 transition-colors shadow-[0_1px_16px_rgba(255,255,255,0.16)] min-h-[44px] shrink-0"
             >
               {isLoading ? (
                 <RefreshCw className="h-4 w-4 animate-spin" strokeWidth={2} />
@@ -307,7 +331,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
       </div>
 
       {/* Prominent AI Assistant Banner */}
-      <div className="mt-5 mx-auto max-w-2xl rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-lg">
+      <div className="mt-5 mx-auto max-w-2xl rounded-xl border border-white/[0.06] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-[0_14px_40px_rgba(0,0,0,0.7)]">
         <div className="flex items-start space-x-3">
           <div className="flex w-10 h-10 shrink-0 items-center justify-center rounded-xl bg-zinc-900 border border-zinc-800 text-[#FAFAFA]">
             <AiCoreIcon className="w-5 h-5 text-[#FAFAFA]" strokeWidth={1.75} />
@@ -339,7 +363,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
 
       {/* Vision Forensics Loading State */}
       {isVisionLoading && (
-        <div className="mt-8 mx-auto max-w-2xl rounded-xl border border-[#262626] bg-[#0A0A0A] p-6 text-center space-y-2.5 animate-in fade-in">
+        <div className="mt-8 mx-auto max-w-2xl rounded-xl border border-white/[0.08] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] p-6 text-center space-y-2.5 animate-in fade-in">
           <VisionLensIcon className="h-6 w-6 mx-auto text-zinc-300 animate-pulse" strokeWidth={1.75} />
           <div className="text-xs font-semibold text-[#FAFAFA]">{visionStageText}</div>
           <div className="text-[11px] text-[#525252] font-mono">
@@ -358,7 +382,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
 
       {/* Vision Forensics Result Panel */}
       {!isVisionLoading && visionResult && (
-        <div className="mt-8 mx-auto max-w-2xl overflow-hidden rounded-xl border border-[#262626] bg-[#0A0A0A] shadow-2xl animate-in fade-in duration-300">
+        <div className="mt-8 mx-auto max-w-2xl overflow-hidden rounded-xl border border-white/[0.08] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] shadow-[0_24px_60px_rgba(0,0,0,0.85)] animate-in fade-in duration-300">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-[#1F1F1F] bg-[#0D0D0D] px-4 sm:px-5 py-3.5">
             <div className="flex items-center space-x-2">
@@ -560,6 +584,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
         onClose={() => setIsScannerOpen(false)}
         onScanSuccess={handleScanSuccess}
       />
+      </div>
     </div>
   );
 };
