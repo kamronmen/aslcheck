@@ -18,6 +18,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { AiCoreIcon, CloneAlertIcon, VerifiedSealIcon } from './Icons';
+import { AudioPlayerButton } from './AudioPlayerButton';
 import type { VerificationResult, ScanLog } from '../types';
 import { reportFakeProduct, claimProduct } from '../lib/api';
 import { analyzeProductWithAi, type ProductAiAnalysis } from '../lib/ai';
@@ -37,7 +38,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
   const { status, product, logs: initialLogs } = result;
   const [logs, setLogs] = useState<ScanLog[]>(initialLogs);
   const [currentStatus, setCurrentStatus] = useState(status);
-  
+
   // Ownership Claim state
   const [isClaimed, setIsClaimed] = useState<boolean>(Boolean(product?.is_claimed));
   const [claimedAt, setClaimedAt] = useState<string | null>(product?.claimed_at || null);
@@ -51,7 +52,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
   const [reportSuccess, setReportSuccess] = useState(false);
 
-  // Gemini AI Analysis state (Feature A)
+  // Gemini AI Analysis state
   const [aiAnalysis, setAiAnalysis] = useState<ProductAiAnalysis | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
 
@@ -131,8 +132,8 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
     return (
       <div className="w-full max-w-2xl mx-auto overflow-hidden rounded-xl border border-[#EF4444]/40 bg-[#0A0A0A] shadow-2xl animate-in fade-in duration-300">
         {/* Banner */}
-        <div className="border-b border-[#EF4444]/30 bg-[#EF4444]/10 p-5 sm:p-6">
-          <div className="flex items-start space-x-3.5">
+        <div className="border-b border-[#EF4444]/30 bg-[#EF4444]/10 p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-3.5">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[#EF4444]/30 bg-[#EF4444]/15 text-[#EF4444]">
               <XCircle className="h-6 w-6" strokeWidth={1.75} />
             </div>
@@ -143,7 +144,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
               <h2 className="mt-0.5 text-base sm:text-lg font-bold tracking-tight text-[#EF4444]">
                 MAHSULOT TOPILMADI — SOXTA BO‘LISHI MUMKIN
               </h2>
-              <p className="mt-1 text-xs sm:text-sm text-[#888888]">
+              <p className="mt-1 text-xs sm:text-sm text-[#888888] leading-relaxed">
                 Ushbu seriya kodi rasmiy AslCheck reyestrida mavjud emas. Mahsulot kontrafakt yoki noqonuniy nusxalangan bo‘lishi mumkin.
               </p>
             </div>
@@ -151,22 +152,22 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
         </div>
 
         {/* Content Details */}
-        <div className="p-5 sm:p-6 space-y-4">
-          <div className="rounded-lg border border-[#1F1F1F] bg-[#050505] p-4">
-            <div className="flex items-center justify-between text-xs">
+        <div className="p-4 sm:p-6 space-y-4">
+          <div className="rounded-lg border border-[#1F1F1F] bg-[#050505] p-3.5 sm:p-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs gap-1">
               <span className="text-[#888888]">Tekshirilgan kod:</span>
-              <span className="font-mono font-semibold text-[#FAFAFA] bg-[#141414] px-2 py-0.5 rounded border border-[#262626]">
+              <span className="font-mono font-semibold text-[#FAFAFA] bg-[#141414] px-2 py-0.5 rounded border border-[#262626] break-all self-start sm:self-auto">
                 {searchedCode.toUpperCase()}
               </span>
             </div>
           </div>
 
-          <div className="rounded-lg border border-[#1F1F1F] bg-[#0D0D0D] p-4">
+          <div className="rounded-lg border border-[#1F1F1F] bg-[#0D0D0D] p-3.5 sm:p-4">
             <h4 className="text-xs font-semibold text-[#FAFAFA] flex items-center space-x-1.5">
               <AlertOctagon className="h-4 w-4 text-[#EF4444]" strokeWidth={1.75} />
               <span>Isteʼmolchi uchun tavsiyalar:</span>
             </h4>
-            <ul className="mt-2 space-y-1.5 text-xs text-[#888888] list-disc list-inside">
+            <ul className="mt-2 space-y-1.5 text-xs text-[#888888] list-disc list-inside leading-relaxed">
               <li>Ushbu mahsulotni sotib olmang va isteʼmol qilmang.</li>
               <li>Sotuvchidan rasmiy muvofiqlik sertifikati va QR pasportini talab qiling.</li>
               <li>Sotuvchi va savdo nuqtasi haqida tegishli nazorat organlariga xabar bering.</li>
@@ -185,13 +186,13 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
     <div className="w-full max-w-2xl mx-auto overflow-hidden rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] shadow-2xl animate-in fade-in duration-300">
       {/* Top Status Banner */}
       <div
-        className={`border-b p-5 sm:p-6 transition-colors ${
+        className={`border-b p-4 sm:p-6 transition-colors ${
           isAuthentic
             ? 'border-[#10B981]/30 bg-[#10B981]/10'
             : 'border-[#F59E0B]/30 bg-[#F59E0B]/10'
         }`}
       >
-        <div className="flex items-start space-x-3.5">
+        <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-3.5">
           <div
             className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border ${
               isAuthentic
@@ -207,7 +208,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
           </div>
 
           <div className="flex-1">
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
               <span
                 className={`text-[11px] font-mono uppercase tracking-wider font-semibold ${
                   isAuthentic ? 'text-[#10B981]' : 'text-[#F59E0B]'
@@ -215,14 +216,14 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
               >
                 {isAuthentic ? 'Asl Mahsulot Sertifikati' : 'Anti-Clone Ogohlantirish'}
               </span>
-              <span className="h-1 w-1 rounded-full bg-[#525252]" />
+              <span className="hidden sm:inline-block h-1 w-1 rounded-full bg-[#525252]" />
               <span className="font-mono text-[11px] text-[#888888]">
                 Skaner: {product.scan_count} / {product.max_safe_scans}
               </span>
             </div>
 
             <h2
-              className={`mt-0.5 text-base sm:text-lg font-bold tracking-tight ${
+              className={`mt-1 text-base sm:text-lg font-bold tracking-tight ${
                 isAuthentic ? 'text-[#10B981]' : 'text-[#F59E0B]'
               }`}
             >
@@ -242,13 +243,13 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
 
       {/* Feature 3: Automatic Expiry Date Alert Banner */}
       {isExpired && (
-        <div className="border-b border-[#EF4444]/40 bg-[#EF4444]/15 px-5 py-3.5 flex items-start space-x-3 text-xs text-[#EF4444]">
+        <div className="border-b border-[#EF4444]/40 bg-[#EF4444]/15 px-4 sm:px-5 py-3.5 flex flex-col sm:flex-row items-start gap-2.5 text-xs text-[#EF4444]">
           <AlertOctagon className="h-4 w-4 shrink-0 mt-0.5" strokeWidth={2} />
           <div>
             <div className="font-bold tracking-tight">
               OGOHLANTIRISH: Mahsulot asl, lekin yaroqlilik muddati o‘tgan!
             </div>
-            <p className="text-[#888888] mt-0.5">
+            <p className="text-[#888888] mt-0.5 leading-relaxed">
               Belgilangan yaroqlilik sanasi ({product.expiry_date}) tugagan. Ushbu mahsulotni isteʼmol qilish yoki ishlatish sog‘liq uchun xavfli bo‘lishi mumkin.
             </p>
           </div>
@@ -257,16 +258,16 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
 
       {/* Feature 2: Smart Ownership Claim Status Banners */}
       {justClaimed && (
-        <div className="border-b border-[#10B981]/30 bg-[#10B981]/15 px-5 py-3 flex items-center space-x-2.5 text-xs text-[#10B981] animate-in fade-in">
+        <div className="border-b border-[#10B981]/30 bg-[#10B981]/15 px-4 sm:px-5 py-3 flex items-center space-x-2.5 text-xs text-[#10B981] animate-in fade-in">
           <Check className="h-4 w-4 shrink-0" strokeWidth={2.5} />
-          <span className="font-semibold">
+          <span className="font-semibold leading-relaxed">
             Ushbu mahsulot siz tomoningizdan faollashtirildi (Band qilindi).
           </span>
         </div>
       )}
 
       {isClaimed && !justClaimed && (
-        <div className="border-b border-[#F59E0B]/30 bg-[#F59E0B]/10 px-5 py-3.5 flex items-start space-x-3 text-xs text-[#F59E0B]">
+        <div className="border-b border-[#F59E0B]/30 bg-[#F59E0B]/10 px-4 sm:px-5 py-3.5 flex flex-col sm:flex-row items-start gap-2.5 text-xs text-[#F59E0B]">
           <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5" strokeWidth={2} />
           <div className="leading-relaxed">
             <span className="font-bold">DIQQAT!</span> Ushbu mahsulot avvalroq{' '}
@@ -286,7 +287,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
         </div>
       )}
 
-      <div className="p-5 sm:p-6 space-y-6">
+      <div className="p-4 sm:p-6 space-y-6">
         {/* Feature 2: Ownership Claim Action Button (when not yet claimed) */}
         {!isClaimed && (
           <div className="rounded-xl border border-[#1F1F1F] bg-[#0D0D0D] p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -295,7 +296,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
                 <ShoppingBag className="h-3.5 w-3.5 text-zinc-300" strokeWidth={1.75} />
                 <span>Ushbu mahsulotni xarid qildingizmi?</span>
               </div>
-              <p className="text-[11px] text-[#888888] mt-0.5">
+              <p className="text-[11px] text-[#888888] mt-0.5 leading-relaxed">
                 Kodni o‘zingizga band qiling — boshqa hech kim ushbu kodni qayta faollashtirolmaydi.
               </p>
             </div>
@@ -303,7 +304,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
               type="button"
               onClick={handleClaim}
               disabled={isClaiming}
-              className="flex items-center justify-center space-x-2 rounded-lg bg-[#FAFAFA] px-4 py-2 text-xs font-bold text-black hover:bg-[#E5E5E5] disabled:opacity-50 transition-colors shrink-0 shadow-sm"
+              className="flex items-center justify-center space-x-2 rounded-lg bg-[#FAFAFA] px-4 py-2.5 text-xs font-bold text-black hover:bg-[#E5E5E5] disabled:opacity-50 transition-colors shrink-0 shadow-sm min-h-[40px]"
             >
               <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
               <span>{isClaiming ? 'Band qilinmoqda...' : 'Sotib oldim — Kodni band qilish'}</span>
@@ -317,17 +318,28 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
             <h3 className="text-xs font-semibold uppercase tracking-wider text-[#888888]">
               Raqamli Mahsulot Pasporti
             </h3>
-            <span className="font-mono text-xs text-[#FAFAFA] bg-[#141414] px-2 py-0.5 rounded border border-[#222222]">
+            <span className="font-mono text-xs text-[#FAFAFA] bg-[#141414] px-2 py-0.5 rounded border border-[#222222] break-all">
               {product.serial_code}
             </span>
           </div>
+
+          {/* Reference packaging photo (if available) */}
+          {product.image_url && (
+            <div className="mb-3 overflow-hidden rounded-lg border border-[#222222] bg-black">
+              <img
+                src={product.image_url}
+                alt={product.product_name}
+                className="w-full max-h-64 object-cover"
+              />
+            </div>
+          )}
 
           <div className="rounded-lg border border-[#1F1F1F] bg-[#050505] p-4 divide-y divide-[#141414]">
             {/* Name & Category */}
             <div className="pb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
               <div>
                 <span className="text-[11px] text-[#525252]">Mahsulot nomi</span>
-                <div className="text-sm font-semibold text-[#FAFAFA]">
+                <div className="text-sm font-semibold text-[#FAFAFA] break-words">
                   {product.product_name}
                 </div>
               </div>
@@ -337,14 +349,14 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
               </div>
             </div>
 
-            {/* Batch & Dates */}
-            <div className="py-3 grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {/* Batch & Dates (Responsive 1 or 2 columns on mobile) */}
+            <div className="py-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <span className="text-[11px] text-[#525252] flex items-center gap-1">
                   <Hash className="h-3 w-3" strokeWidth={1.75} />
                   Partiya raqami
                 </span>
-                <div className="font-mono text-xs font-medium text-[#FAFAFA] mt-0.5">
+                <div className="font-mono text-xs font-medium text-[#FAFAFA] mt-0.5 break-words">
                   {product.batch_number}
                 </div>
               </div>
@@ -360,7 +372,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
               </div>
 
               {/* Expiry Date (Highlighted if expired) */}
-              <div className="col-span-2 sm:col-span-1">
+              <div>
                 <span className="text-[11px] text-[#525252] flex items-center gap-1">
                   <Clock className="h-3 w-3" strokeWidth={1.75} />
                   Yaroqlilik muddati
@@ -384,7 +396,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
                   <Layers className="h-3 w-3" strokeWidth={1.75} />
                   Tarkibi va xomashyosi
                 </span>
-                <p className="mt-1 text-xs text-[#888888] leading-relaxed">
+                <p className="mt-1 text-xs text-[#888888] leading-relaxed break-words">
                   {product.ingredients}
                 </p>
               </div>
@@ -402,7 +414,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
                     <AiCoreIcon className="h-4 w-4 text-zinc-300" strokeWidth={1.75} />
                     <span>AI Tarkib va Xavfsizlik Ekspertizasi</span>
                   </div>
-                  <p className="text-[11px] text-[#888888] mt-0.5">
+                  <p className="text-[11px] text-[#888888] mt-0.5 leading-relaxed">
                     Mahsulot tarkibi, yaroqlilik muddati va nusxalanish ehtimolini sunʼiy intellekt orqali chuqur tekshiring
                   </p>
                 </div>
@@ -410,7 +422,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
                 <button
                   type="button"
                   onClick={handleRunAiAnalysis}
-                  className="flex items-center justify-center space-x-2 rounded-lg border border-[#262626] bg-[#141414] hover:bg-[#1C1C1C] hover:border-[#3A3A3A] px-4 py-2 text-xs font-medium text-[#FAFAFA] transition-colors shrink-0"
+                  className="flex items-center justify-center space-x-2 rounded-lg border border-[#262626] bg-[#141414] hover:bg-[#1C1C1C] hover:border-[#3A3A3A] px-4 py-2.5 text-xs font-medium text-[#FAFAFA] transition-colors shrink-0 min-h-[40px]"
                 >
                   <AiCoreIcon className="h-3.5 w-3.5 text-[#FAFAFA]" strokeWidth={1.5} />
                   <span>AI bilan tahlil qilish</span>
@@ -432,8 +444,8 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
           )}
 
           {aiAnalysis && (
-            <div className="rounded-xl border border-[#222222] bg-[#0A0A0A] p-5 space-y-4 shadow-xl animate-in fade-in duration-300">
-              <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[#141414]">
+            <div className="rounded-xl border border-[#222222] bg-[#0A0A0A] p-4 sm:p-5 space-y-4 shadow-xl animate-in fade-in duration-300">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 pb-3 border-b border-[#141414]">
                 <div className="flex items-center space-x-2">
                   <AiCoreIcon className="h-4 w-4 text-zinc-300" strokeWidth={1.75} />
                   <h3 className="text-xs font-semibold text-[#FAFAFA] tracking-tight">
@@ -441,7 +453,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
                   </h3>
                 </div>
 
-                <div className="flex items-center space-x-2">
+                <div className="flex flex-wrap items-center gap-2">
                   {typeof aiAnalysis.days_until_expiry === 'number' && (
                     <span
                       className={`inline-flex items-center rounded px-2 py-0.5 text-[10px] font-mono font-medium border ${
@@ -469,6 +481,14 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
                   >
                     <span>Xavfsizlik: {aiAnalysis.safety_score}</span>
                   </span>
+
+                  {/* Audio reader button for AI analysis */}
+                  <AudioPlayerButton
+                    text={`${aiAnalysis.authenticity_verdict}. ${aiAnalysis.ingredients_summary}. Amaliy tavsiya: ${aiAnalysis.buyer_tip}`}
+                    id={`ai-product-analysis-${product.id}`}
+                    label="AI xulosasini tinglash"
+                    variant="pill"
+                  />
                 </div>
               </div>
 
@@ -501,7 +521,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
                   <span className="text-[10px] text-[#525252] uppercase font-mono tracking-wider block mb-1">
                     Tarkib va Allergen Tahlili
                   </span>
-                  <p className="text-[#888888] leading-relaxed">
+                  <p className="text-[#888888] leading-relaxed break-words">
                     {aiAnalysis.ingredients_summary}
                   </p>
                   {aiAnalysis.ingredient_tags && aiAnalysis.ingredient_tags.length > 0 && (
@@ -522,7 +542,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
                   <span className="text-[10px] text-[#525252] uppercase font-mono tracking-wider block mb-1">
                     Asllik va Kontrafakt Xulosasi
                   </span>
-                  <p className="text-[#888888] leading-relaxed">
+                  <p className="text-[#888888] leading-relaxed break-words">
                     {aiAnalysis.authenticity_verdict}
                   </p>
                 </div>
@@ -531,7 +551,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
                   <span className="text-[10px] text-[#525252] uppercase font-mono tracking-wider block mb-1">
                     Xaridor Uchun Amaliy Tavsiya
                   </span>
-                  <p className="text-[#FAFAFA] font-medium leading-relaxed">
+                  <p className="text-[#FAFAFA] font-medium leading-relaxed break-words">
                     {aiAnalysis.buyer_tip}
                   </p>
                 </div>
@@ -545,7 +565,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
                       {aiAnalysis.physical_checks.map((chk, i) => (
                         <li key={i} className="flex items-start space-x-2">
                           <Check className="h-3.5 w-3.5 text-[#10B981] shrink-0 mt-0.5" strokeWidth={2} />
-                          <span>{chk}</span>
+                          <span className="break-words">{chk}</span>
                         </li>
                       ))}
                     </ul>
@@ -581,14 +601,14 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
             </h3>
 
             <div className="rounded-lg border border-[#1F1F1F] bg-[#050505] p-4">
-              <div className="flex items-start justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                 <div className="flex items-start space-x-3">
                   <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#1F1F1F] bg-[#0A0A0A] text-[#FAFAFA]">
                     <Building2 className="h-4 w-4" strokeWidth={1.75} />
                   </div>
                   <div>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm font-semibold text-[#FAFAFA]">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <span className="text-sm font-semibold text-[#FAFAFA] break-words">
                         {manufacturer.name}
                       </span>
                       {manufacturer.verified && (
@@ -606,9 +626,9 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
                 </div>
               </div>
 
-              <div className="mt-3 pt-3 border-t border-[#141414] flex items-center justify-between text-xs">
+              <div className="mt-3 pt-3 border-t border-[#141414] flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs gap-1">
                 <span className="text-[#525252]">Davlat litsenziyasi:</span>
-                <span className="font-mono text-[#FAFAFA] bg-[#111111] px-2 py-0.5 rounded border border-[#1F1F1F]">
+                <span className="font-mono text-[#FAFAFA] bg-[#111111] px-2 py-0.5 rounded border border-[#1F1F1F] break-all self-start sm:self-auto">
                   {manufacturer.license_number}
                 </span>
               </div>
@@ -618,7 +638,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
 
         {/* Scan History Timeline */}
         <div>
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-3">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-[#888888] flex items-center space-x-1.5">
               <Clock className="h-3.5 w-3.5" strokeWidth={1.75} />
               <span>So‘nggi tekshiruvlar tarixi (Oxirgi 5 ta)</span>
@@ -649,13 +669,13 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
                       {log.device_info || 'Nomaʼlum qurilma'}
                     </span>
                     {log.location_note && (
-                      <span className="text-[#888888] text-[11px]">
+                      <span className="text-[#888888] text-[11px] break-words">
                         • {log.location_note}
                       </span>
                     )}
                   </div>
 
-                  <div className="flex items-center space-x-2 text-[11px] text-[#525252] sm:text-right font-mono">
+                  <div className="flex items-center space-x-2 text-[11px] text-[#525252] sm:text-right font-mono self-start sm:self-auto">
                     <span>
                       {new Date(log.scanned_at).toLocaleString('uz-UZ', {
                         year: 'numeric',
@@ -687,7 +707,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
             <button
               type="button"
               onClick={() => setShowReportForm(true)}
-              className="flex items-center justify-center space-x-2 w-full rounded-lg border border-[#EF4444]/30 bg-[#EF4444]/5 hover:bg-[#EF4444]/10 py-2.5 text-xs font-medium text-[#EF4444] transition-colors"
+              className="flex items-center justify-center space-x-2 w-full rounded-lg border border-[#EF4444]/30 bg-[#EF4444]/5 hover:bg-[#EF4444]/10 py-3 text-xs font-medium text-[#EF4444] transition-colors min-h-[44px]"
             >
               <Flag className="h-3.5 w-3.5" strokeWidth={1.75} />
               <span>Soxta mahsulot haqida xabar berish</span>
@@ -722,7 +742,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
                   placeholder="Masalan: Chorsu bozori, 14-do‘kon yoki Toshkent sh., Chilonzor"
                   value={reportLocation}
                   onChange={(e) => setReportLocation(e.target.value)}
-                  className="w-full rounded-md border border-[#1F1F1F] bg-[#050505] px-3 py-1.5 text-xs text-[#FAFAFA] placeholder-[#525252] focus:border-[#FAFAFA] focus:outline-none"
+                  className="w-full rounded-md border border-[#1F1F1F] bg-[#050505] px-3 py-2 text-xs text-[#FAFAFA] placeholder-[#525252] focus:border-[#FAFAFA] focus:outline-none min-h-[38px]"
                 />
               </div>
 
@@ -735,7 +755,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
                   placeholder="Masalan: Qadoqdagi shrift buzilgan, qopqoq plyonkasi yo‘q, narxi shubhali arzon..."
                   value={reportComment}
                   onChange={(e) => setReportComment(e.target.value)}
-                  className="w-full rounded-md border border-[#1F1F1F] bg-[#050505] px-3 py-1.5 text-xs text-[#FAFAFA] placeholder-[#525252] focus:border-[#FAFAFA] focus:outline-none resize-none"
+                  className="w-full rounded-md border border-[#1F1F1F] bg-[#050505] px-3 py-2 text-xs text-[#FAFAFA] placeholder-[#525252] focus:border-[#FAFAFA] focus:outline-none resize-none"
                 />
               </div>
 
@@ -743,14 +763,14 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowReportForm(false)}
-                  className="rounded-md border border-[#1F1F1F] bg-[#141414] px-3 py-1.5 text-xs text-[#888888] hover:text-[#FAFAFA]"
+                  className="rounded-md border border-[#1F1F1F] bg-[#141414] px-3.5 py-2 text-xs text-[#888888] hover:text-[#FAFAFA] min-h-[36px]"
                 >
                   Bekor qilish
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingReport}
-                  className="flex items-center space-x-1.5 rounded-md bg-[#EF4444] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[#DC2626] disabled:opacity-50 transition-colors"
+                  className="flex items-center space-x-1.5 rounded-md bg-[#EF4444] px-4 py-2 text-xs font-semibold text-white hover:bg-[#DC2626] disabled:opacity-50 transition-colors min-h-[36px]"
                 >
                   <Send className="h-3 w-3" strokeWidth={1.75} />
                   <span>{isSubmittingReport ? 'Yuborilmoqda...' : 'Xabarni yuborish'}</span>
@@ -760,9 +780,9 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
           )}
 
           {reportSuccess && (
-            <div className="flex items-center space-x-2 rounded-lg border border-[#10B981]/30 bg-[#10B981]/10 p-3 text-xs text-[#10B981] animate-in fade-in duration-200">
+            <div className="flex items-center space-x-2 rounded-lg border border-[#10B981]/30 bg-[#10B981]/10 p-3.5 text-xs text-[#10B981] animate-in fade-in duration-200">
               <Check className="h-4 w-4 shrink-0" strokeWidth={2} />
-              <span>
+              <span className="leading-relaxed">
                 Shikoyatingiz qabul qilindi. Ushbu mahsulot reyestrda shubhali sifatida belgilandi.
               </span>
             </div>

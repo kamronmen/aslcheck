@@ -1,0 +1,171 @@
+export default async function handler(req: any, res?: any) {
+  // Handle CORS
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Content-Type': 'application/json; charset=utf-8',
+  };
+
+  if (req.method === 'OPTIONS') {
+    if (res && typeof res.status === 'function') {
+      return res.status(200).end();
+    }
+    return new Response(null, { status: 200, headers });
+  }
+
+  if (req.method !== 'POST') {
+    if (res && typeof res.status === 'function') {
+      return res.status(405).json({ error: 'Method Not Allowed' });
+    }
+    return new Response(JSON.stringify({ error: 'Method Not Allowed' }), {
+      status: 405,
+      headers,
+    });
+  }
+
+  const sendJson = (data: any, statusCode: number = 200) => {
+    if (res && typeof res.status === 'function') {
+      return res.status(statusCode).json(data);
+    }
+    return new Response(JSON.stringify(data), { status: statusCode, headers });
+  };
+
+  // Helper to prepend standard 44-byte RIFF WAV header to PCM 16-bit audio
+  const pcmToWavBuffer = (
+    pcmBuffer: Buffer,
+    sampleRate: number = 24000,
+    numChannels: number = 1,
+    bitDepth: number = 16
+  ): Buffer => {
+    const byteRate = sampleRate * numChannels * (bitDepth / 8);
+    const blockAlign = numChannels * (bitDepth / 8);
+    const dataSize = pcmBuffer.length;
+    const wavHeader = Buffer.alloc(44);
+
+    // RIFF chunk descriptor
+    wavHeader.write('RIFF', 0);
+    wavHeader.writeUInt32LE(36 + dataSize, 4);
+    wavHeader.write('WAVE', 8);
+
+    // 'fmt ' sub-chunk
+    wavHeader.write('fmt ', 12);
+    wavHeader.writeUInt32LE(16, 16); // Subchunk1Size for PCM
+    wavHeader.writeUInt16LE(1, 20); // AudioFormat 1 = PCM
+    wavHeader.writeUInt16LE(numChannels, 22);
+    wavHeader.writeUInt32LE(sampleRate, 24);
+    wavHeader.writeUInt32LE(byteRate, 28);
+    wavHeader.writeUInt16LE(blockAlign, 32);
+    wavHeader.writeUInt16LE(bitDepth, 34);
+
+    // 'data' sub-chunk
+    wavHeader.write('data', 36);
+    wavHeader.writeUInt32LE(dataSize, 40);
+
+    return Buffer.concat([wavHeader, pcmBuffer]);
+  };
+
+  // Parse body safely
+  let body: any = {};
+  try {
+    if (req.body) {
+      body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    } else if (typeof req.json === 'function') {
+      body = await req.json();
+    }
+  } catch (err) {
+    console.warn('Failed to parse request body in /api/tts:', err);
+  }
+
+  const rawText = body?.text || '';
+  if (!rawText || typeof rawText !== 'string' || !rawText.trim()) {
+    return sendJson({ error: 'Matn kiritilmadi.', fallback: true }, 400);
+  }
+
+  // Clean and prepare text: strip markdown characters, bullets, emojis, and cap at ~1200 chars
+  const cleanText = rawText
+    .replace(/[#*`_~>[\]()]/g, ' ')
+    .replace(/•|\-|\+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 1200);
+
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
+  if (!apiKey || apiKey.length < 10) {
+    return sendJson({
+      error: 'GEMINI_API_KEY sozlanmagan.',
+      fallback: true,
+    });
+  }
+
+  const ttsModels = ['gemini-2.5-flash-preview-tts', 'gemini-2.0-flash-exp'];
+
+  for (const model of ttsModels) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      const payload = {
+        contents: [
+          {
+            parts: [
+              {
+                text: `Quyidagi o'zbek tilidagi matnni aniq, tabiiy va tushunarli ovozda o'qib bering:\n\n${cleanText}`,
+              },
+            ],
+          },
+        ],
+        generationConfig: {
+          responseModalities: ['AUDIO'],
+          speechConfig: {
+            voiceConfig: {
+              prebuiltVoiceConfig: {
+                voiceName: 'Kore',
+              },
+            },
+          },
+        },
+      };
+
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.warn(`TTS model ${model} returned error status: ${response.status}`, errorText);
+        continue;
+      }
+
+      const data = await response.json();
+      const inlineData = data?.candidates?.[0]?.content?.parts?.[0]?.inlineData;
+
+      if (inlineData && inlineData.data) {
+        const rawMime = inlineData.mimeType || 'audio/L16;codec=pcm;rate=24000';
+        let sampleRate = 24000;
+        const rateMatch = rawMime.match(/rate=(\d+)/);
+        if (rateMatch) {
+          sampleRate = parseInt(rateMatch[1], 10);
+        }
+
+        const pcmBuffer = Buffer.from(inlineData.data, 'base64');
+        const wavBuffer = pcmToWavBuffer(pcmBuffer, sampleRate, 1, 16);
+        const audioBase64 = wavBuffer.toString('base64');
+
+        return sendJson({
+          audioBase64,
+          mimeType: 'audio/wav',
+          sampleRate,
+        });
+      }
+    } catch (err) {
+      console.warn(`TTS attempt with model ${model} failed:`, err);
+    }
+  }
+
+  // If both models failed or quota reached, return fallback signal so client uses Web Speech API
+  return sendJson({
+    error: 'Gemini TTS audio generatsiya qilib bo‘lmadi.',
+    fallback: true,
+  });
+}

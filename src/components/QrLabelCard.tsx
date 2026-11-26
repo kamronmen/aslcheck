@@ -41,8 +41,8 @@ export const QrLabelCard: React.FC<QrLabelCardProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md overflow-hidden rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
+      <div className="relative w-full max-w-md max-h-[92dvh] overflow-y-auto rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] shadow-2xl">
         {/* Header */}
         <div className="no-print flex items-center justify-between border-b border-[#1F1F1F] px-5 py-4">
           <div className="flex items-center space-x-2">

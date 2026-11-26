@@ -20,6 +20,7 @@ export interface Product {
   manufacture_date: string;
   expiry_date: string;
   ingredients: string | null;
+  image_url?: string | null;
   scan_count: number;
   max_safe_scans: number;
   is_flagged: boolean;
@@ -73,9 +74,11 @@ export interface NewProductPayload {
   batch_number: string;
   manufacture_date: string;
   expiry_date: string;
-  ingredients?: string;
+  ingredients?: string | null;
   max_safe_scans?: number;
   serial_code?: string;
+  manufacturer_id?: string;
+  image_url?: string | null;
 }
 
 export interface RegisterCompanyPayload {

@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { QrScannerModal } from './QrScannerModal';
 import { VerificationCard } from './VerificationCard';
+import { AudioPlayerButton } from './AudioPlayerButton';
 import { AslBrandMark, AiCoreIcon, VisionLensIcon } from './Icons';
 import { verifyProduct, lookupProductByCode } from '../lib/api';
 import { verifyImageWithVision } from '../lib/ai';
@@ -178,7 +179,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
   };
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-12">
+    <div className="mx-auto max-w-4xl px-3 py-6 sm:px-6 sm:py-12">
       {/* Hidden input & temp decoder mount for Hybrid Vision Forensics */}
       <input
         ref={visionFileInputRef}
@@ -190,8 +191,8 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
       <div id="vision-qr-decoder-temp" className="hidden" />
 
       {/* Hero / Header */}
-      <div className="text-center mb-8 sm:mb-10">
-        <div className="inline-flex items-center space-x-1.5 rounded-full border border-[#1F1F1F] bg-[#0A0A0A] px-3 py-1 text-xs text-[#888888] mb-4">
+      <div className="text-center mb-6 sm:mb-10">
+        <div className="inline-flex items-center space-x-1.5 rounded-full border border-[#1F1F1F] bg-[#0A0A0A] px-3 py-1 text-xs text-[#888888] mb-3 sm:mb-4">
           <AslBrandMark className="h-3.5 w-3.5 text-[#FAFAFA]" strokeWidth={1.5} />
           <span>Litsenziyalangan Mahsulot Reyestri</span>
         </div>
@@ -206,34 +207,34 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
       {/* Main Verification Input Box */}
       <div className="mx-auto max-w-2xl rounded-2xl border border-[#1F1F1F] bg-[#0A0A0A] p-4 sm:p-6 shadow-2xl">
         <form onSubmit={handleFormSubmit} className="space-y-3">
-          <div className="relative">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-              <Search className="h-4 w-4 text-[#525252]" strokeWidth={1.75} />
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="relative flex-1">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+                <Search className="h-4 w-4 text-[#525252]" strokeWidth={1.75} />
+              </div>
+              <input
+                type="text"
+                value={inputCode}
+                onChange={(e) => setInputCode(e.target.value.toUpperCase())}
+                placeholder="Masalan: ASL-2026-001"
+                disabled={isLoading || isVisionLoading}
+                className="w-full rounded-xl border border-[#1F1F1F] bg-[#000000] py-3 pl-10 pr-3 font-mono text-base font-medium tracking-wide text-[#FAFAFA] placeholder-[#525252] focus:border-[#FAFAFA] focus:outline-none transition-colors min-h-[44px]"
+              />
             </div>
-            <input
-              type="text"
-              value={inputCode}
-              onChange={(e) => setInputCode(e.target.value.toUpperCase())}
-              placeholder="Masalan: ASL-2026-001"
-              disabled={isLoading || isVisionLoading}
-              className="w-full rounded-xl border border-[#1F1F1F] bg-[#000000] py-3 pl-10 pr-24 sm:pr-32 font-mono text-sm sm:text-base font-medium tracking-wide text-[#FAFAFA] placeholder-[#525252] focus:border-[#FAFAFA] focus:outline-none transition-colors"
-            />
-            <div className="absolute inset-y-1.5 right-1.5 flex items-center">
-              <button
-                type="submit"
-                disabled={isLoading || isVisionLoading || !inputCode.trim()}
-                className="flex items-center space-x-1.5 rounded-lg bg-[#FAFAFA] px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-black hover:bg-[#E5E5E5] disabled:opacity-40 transition-colors shadow-sm"
-              >
-                {isLoading ? (
-                  <RefreshCw className="h-3.5 w-3.5 animate-spin" strokeWidth={2} />
-                ) : (
-                  <>
-                    <span>Tekshirish</span>
-                    <ArrowRight className="h-3.5 w-3.5 hidden sm:inline-block" strokeWidth={2} />
-                  </>
-                )}
-              </button>
-            </div>
+            <button
+              type="submit"
+              disabled={isLoading || isVisionLoading || !inputCode.trim()}
+              className="flex items-center justify-center space-x-1.5 rounded-xl bg-[#FAFAFA] px-5 py-3 text-sm font-semibold text-black hover:bg-[#E5E5E5] disabled:opacity-40 transition-colors shadow-sm min-h-[44px] shrink-0"
+            >
+              {isLoading ? (
+                <RefreshCw className="h-4 w-4 animate-spin" strokeWidth={2} />
+              ) : (
+                <>
+                  <span>Tekshirish</span>
+                  <ArrowRight className="h-4 w-4" strokeWidth={2} />
+                </>
+              )}
+            </button>
           </div>
 
           {/* Dual Hardware Action Row: Live QR Scanner + AI Vision Forensics */}
@@ -242,7 +243,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
               type="button"
               disabled={isVisionLoading}
               onClick={() => setIsScannerOpen(true)}
-              className="flex w-full items-center justify-center space-x-2 rounded-xl border border-[#1F1F1F] bg-[#111111] py-2.5 sm:py-3 text-xs sm:text-sm font-medium text-[#FAFAFA] hover:bg-[#161616] hover:border-[#333333] disabled:opacity-40 transition-colors"
+              className="flex w-full items-center justify-center space-x-2 rounded-xl border border-[#1F1F1F] bg-[#111111] py-3 text-xs sm:text-sm font-medium text-[#FAFAFA] hover:bg-[#161616] hover:border-[#333333] disabled:opacity-40 transition-colors min-h-[44px]"
             >
               <QrCode className="h-4 w-4 text-[#FAFAFA]" strokeWidth={1.75} />
               <span>QR-kodni skanerlash</span>
@@ -252,7 +253,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
               type="button"
               disabled={isVisionLoading}
               onClick={() => visionFileInputRef.current?.click()}
-              className="flex w-full items-center justify-center space-x-2 rounded-xl border border-[#262626] bg-[#111111] py-2.5 sm:py-3 text-xs sm:text-sm font-medium text-[#FAFAFA] hover:bg-[#181818] hover:border-[#444444] disabled:opacity-40 transition-colors"
+              className="flex w-full items-center justify-center space-x-2 rounded-xl border border-[#262626] bg-[#111111] py-3 text-xs sm:text-sm font-medium text-[#FAFAFA] hover:bg-[#181818] hover:border-[#444444] disabled:opacity-40 transition-colors min-h-[44px]"
             >
               {isVisionLoading ? (
                 <RefreshCw className="h-4 w-4 animate-spin text-zinc-300" strokeWidth={1.75} />
@@ -270,11 +271,11 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
             <span className="text-[11px] text-[#525252] uppercase tracking-wider font-mono">
               Jonli demo sinov kodlari:
             </span>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={() => handleDemoClick('ASL-2026-001')}
-                className="flex items-center space-x-1.5 rounded-md border border-[#10B981]/30 bg-[#10B981]/10 px-2 py-1 text-[11px] font-mono text-[#10B981] hover:bg-[#10B981]/20 transition-colors"
+                className="flex items-center space-x-1.5 rounded-md border border-[#10B981]/30 bg-[#10B981]/10 px-2.5 py-1 text-[11px] font-mono text-[#10B981] hover:bg-[#10B981]/20 transition-colors min-h-[32px]"
               >
                 <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
                 <span>ASL-2026-001</span>
@@ -284,7 +285,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
               <button
                 type="button"
                 onClick={() => handleDemoClick('ASL-2026-999')}
-                className="flex items-center space-x-1.5 rounded-md border border-[#F59E0B]/30 bg-[#F59E0B]/10 px-2 py-1 text-[11px] font-mono text-[#F59E0B] hover:bg-[#F59E0B]/20 transition-colors"
+                className="flex items-center space-x-1.5 rounded-md border border-[#F59E0B]/30 bg-[#F59E0B]/10 px-2.5 py-1 text-[11px] font-mono text-[#F59E0B] hover:bg-[#F59E0B]/20 transition-colors min-h-[32px]"
               >
                 <span className="h-1.5 w-1.5 rounded-full bg-[#F59E0B]" />
                 <span>ASL-2026-999</span>
@@ -294,7 +295,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
               <button
                 type="button"
                 onClick={() => handleDemoClick('FAKE-000')}
-                className="flex items-center space-x-1.5 rounded-md border border-[#EF4444]/30 bg-[#EF4444]/10 px-2 py-1 text-[11px] font-mono text-[#EF4444] hover:bg-[#EF4444]/20 transition-colors"
+                className="flex items-center space-x-1.5 rounded-md border border-[#EF4444]/30 bg-[#EF4444]/10 px-2.5 py-1 text-[11px] font-mono text-[#EF4444] hover:bg-[#EF4444]/20 transition-colors min-h-[32px]"
               >
                 <span className="h-1.5 w-1.5 rounded-full bg-[#EF4444]" />
                 <span>FAKE-000</span>
@@ -328,7 +329,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
         <button
           type="button"
           onClick={() => onNavigateToAi?.()}
-          className="shrink-0 flex items-center justify-center space-x-1.5 rounded-lg border border-[#262626] bg-[#141414] px-3.5 py-2 text-xs font-semibold text-[#FAFAFA] hover:bg-[#1E1E1E] hover:border-[#444444] transition-colors"
+          className="shrink-0 flex items-center justify-center space-x-1.5 rounded-lg border border-[#262626] bg-[#141414] px-3.5 py-2.5 text-xs font-semibold text-[#FAFAFA] hover:bg-[#1E1E1E] hover:border-[#444444] transition-colors min-h-[40px]"
         >
           <AiCoreIcon className="h-3.5 w-3.5 text-zinc-300" strokeWidth={1.75} />
           <span>AI bilan maslahat</span>
@@ -359,7 +360,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
       {!isVisionLoading && visionResult && (
         <div className="mt-8 mx-auto max-w-2xl overflow-hidden rounded-xl border border-[#262626] bg-[#0A0A0A] shadow-2xl animate-in fade-in duration-300">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-[#1F1F1F] bg-[#0D0D0D] px-5 py-3.5">
+          <div className="flex items-center justify-between border-b border-[#1F1F1F] bg-[#0D0D0D] px-4 sm:px-5 py-3.5">
             <div className="flex items-center space-x-2">
               <VisionLensIcon className="h-4 w-4 text-zinc-300" strokeWidth={1.75} />
               <h3 className="text-xs font-semibold uppercase tracking-wider text-[#FAFAFA]">
@@ -372,21 +373,21 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
                 setVisionResult(null);
                 setVisionPreviewUrl(null);
               }}
-              className="rounded p-1 text-[#888888] hover:bg-[#141414] hover:text-[#FAFAFA]"
+              className="rounded p-1.5 text-[#888888] hover:bg-[#141414] hover:text-[#FAFAFA]"
             >
-              <X className="h-3.5 w-3.5" />
+              <X className="h-4 w-4" />
             </button>
           </div>
 
-          <div className="p-5 space-y-5">
+          <div className="p-4 sm:p-5 space-y-5">
             {/* Top Split: Thumbnail + Forensic Metrics */}
             <div className="flex flex-col sm:flex-row gap-4">
               {visionPreviewUrl && (
-                <div className="shrink-0">
+                <div className="shrink-0 flex justify-center sm:justify-start">
                   <img
                     src={visionPreviewUrl}
                     alt="Tekshirilgan qadoq surati"
-                    className="h-28 w-28 sm:h-32 sm:w-32 rounded-lg border border-[#222222] object-cover bg-black"
+                    className="h-32 w-32 sm:h-36 sm:w-36 rounded-lg border border-[#222222] object-cover bg-black"
                   />
                 </div>
               )}
@@ -419,7 +420,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
                 </div>
 
                 {/* Badges Grid */}
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5 sm:gap-2">
                   <span
                     className={`inline-flex items-center rounded border px-2 py-0.5 text-[11px] font-medium ${
                       visionResult.package_match === 'Mos keladi'
@@ -452,9 +453,20 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
                     )}
                 </div>
 
-                <p className="text-xs text-[#A0A0A0] leading-relaxed">
-                  {visionResult.forensic_verdict}
-                </p>
+                {/* Verdict text + Audio Playback */}
+                <div className="space-y-2 pt-1">
+                  <p className="text-xs text-[#A0A0A0] leading-relaxed break-words">
+                    {visionResult.forensic_verdict}
+                  </p>
+                  <div className="flex items-center justify-start pt-1">
+                    <AudioPlayerButton
+                      text={visionResult.forensic_verdict}
+                      id={`vision-verdict-${visionResult.detected_code || 'res'}`}
+                      label="Ekspert xulosasini tinglash"
+                      variant="pill"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -464,7 +476,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
                 {visionResult.forensic_checks.map((chk, idx) => (
                   <div
                     key={idx}
-                    className="flex items-start justify-between gap-3 rounded-lg border border-[#141414] bg-[#050505] p-3 text-xs"
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-lg border border-[#141414] bg-[#050505] p-3 text-xs"
                   >
                     <div className="flex items-start space-x-2.5">
                       {chk.status === 'pass' ? (
@@ -485,12 +497,14 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
                       )}
                       <div>
                         <div className="font-semibold text-[#FAFAFA]">{chk.label}</div>
-                        <div className="text-[11px] text-[#888888] mt-0.5">{chk.detail}</div>
+                        <div className="text-[11px] text-[#888888] mt-0.5 leading-relaxed">
+                          {chk.detail}
+                        </div>
                       </div>
                     </div>
 
                     <span
-                      className={`shrink-0 rounded px-1.5 py-0.5 font-mono text-[10px] uppercase font-semibold ${
+                      className={`self-start sm:self-auto shrink-0 rounded px-1.5 py-0.5 font-mono text-[10px] uppercase font-semibold ${
                         chk.status === 'pass'
                           ? 'text-[#10B981] bg-[#10B981]/10'
                           : chk.status === 'fail'

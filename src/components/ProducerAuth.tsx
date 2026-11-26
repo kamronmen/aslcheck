@@ -260,7 +260,7 @@ export const ProducerAuth: React.FC<ProducerAuthProps> = ({ onAuthenticated }) =
             <button
               type="submit"
               disabled={isLoading || !loginEmail.trim() || !loginPassword}
-              className="mt-2 flex w-full items-center justify-center space-x-2 rounded-xl bg-[#FAFAFA] py-2.5 text-xs font-bold text-black hover:bg-[#E5E5E5] disabled:opacity-40 transition-colors shadow-sm"
+              className="mt-2 flex w-full items-center justify-center space-x-2 rounded-xl bg-[#FAFAFA] py-3 text-xs font-bold text-black hover:bg-[#E5E5E5] disabled:opacity-40 transition-colors shadow-sm min-h-[44px]"
             >
               {isLoading ? (
                 <>
@@ -386,7 +386,7 @@ export const ProducerAuth: React.FC<ProducerAuthProps> = ({ onAuthenticated }) =
             <button
               type="submit"
               disabled={isLoading}
-              className="mt-2 flex w-full items-center justify-center space-x-2 rounded-xl bg-[#FAFAFA] py-2.5 text-xs font-bold text-black hover:bg-[#E5E5E5] disabled:opacity-40 transition-colors shadow-sm"
+              className="mt-2 flex w-full items-center justify-center space-x-2 rounded-xl bg-[#FAFAFA] py-3 text-xs font-bold text-black hover:bg-[#E5E5E5] disabled:opacity-40 transition-colors shadow-sm min-h-[44px]"
             >
               {isLoading ? (
                 <>
@@ -418,7 +418,7 @@ export const ProducerAuth: React.FC<ProducerAuthProps> = ({ onAuthenticated }) =
           type="button"
           onClick={handleDemoEnter}
           disabled={isDemoLoading || isLoading}
-          className="flex w-full items-center justify-center space-x-2 rounded-xl border border-[#262626] bg-[#111111] px-3.5 py-2.5 text-xs font-medium text-[#FAFAFA] hover:bg-[#161616] hover:border-[#3A3A3A] disabled:opacity-50 transition-colors"
+          className="flex w-full items-center justify-center space-x-2 rounded-xl border border-[#262626] bg-[#111111] px-3.5 py-3 text-xs font-medium text-[#FAFAFA] hover:bg-[#161616] hover:border-[#3A3A3A] disabled:opacity-50 transition-colors min-h-[44px]"
         >
           {isDemoLoading ? (
             <RefreshCw className="h-3.5 w-3.5 animate-spin text-[#888888]" />

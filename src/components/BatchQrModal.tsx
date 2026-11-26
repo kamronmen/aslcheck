@@ -24,35 +24,35 @@ export const BatchQrModal: React.FC<BatchQrModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
-      <div className="relative w-full max-w-4xl my-8 overflow-hidden rounded-2xl border border-[#1F1F1F] bg-[#0A0A0A] shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
+      <div className="relative w-full max-w-4xl my-auto max-h-[92dvh] flex flex-col overflow-hidden rounded-xl sm:rounded-2xl border border-[#1F1F1F] bg-[#0A0A0A] shadow-2xl">
         {/* Header (hidden in print) */}
-        <div className="no-print flex items-center justify-between border-b border-[#1F1F1F] px-6 py-4 bg-[#0D0D0D]">
+        <div className="no-print flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-[#1F1F1F] px-4 sm:px-6 py-3.5 sm:py-4 gap-3 bg-[#0D0D0D]">
           <div className="flex items-center space-x-2.5">
-            <AslBrandMark className="h-5 w-5 text-[#FAFAFA]" strokeWidth={1.5} />
+            <AslBrandMark className="h-5 w-5 text-[#FAFAFA] shrink-0" strokeWidth={1.5} />
             <div>
-              <h3 className="text-sm font-semibold tracking-tight text-[#FAFAFA]">
+              <h3 className="text-xs sm:text-sm font-semibold tracking-tight text-[#FAFAFA]">
                 A4 Chop Etish Uchun Partiyali QR-kodlar ({products.length} ta)
               </h3>
-              <p className="text-[11px] text-[#888888]">
+              <p className="text-[10px] sm:text-[11px] text-[#888888]">
                 Barcha qadoqlarga yopishtirish uchun tayyor unikal yorliqlar
               </p>
             </div>
           </div>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center justify-between sm:justify-end space-x-2.5">
             <button
               type="button"
               onClick={handlePrint}
-              className="flex items-center space-x-1.5 rounded-lg bg-[#FAFAFA] px-4 py-2 text-xs font-semibold text-black hover:bg-[#E5E5E5] transition-colors shadow-sm"
+              className="flex items-center space-x-1.5 rounded-lg bg-[#FAFAFA] px-3.5 py-2 text-xs font-semibold text-black hover:bg-[#E5E5E5] transition-colors shadow-sm min-h-[38px]"
             >
               <Printer className="h-4 w-4" strokeWidth={2} />
-              <span>Barchasini chop etish (A4)</span>
+              <span>Chop etish (A4)</span>
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg p-2 text-[#888888] hover:bg-[#141414] hover:text-[#FAFAFA] transition-colors"
+              className="rounded-lg p-2 text-[#888888] hover:bg-[#141414] hover:text-[#FAFAFA] transition-colors min-h-[38px] min-w-[38px] flex items-center justify-center"
             >
               <X className="h-4 w-4" strokeWidth={1.75} />
             </button>
