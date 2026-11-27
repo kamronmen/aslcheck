@@ -72,6 +72,7 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
   const inputRef = useRef<HTMLInputElement>(null);
   const recorderRef = useRef<VoiceRecorderSession | null>(null);
   const autoStopRef = useRef<() => void>(() => {});
+  const lastInitialQuestionRef = useRef<string>('');
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -295,12 +296,16 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
   };
 
   useEffect(() => {
-    if (initialQuestion && initialQuestion.trim()) {
-      handleSendMessage(initialQuestion.trim());
-      if (onClearInitialQuestion) {
-        onClearInitialQuestion();
-      }
-    }
+    const trimmed = initialQuestion?.trim();
+    if (!trimmed || lastInitialQuestionRef.current === trimmed) return;
+    lastInitialQuestionRef.current = trimmed;
+
+    const timer = window.setTimeout(() => {
+      void handleSendMessage(trimmed);
+      onClearInitialQuestion?.();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
   }, [initialQuestion, handleSendMessage, onClearInitialQuestion]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -328,6 +333,27 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
     return `${mins}:${rem.toString().padStart(2, '0')}`;
   };
 
+  const renderInlineTokens = (str: string): React.ReactNode[] => {
+    const tokens = str.split(/(\*\*.*?\*\*|\*[^*]+?\*)/g);
+    return tokens.map((token, idx) => {
+      if (token.startsWith('**') && token.endsWith('**') && token.length > 4) {
+        return (
+          <strong key={idx} className="text-[#FAFAFA] font-semibold">
+            {token.slice(2, -2)}
+          </strong>
+        );
+      }
+      if (token.startsWith('*') && token.endsWith('*') && token.length > 2) {
+        return (
+          <em key={idx} className="text-[#CCCCCC] not-italic">
+            {token.slice(1, -1)}
+          </em>
+        );
+      }
+      return <React.Fragment key={idx}>{token}</React.Fragment>;
+    });
+  };
+
   const renderFormattedText = (text: string) => {
     const lines = text.split('\n');
     return (
@@ -343,46 +369,31 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
             return (
               <div key={idx} className="flex items-start space-x-2 pl-1">
                 <span className="text-zinc-400 font-bold text-xs mt-0.5">•</span>
-                <span dangerouslySetInnerHTML={{ __html: parseBold(content) }} />
+                <span>{renderInlineTokens(content)}</span>
               </div>
             );
           }
 
           if (/^\d+\.\s/.test(trimmed)) {
             return (
-              <div
-                key={idx}
-                className="pl-1"
-                dangerouslySetInnerHTML={{ __html: parseBold(trimmed) }}
-              />
+              <div key={idx} className="pl-1">
+                {renderInlineTokens(trimmed)}
+              </div>
             );
           }
 
           if (trimmed.startsWith('### ')) {
             return (
-              <h4
-                key={idx}
-                className="font-semibold text-[#FAFAFA] text-sm pt-1"
-                dangerouslySetInnerHTML={{ __html: parseBold(trimmed.replace('### ', '')) }}
-              />
+              <h4 key={idx} className="font-semibold text-[#FAFAFA] text-sm pt-1">
+                {renderInlineTokens(trimmed.replace('### ', ''))}
+              </h4>
             );
           }
 
-          return (
-            <p key={idx} dangerouslySetInnerHTML={{ __html: parseBold(trimmed) }} />
-          );
+          return <p key={idx}>{renderInlineTokens(trimmed)}</p>;
         })}
       </div>
     );
-  };
-
-  const parseBold = (str: string) => {
-    return str
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/\*\*(.*?)\*\*/g, '<strong class="text-[#FAFAFA] font-semibold">$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em class="text-[#CCCCCC]">$1</em>');
   };
 
   return (
@@ -491,10 +502,10 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
               </div>
 
               <div
-                className={`max-w-[88%] sm:max-w-[78%] rounded-2xl p-3 sm:p-4 text-xs sm:text-sm shadow-sm break-words ${
+                className={`max-w-[88%] sm:max-w-[78%] rounded-2xl p-3 sm:p-4 break-words ${
                   isUser
-                    ? 'border border-[#2E2E2E] bg-[#141414] text-[#FAFAFA] rounded-tr-sm'
-                    : 'border border-[#1F1F1F] bg-[#0A0A0A] text-[#A0A0A0] rounded-tl-sm'
+                    ? 'border border-[#2E2E2E] bg-gradient-to-b from-[#171717] to-[#111111] text-[#FAFAFA] rounded-tr-sm shadow-sm text-xs sm:text-sm'
+                    : 'border border-white/[0.08] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] text-[#B0B0B0] rounded-tl-sm shadow-[0_14px_35px_rgba(0,0,0,0.65)] text-xs sm:text-sm'
                 }`}
               >
                 {!isUser && (
@@ -635,44 +646,43 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="relative flex items-center gap-2">
-            <div className="relative flex-1 flex items-center">
-              <input
-                ref={inputRef}
-                type="text"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Savol yozing yoki mikrofonga gapiring..."
-                disabled={isLoading}
-                className="w-full rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] py-3 pl-3.5 pr-[136px] sm:pr-[148px] text-base sm:text-sm text-[#FAFAFA] placeholder-[#525252] focus:border-[#FAFAFA] focus:outline-none transition-colors min-h-[46px]"
-              />
-              <div className="absolute right-1.5 flex items-center space-x-1.5">
-                <button
-                  type="button"
-                  onClick={() => void handleStartVoiceRecording()}
-                  disabled={isLoading}
-                  title="Mikrofon orqali o‘zbekcha ovozli savol berish"
-                  aria-label="Ovozli savol berish"
-                  className="flex items-center justify-center rounded-lg border border-[#262626] bg-[#141414] px-2.5 py-2 text-[#D4D4D4] hover:text-white hover:border-[#3A3A3A] hover:bg-[#1C1C1C] disabled:opacity-30 transition-colors min-h-[36px] min-w-[36px]"
-                >
-                  <Mic className="h-4 w-4" strokeWidth={1.85} />
-                </button>
-                <button
-                  type="submit"
-                  disabled={isLoading || !inputValue.trim()}
-                  className="flex items-center space-x-1.5 rounded-lg bg-white px-3 sm:px-3.5 py-2 text-xs font-semibold text-black hover:bg-zinc-200 disabled:opacity-30 transition-colors shadow-sm min-h-[36px]"
-                >
-                  {isLoading ? (
-                    <RefreshCw className="h-3.5 w-3.5 animate-spin" strokeWidth={2} />
-                  ) : (
-                    <>
-                      <span>Yuborish</span>
-                      <Send className="h-3 w-3" strokeWidth={2} />
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
+          <form
+            onSubmit={handleSubmit}
+            className="flex items-center gap-1.5 rounded-xl border border-white/[0.08] border-t-white/15 bg-gradient-to-b from-[#111111] to-[#080808] p-1.5 focus-within:border-white/40 transition-colors"
+          >
+            <input
+              ref={inputRef}
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              placeholder="Savol yozing..."
+              disabled={isLoading}
+              className="flex-1 min-w-0 bg-transparent px-2.5 py-2 text-base sm:text-sm text-[#FAFAFA] placeholder-[#525252] focus:outline-none min-h-[38px]"
+            />
+            <button
+              type="button"
+              onClick={() => void handleStartVoiceRecording()}
+              disabled={isLoading}
+              title="Mikrofon orqali o‘zbekcha ovozli savol berish"
+              aria-label="Ovozli savol berish"
+              className="flex items-center justify-center rounded-lg border border-[#262626] bg-[#141414] px-2.5 py-2 text-[#D4D4D4] hover:text-white hover:border-[#3A3A3A] hover:bg-[#1C1C1C] disabled:opacity-30 transition-colors min-h-[38px] min-w-[38px] shrink-0"
+            >
+              <Mic className="h-4 w-4" strokeWidth={1.85} />
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading || !inputValue.trim()}
+              className="flex items-center space-x-1.5 rounded-lg bg-white px-3 sm:px-3.5 py-2 text-xs font-semibold text-black hover:bg-zinc-200 disabled:opacity-30 transition-colors shadow-sm min-h-[38px] shrink-0"
+            >
+              {isLoading ? (
+                <RefreshCw className="h-3.5 w-3.5 animate-spin" strokeWidth={2} />
+              ) : (
+                <>
+                  <span>Yuborish</span>
+                  <Send className="h-3 w-3" strokeWidth={2} />
+                </>
+              )}
+            </button>
           </form>
         )}
 

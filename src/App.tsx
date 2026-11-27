@@ -1,10 +1,16 @@
-import { useState, useEffect } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
+import { RefreshCw } from 'lucide-react';
 import { Navbar, type NavTab } from './components/Navbar';
 import { VerifyPage } from './components/VerifyPage';
-import { ProducerPage } from './components/ProducerPage';
-import { AiExpertPage } from './components/AiExpertPage';
 import { AslBrandMark } from './components/Icons';
 import { supabase, isSupabaseConfigured } from './lib/supabase';
+
+const AiExpertPage = lazy(() =>
+  import('./components/AiExpertPage').then((m) => ({ default: m.AiExpertPage }))
+);
+const ProducerPage = lazy(() =>
+  import('./components/ProducerPage').then((m) => ({ default: m.ProducerPage }))
+);
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -24,6 +30,13 @@ function getInitialTabFromUrl(): NavTab {
   }
   return 'verify';
 }
+
+const TabLoadingFallback = () => (
+  <div className="flex h-80 flex-col items-center justify-center space-y-3">
+    <RefreshCw className="h-5 w-5 animate-spin text-[#888888]" strokeWidth={1.75} />
+    <span className="text-xs text-[#888888]">Bo‘lim yuklanmoqda...</span>
+  </div>
+);
 
 export function App() {
   const [activeTab, setActiveTab] = useState<NavTab>(getInitialTabFromUrl);
@@ -60,28 +73,25 @@ export function App() {
 
   return (
     <div className="min-h-screen bg-black text-[#FAFAFA] flex flex-col font-sans selection:bg-[#333333] selection:text-white">
-      {/* Navbar with 3 Tabs */}
       <Navbar activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      {/* Main Content Area */}
       <main className="flex-1">
         {activeTab === 'verify' && (
           <VerifyPage onNavigateToAi={handleNavigateToAi} />
         )}
 
-        {activeTab === 'ai' && (
-          <AiExpertPage
-            initialQuestion={initialAiQuestion}
-            onClearInitialQuestion={() => setInitialAiQuestion('')}
-          />
-        )}
+        <Suspense fallback={<TabLoadingFallback />}>
+          {activeTab === 'ai' && (
+            <AiExpertPage
+              initialQuestion={initialAiQuestion}
+              onClearInitialQuestion={() => setInitialAiQuestion('')}
+            />
+          )}
 
-        {activeTab === 'producer' && (
-          <ProducerPage />
-        )}
+          {activeTab === 'producer' && <ProducerPage />}
+        </Suspense>
       </main>
 
-      {/* Ultra-minimalist Footer */}
       <footer className="border-t border-[#1F1F1F] bg-[#050505] py-8 text-xs text-[#525252]">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center space-x-2">

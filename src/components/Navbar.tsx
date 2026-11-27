@@ -26,7 +26,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
               <span className="text-sm sm:text-base font-semibold tracking-tight text-[#FAFAFA]">
                 AslCheck
               </span>
-              <span className="hidden rounded border border-[#2A2A2A] bg-[#141414] px-1.5 py-0.5 text-[9px] sm:text-[10px] font-medium tracking-wide text-[#888888] xs:inline-block">
+              <span className="hidden rounded border border-[#2A2A2A] bg-[#141414] px-1.5 py-0.5 text-[9px] sm:text-[10px] font-mono font-medium tracking-wide text-[#888888] sm:inline-block">
                 PRO
               </span>
             </div>

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { X, Printer } from 'lucide-react';
 import { AslBrandMark } from './Icons';
@@ -17,6 +17,15 @@ export const BatchQrModal: React.FC<BatchQrModalProps> = ({
 }) => {
   const printableAreaRef = useRef<HTMLDivElement | null>(null);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen || products.length === 0) return null;
 
   const handlePrint = () => {
@@ -24,8 +33,17 @@ export const BatchQrModal: React.FC<BatchQrModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
-      <div className="relative w-full max-w-4xl my-auto max-h-[92dvh] flex flex-col overflow-hidden rounded-xl sm:rounded-2xl border border-[#1F1F1F] bg-[#0A0A0A] shadow-2xl">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Partiyali QR-kodlar"
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-4xl my-auto max-h-[92dvh] flex flex-col overflow-hidden rounded-xl sm:rounded-2xl border border-white/[0.08] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] shadow-[0_24px_70px_rgba(0,0,0,0.9)]"
+      >
         {/* Header (hidden in print) */}
         <div className="no-print flex flex-col sm:flex-row sm:items-center sm:justify-between border-b border-[#1F1F1F] px-4 sm:px-6 py-3.5 sm:py-4 gap-3 bg-[#0D0D0D]">
           <div className="flex items-center space-x-2.5">

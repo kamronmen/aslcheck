@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Html5Qrcode } from 'html5-qrcode';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import type { Html5Qrcode } from 'html5-qrcode';
 import { X, Camera, Image, AlertCircle, RefreshCw } from 'lucide-react';
 import { extractSerialCode } from '../lib/qr';
 
@@ -19,10 +19,14 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
   const [activeMode, setActiveMode] = useState<'camera' | 'file'>('camera');
   const qrScannerRef = useRef<Html5Qrcode | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const onScanSuccessRef = useRef(onScanSuccess);
   const qrContainerId = 'aslcheck-qr-reader';
 
-  // Stop camera helper
-  const stopCamera = async () => {
+  useEffect(() => {
+    onScanSuccessRef.current = onScanSuccess;
+  }, [onScanSuccess]);
+
+  const stopCamera = useCallback(async () => {
     if (qrScannerRef.current) {
       try {
         if (qrScannerRef.current.isScanning) {
@@ -35,42 +39,39 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
         qrScannerRef.current = null;
       }
     }
-  };
+  }, []);
 
-  // Start live camera
-  const startCamera = async () => {
+  const startCamera = useCallback(async () => {
     setErrorMsg(null);
     setIsInitializing(true);
 
     try {
       await stopCamera();
 
-      // Ensure element exists in DOM
       const elem = document.getElementById(qrContainerId);
       if (!elem) {
         setIsInitializing(false);
         return;
       }
 
-      const html5QrCode = new Html5Qrcode(qrContainerId);
+      const { Html5Qrcode: Html5QrcodeLib } = await import('html5-qrcode');
+      const html5QrCode = new Html5QrcodeLib(qrContainerId);
       qrScannerRef.current = html5QrCode;
-
-      const config = {
-        fps: 15,
-        qrbox: { width: 240, height: 240 },
-        aspectRatio: 1.0,
-      };
 
       await html5QrCode.start(
         { facingMode: 'environment' },
-        config,
+        {
+          fps: 15,
+          qrbox: { width: 240, height: 240 },
+          aspectRatio: 1.0,
+        },
         async (decodedText) => {
           const code = extractSerialCode(decodedText);
           await stopCamera();
-          onScanSuccess(code);
+          onScanSuccessRef.current(code);
         },
         () => {
-          // Frame callback, ignored to prevent console spam
+          // Ignore per-frame misses
         }
       );
       setIsInitializing(false);
@@ -78,39 +79,53 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
       console.error('Camera start error:', err);
       setIsInitializing(false);
       setErrorMsg(
-        'Kameraga ulanib bo‘lmadi. Ruxsat berilganligini tekshiring yoki pastdagi "Fayldan yuklash" usulidan foydalaning.'
+        'Kameraga ulanib bo‘lmadi. Ruxsat berilganligini tekshiring yoki pastdagi "Fayl / Rasm yuklash" usulidan foydalaning.'
       );
     }
-  };
+  }, [stopCamera]);
 
   useEffect(() => {
     if (isOpen && activeMode === 'camera') {
       const timer = setTimeout(() => {
-        startCamera();
+        void startCamera();
       }, 150);
-      return () => clearTimeout(timer);
-    } else {
-      stopCamera();
+      return () => {
+        clearTimeout(timer);
+        void stopCamera();
+      };
     }
 
+    void stopCamera();
     return () => {
-      stopCamera();
+      void stopCamera();
     };
-  }, [isOpen, activeMode]);
+  }, [isOpen, activeMode, startCamera, stopCamera]);
 
-  const handleModalClose = async () => {
+  const handleModalClose = useCallback(async () => {
     await stopCamera();
     onClose();
-  };
+  }, [stopCamera, onClose]);
 
-  // Handle local file scan
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        void handleModalClose();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isOpen, handleModalClose]);
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
 
     setErrorMsg(null);
     try {
-      const html5QrCode = new Html5Qrcode('file-scanner-temp');
+      const { Html5Qrcode: Html5QrcodeLib } = await import('html5-qrcode');
+      const html5QrCode = new Html5QrcodeLib('file-scanner-temp');
       const decodedText = await html5QrCode.scanFile(file, true);
       const code = extractSerialCode(decodedText);
       await stopCamera();
@@ -124,8 +139,17 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md max-h-[90dvh] overflow-y-auto rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] shadow-2xl">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="QR-kodni skanerlash"
+      onClick={() => void handleModalClose()}
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-sm animate-in fade-in duration-200"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-md max-h-[90dvh] overflow-y-auto rounded-2xl border border-white/[0.08] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] shadow-[0_24px_70px_rgba(0,0,0,0.9)]"
+      >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[#1F1F1F] px-5 py-4">
           <div className="flex items-center space-x-2">
@@ -135,7 +159,9 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
             </h3>
           </div>
           <button
-            onClick={handleModalClose}
+            type="button"
+            onClick={() => void handleModalClose()}
+            aria-label="Yopish"
             className="rounded-md p-1.5 text-[#888888] hover:bg-[#141414] hover:text-[#FAFAFA] transition-colors"
           >
             <X className="h-4 w-4" strokeWidth={1.75} />
@@ -179,7 +205,6 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
         <div className="p-5">
           {activeMode === 'camera' ? (
             <div className="flex flex-col items-center">
-              {/* Camera Container with overlay view */}
               <div className="relative w-full aspect-square max-w-[280px] overflow-hidden rounded-lg border border-[#1F1F1F] bg-black">
                 <div id={qrContainerId} className="w-full h-full" />
 
@@ -190,7 +215,6 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
                   </div>
                 )}
 
-                {/* Minimalist target border frame */}
                 {!isInitializing && !errorMsg && (
                   <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                     <div className="h-44 w-44 rounded-lg border-2 border-dashed border-[#FAFAFA]/40 relative">
@@ -231,12 +255,10 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
                   PNG, JPG yoki skrinshot
                 </span>
               </button>
-              {/* Hidden element for file scanning */}
               <div id="file-scanner-temp" className="hidden" />
             </div>
           )}
 
-          {/* Error Message */}
           {errorMsg && (
             <div className="mt-4 flex items-start space-x-2.5 rounded-lg border border-[#EF4444]/30 bg-[#EF4444]/10 p-3 text-xs text-[#EF4444]">
               <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" strokeWidth={1.75} />
@@ -249,7 +271,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
         <div className="border-t border-[#1F1F1F] bg-[#050505] px-5 py-3 flex justify-end">
           <button
             type="button"
-            onClick={handleModalClose}
+            onClick={() => void handleModalClose()}
             className="rounded-md border border-[#1F1F1F] bg-[#111111] px-3.5 py-1.5 text-xs font-medium text-[#FAFAFA] hover:bg-[#1a1a1a] transition-colors"
           >
             Yopish

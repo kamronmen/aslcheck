@@ -160,10 +160,11 @@ export const ProducerPage: React.FC = () => {
   };
 
   useEffect(() => {
-    if (currentManufacturer) {
-      setAiReport(null);
-      loadData();
-    }
+    if (!currentManufacturer) return;
+    const timer = window.setTimeout(() => {
+      void loadData();
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [currentManufacturer, loadData]);
 
   // Calculate KPIs strictly for currentManufacturer
@@ -259,6 +260,7 @@ export const ProducerPage: React.FC = () => {
   const handleLogout = async () => {
     await logoutProducerAccount();
     setCurrentManufacturer(null);
+    setAiReport(null);
     setIsDemoMode(false);
   };
 
@@ -279,6 +281,7 @@ export const ProducerPage: React.FC = () => {
     return (
       <ProducerAuth
         onAuthenticated={(manufacturer, demo) => {
+          setAiReport(null);
           setCurrentManufacturer(manufacturer);
           setIsDemoMode(demo);
         }}
@@ -908,7 +911,7 @@ export const ProducerPage: React.FC = () => {
           )}
 
           {reports.length === 0 ? (
-            <div className="p-8 sm:p-12 text-center rounded-xl border border-[#1F1F1F] bg-[#0A0A0A]">
+            <div className="p-8 sm:p-12 text-center rounded-xl border border-white/[0.06] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808]">
               <CheckCircle2 className="h-8 w-8 text-[#10B981] mx-auto mb-2" strokeWidth={1.75} />
               <div className="text-sm font-semibold text-[#FAFAFA]">
                 Hozircha shikoyatlar kelib tushmagan
@@ -922,7 +925,7 @@ export const ProducerPage: React.FC = () => {
               {reports.map((r) => (
                 <div
                   key={r.id}
-                  className="rounded-xl border border-[#EF4444]/30 bg-[#0A0A0A] p-4 sm:p-5 shadow-lg space-y-3"
+                  className="rounded-xl border border-[#EF4444]/30 border-t-[#EF4444]/55 bg-gradient-to-b from-[#140C0C] to-[#080808] p-4 sm:p-5 shadow-[0_14px_36px_rgba(0,0,0,0.65)] space-y-3"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>

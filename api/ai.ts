@@ -1,11 +1,15 @@
 export default async function handler(req: any, res?: any) {
-  // Handle CORS
-  const headers = {
+  // Handle CORS consistently across Node/Vercel runtimes
+  const headers: Record<string, string> = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Content-Type': 'application/json; charset=utf-8',
   };
+
+  if (res && typeof res.setHeader === 'function') {
+    Object.entries(headers).forEach(([k, v]) => res.setHeader(k, v));
+  }
 
   if (req.method === 'OPTIONS') {
     if (res && typeof res.status === 'function') {
@@ -45,6 +49,17 @@ export default async function handler(req: any, res?: any) {
 
   const { mode, payload } = body || {};
 
+  // Guard against oversized media payloads (> 5 MB base64)
+  const payloadMediaSize =
+    (typeof payload?.imageBase64 === 'string' ? payload.imageBase64.length : 0) +
+    (typeof payload?.audioBase64 === 'string' ? payload.audioBase64.length : 0);
+  if (payloadMediaSize > 5_500_000) {
+    return sendJson(
+      { error: 'Yuklangan fayl hajmi juda katta (maksimum 4 MB). Qisqaroq yoki kichikroq fayl yuboring.' },
+      413
+    );
+  }
+
   // Read Gemini API Key strictly from server environment
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '';
 
@@ -59,6 +74,7 @@ export default async function handler(req: any, res?: any) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(bodyPayload),
+          signal: typeof AbortSignal !== 'undefined' && AbortSignal.timeout ? AbortSignal.timeout(25000) : undefined,
         });
 
         if (response.ok) {

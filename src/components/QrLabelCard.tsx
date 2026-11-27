@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { X, Download, Printer } from 'lucide-react';
 import { AslBrandMark, VerifiedSealIcon } from './Icons';
@@ -16,6 +16,15 @@ export const QrLabelCard: React.FC<QrLabelCardProps> = ({
   onClose,
 }) => {
   const qrRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen || !product) return null;
 
@@ -41,8 +50,17 @@ export const QrLabelCard: React.FC<QrLabelCardProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto">
-      <div className="relative w-full max-w-md max-h-[92dvh] overflow-y-auto rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] shadow-2xl">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="QR Yorliq"
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-md max-h-[92dvh] overflow-y-auto rounded-2xl border border-white/[0.08] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] shadow-[0_24px_70px_rgba(0,0,0,0.9)]"
+      >
         {/* Header */}
         <div className="no-print flex items-center justify-between border-b border-[#1F1F1F] px-5 py-4">
           <div className="flex items-center space-x-2">
@@ -52,7 +70,9 @@ export const QrLabelCard: React.FC<QrLabelCardProps> = ({
             </h3>
           </div>
           <button
+            type="button"
             onClick={onClose}
+            aria-label="Yopish"
             className="rounded-md p-1.5 text-[#888888] hover:bg-[#141414] hover:text-[#FAFAFA] transition-colors"
           >
             <X className="h-4 w-4" strokeWidth={1.75} />

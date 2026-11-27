@@ -56,9 +56,10 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
   const [aiAnalysis, setAiAnalysis] = useState<ProductAiAnalysis | null>(null);
   const [isAiLoading, setIsAiLoading] = useState(false);
 
-  // Automatic Expiry Date Check
+  // Automatic Expiry Date Check (pure across renders)
+  const [todayMidnight] = useState(() => new Date().setHours(0, 0, 0, 0));
   const isExpired = product?.expiry_date
-    ? new Date(product.expiry_date).getTime() < new Date().setHours(0, 0, 0, 0)
+    ? new Date(product.expiry_date).getTime() < todayMidnight
     : false;
 
   // Handle Ownership Claim
@@ -510,7 +511,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-[11px]">
                   <span className="font-mono uppercase tracking-wider text-[#737373]">
-                    Ishonchlilik Indeksi (Trust Score)
+                    Ishonch Indeksi
                   </span>
                   <span className="font-mono font-bold text-[#FAFAFA] tabular-nums">
                     {aiAnalysis.trust_score} <span className="text-[#525252] font-normal">/ 100</span>

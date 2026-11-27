@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Html5Qrcode } from 'html5-qrcode';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import {
   Search,
   QrCode,
@@ -13,7 +12,7 @@ import {
 import { QrScannerModal } from './QrScannerModal';
 import { VerificationCard } from './VerificationCard';
 import { AudioPlayerButton } from './AudioPlayerButton';
-import { AslBrandMark, AiCoreIcon, VisionLensIcon } from './Icons';
+import { AslBrandMark, AiCoreIcon, VisionLensIcon, CloneAlertIcon } from './Icons';
 import { verifyProduct, lookupProductByCode } from '../lib/api';
 import { verifyImageWithVision } from '../lib/ai';
 import { extractSerialCode, compressImageForVision } from '../lib/qr';
@@ -27,58 +26,92 @@ interface VerifyPageProps {
   onNavigateToAi?: (question?: string) => void;
 }
 
+function getInitialCodeFromUrl(): string {
+  if (typeof window === 'undefined') return '';
+  const params = new URLSearchParams(window.location.search);
+  const codeParam = params.get('code');
+  const isAuthTab = params.get('tab') === 'producer';
+  const isUuidAuthCode = Boolean(
+    codeParam && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(codeParam.trim())
+  );
+  if (codeParam && !isAuthTab && !isUuidAuthCode) {
+    return codeParam.trim().toUpperCase();
+  }
+  return '';
+}
+
 export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
-  const [inputCode, setInputCode] = useState('');
+  const [inputCode, setInputCode] = useState<string>(getInitialCodeFromUrl);
   const [searchedCode, setSearchedCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [verificationResult, setVerificationResult] = useState<VerificationResult | null>(null);
 
-  // Hybrid Vision Forensics state
+  // Refs for input focus, smooth scroll-to-result, and race-safe latest-request guard
   const codeInputRef = useRef<HTMLInputElement | null>(null);
   const visionFileInputRef = useRef<HTMLInputElement | null>(null);
+  const resultSectionRef = useRef<HTMLDivElement | null>(null);
+  const verifyReqCounterRef = useRef(0);
+  const hasAutoVerifiedRef = useRef(false);
+
   const [isVisionLoading, setIsVisionLoading] = useState(false);
   const [visionStageText, setVisionStageText] = useState('Surat tahlil qilinmoqda...');
   const [visionPreviewUrl, setVisionPreviewUrl] = useState<string | null>(null);
   const [visionResult, setVisionResult] = useState<VisionVerifyResult | null>(null);
   const [visionError, setVisionError] = useState<string | null>(null);
 
-  // Core verification executor
-  const handleVerify = async (codeToVerify: string) => {
-    const trimmed = codeToVerify.trim().toUpperCase();
-    if (!trimmed || isLoading) return;
-
-    setIsLoading(true);
-    setSearchedCode(trimmed);
-    setVerificationResult(null);
-
-    try {
-      const result = await verifyProduct(trimmed);
-      setVerificationResult(result);
-      const newUrl = new URL(window.location.href);
-      newUrl.searchParams.set('code', trimmed);
-      window.history.replaceState({}, '', newUrl.toString());
-    } catch (err) {
-      console.error('Verification error:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // URL Auto-Verify: On page load, check for ?code=... (skipping Supabase auth UUID callbacks)
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const codeParam = params.get('code');
-    const isAuthTab = params.get('tab') === 'producer';
-    const isUuidAuthCode = Boolean(
-      codeParam && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(codeParam.trim())
-    );
-    if (codeParam && !isAuthTab && !isUuidAuthCode) {
-      const cleaned = codeParam.trim().toUpperCase();
-      setInputCode(cleaned);
-      handleVerify(cleaned);
-    }
+  const scrollToResultSmooth = useCallback(() => {
+    window.setTimeout(() => {
+      resultSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
   }, []);
+
+  // Core verification executor (race-safe)
+  const handleVerify = useCallback(
+    async (codeToVerify: string, shouldScroll: boolean = true) => {
+      const trimmed = codeToVerify.trim().toUpperCase();
+      if (!trimmed) return;
+
+      const reqId = ++verifyReqCounterRef.current;
+      setIsLoading(true);
+      setSearchedCode(trimmed);
+      setVerificationResult(null);
+
+      try {
+        const result = await verifyProduct(trimmed);
+        if (reqId !== verifyReqCounterRef.current) return;
+
+        setVerificationResult(result);
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.set('code', trimmed);
+        window.history.replaceState({}, '', newUrl.toString());
+
+        if (shouldScroll) {
+          scrollToResultSmooth();
+        }
+      } catch (err) {
+        console.error('Verification error:', err);
+      } finally {
+        if (reqId === verifyReqCounterRef.current) {
+          setIsLoading(false);
+        }
+      }
+    },
+    [scrollToResultSmooth]
+  );
+
+  // URL Auto-Verify on mount when ?code=... is present
+  useEffect(() => {
+    if (hasAutoVerifiedRef.current) return;
+    const initialCode = getInitialCodeFromUrl();
+    if (!initialCode) return;
+
+    hasAutoVerifiedRef.current = true;
+    const timer = window.setTimeout(() => {
+      void handleVerify(initialCode, false);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [handleVerify]);
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,10 +153,11 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
     setVerificationResult(null);
 
     try {
-      // Step A: Attempt instant client-side QR decode
+      // Step A: Attempt instant client-side QR decode (dynamically loaded)
       setVisionStageText('1/3 — QR matritsa dekod qilinmoqda...');
       let decodedCode: string | null = null;
       try {
+        const { Html5Qrcode } = await import('html5-qrcode');
         const html5QrCode = new Html5Qrcode('vision-qr-decoder-temp');
         const rawDecoded = await html5QrCode.scanFile(file, false);
         if (rawDecoded) {
@@ -172,7 +206,9 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
 
       if (finalCode) {
         setInputCode(finalCode);
-        await handleVerify(finalCode);
+        await handleVerify(finalCode, true);
+      } else {
+        scrollToResultSmooth();
       }
     } catch (err: any) {
       console.error('Vision verification error:', err);
@@ -341,7 +377,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
               <span>AslCheck AI Ekspert</span>
               <span className="inline-flex items-center space-x-1 rounded-full border border-[#10B981]/30 bg-[#10B981]/10 px-1.5 py-0.5 text-[9px] font-mono font-medium text-[#10B981]">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
-                <span>ONLINE</span>
+                <span>FAOL</span>
               </span>
             </div>
             <p className="text-[11px] text-[#888888] mt-0.5 leading-relaxed">
@@ -567,16 +603,58 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({ onNavigateToAi }) => {
         </div>
       )}
 
-      {/* Verification Card Result */}
-      {!isLoading && verificationResult && (
-        <div className="mt-8">
-          <VerificationCard
-            result={verificationResult}
-            searchedCode={searchedCode}
-            onAskAiAboutProduct={(prompt) => onNavigateToAi?.(prompt)}
-          />
-        </div>
-      )}
+      {/* Verification Result Anchor (auto-scrolled into view on mobile/desktop) */}
+      <div ref={resultSectionRef} className="scroll-mt-20">
+        {/* Empty-state 3-step Architecture Bento Strip */}
+        {!isLoading && !verificationResult && !visionResult && !isVisionLoading && !visionError && (
+          <div className="mt-6 mx-auto max-w-2xl grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="rounded-xl border border-white/[0.06] border-t-white/10 bg-gradient-to-b from-[#0E0E0E] to-[#060606] p-3.5 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <QrCode className="h-4 w-4 text-[#FAFAFA]" strokeWidth={1.75} />
+                <span className="font-mono text-[10px] text-[#525252]">01</span>
+              </div>
+              <div className="text-xs font-semibold text-[#FAFAFA]">Tezkor QR Pasport</div>
+              <p className="text-[11px] text-[#737373] leading-relaxed">
+                Kamera yoki rasm orqali 1 soniyada zavod pasportini oching.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-white/[0.06] border-t-white/10 bg-gradient-to-b from-[#0E0E0E] to-[#060606] p-3.5 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <CloneAlertIcon className="h-4 w-4 text-[#10B981]" strokeWidth={1.75} />
+                <span className="font-mono text-[10px] text-[#525252]">02</span>
+              </div>
+              <div className="text-xs font-semibold text-[#FAFAFA]">Anti-Clone Himoya</div>
+              <p className="text-[11px] text-[#737373] leading-relaxed">
+                Klonlangan kodlar, limit oshishi va muddati o‘tishini darhol tutadi.
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-white/[0.06] border-t-white/10 bg-gradient-to-b from-[#0E0E0E] to-[#060606] p-3.5 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <AiCoreIcon className="h-4 w-4 text-zinc-200" strokeWidth={1.75} />
+                <span className="font-mono text-[10px] text-[#525252]">03</span>
+              </div>
+              <div className="text-xs font-semibold text-[#FAFAFA]">O‘zbekcha AI & Ovoz</div>
+              <p className="text-[11px] text-[#737373] leading-relaxed">
+                Qadoq kriminalistikasi, tarkib tahlili va jonli ovozli maslahat.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Verification Card Result */}
+        {!isLoading && verificationResult && (
+          <div className="mt-8">
+            <VerificationCard
+              key={`${searchedCode}-${verificationResult.status}-${verificationResult.product?.id ?? 'none'}-${verificationResult.product?.scan_count ?? 0}`}
+              result={verificationResult}
+              searchedCode={searchedCode}
+              onAskAiAboutProduct={(prompt) => onNavigateToAi?.(prompt)}
+            />
+          </div>
+        )}
+      </div>
 
       {/* Live QR Scanner Modal */}
       <QrScannerModal
