@@ -26,6 +26,9 @@ export interface Product {
   is_flagged: boolean;
   is_claimed?: boolean;
   claimed_at?: string | null;
+  scratch_pin?: string | null;
+  is_pin_verified?: boolean;
+  velocity_alert?: string | null;
   created_at: string;
 }
 

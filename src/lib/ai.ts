@@ -162,7 +162,7 @@ export async function askAiAssistant(
     console.warn('Call to /api/ai failed, using local guidance fallback:', err);
   }
 
-  return `AslCheck AI tahlili:
+  return `AslCheck Yordamchi tahlili:
 Mahsulotlarning asl nusxasini tekshirish uchun uning qadog‘idagi unikal seriya kodini AslCheck orqali skanerlang va qadoqdagi himoya stikerining butunligini tekshiring.
 
 Asosiy tavsiyalar:

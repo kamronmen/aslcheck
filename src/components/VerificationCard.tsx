@@ -16,11 +16,14 @@ import {
   ShieldAlert,
   ShoppingBag,
   RefreshCw,
+  AlertTriangle,
+  KeyRound,
+  ShieldCheck,
 } from 'lucide-react';
 import { AiCoreIcon, CloneAlertIcon, VerifiedSealIcon } from './Icons';
 import { AudioPlayerButton } from './AudioPlayerButton';
 import type { VerificationResult, ScanLog } from '../types';
-import { reportFakeProduct, claimProduct } from '../lib/api';
+import { reportFakeProduct, claimProduct, verifyScratchPin } from '../lib/api';
 import { analyzeProductWithAi, type ProductAiAnalysis } from '../lib/ai';
 
 interface VerificationCardProps {
@@ -44,6 +47,34 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
   const [claimedAt, setClaimedAt] = useState<string | null>(product?.claimed_at || null);
   const [isClaiming, setIsClaiming] = useState(false);
   const [justClaimed, setJustClaimed] = useState(false);
+
+  // 2FA Scratch-PIN state
+  const [scratchPinInput, setScratchPinInput] = useState('');
+  const [isPinVerifying, setIsPinVerifying] = useState(false);
+  const [isPinVerified, setIsPinVerified] = useState<boolean>(Boolean(product?.is_pin_verified));
+  const [pinMessage, setPinMessage] = useState<{ text: string; isError: boolean } | null>(null);
+
+  const handleVerifyPin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!product || isPinVerifying || !scratchPinInput.trim()) return;
+    setIsPinVerifying(true);
+    setPinMessage(null);
+    try {
+      const res = await verifyScratchPin(product.id, scratchPinInput);
+      if (res.success) {
+        setIsPinVerified(true);
+        setIsClaimed(true);
+        setJustClaimed(true);
+        setPinMessage({ text: res.message, isError: false });
+      } else {
+        setPinMessage({ text: res.message, isError: true });
+      }
+    } catch {
+      setPinMessage({ text: 'Tekshirishda xatolik yuz berdi', isError: true });
+    } finally {
+      setIsPinVerifying(false);
+    }
+  };
 
   // Counterfeit Report state
   const [showReportForm, setShowReportForm] = useState(false);
@@ -256,6 +287,27 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
         </div>
       </div>
 
+      {/* Feature 4: Impossible Travel & Velocity Shield Banner */}
+      {product.velocity_alert && (
+        <div className="border-b border-[#F59E0B]/30 bg-[#F59E0B]/10 px-4 sm:px-5 py-3.5 flex flex-col sm:flex-row items-start gap-2.5 text-xs text-[#F59E0B] animate-in fade-in">
+          <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" strokeWidth={2} />
+          <div>
+            <div className="font-bold tracking-tight flex items-center gap-1.5">
+              <span>GEOGRAFIK VA CHASTOTA ANOMALIYASI (IMPOSSIBLE TRAVEL):</span>
+              <span className="rounded bg-[#F59E0B]/20 border border-[#F59E0B]/40 px-1.5 py-0.2 text-[9px] font-mono">
+                Xavf darajasi: 98%
+              </span>
+            </div>
+            <p className="text-zinc-300 mt-1 leading-relaxed">
+              {product.velocity_alert}
+            </p>
+            <p className="text-[11px] text-[#F59E0B] mt-1 font-medium">
+              Xulosa: Bitta haqiqiy QR-kod rasmga olinib, 20 tagacha qalbaki qadoqlarga ko‘paytirib yopishtirilgan. Tizim anomaliyani fosh qildi!
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Feature 3: Automatic Expiry Date Alert Banner */}
       {isExpired && (
         <div className="border-b border-[#EF4444]/40 bg-[#EF4444]/15 px-4 sm:px-5 py-3.5 flex flex-col sm:flex-row items-start gap-2.5 text-xs text-[#EF4444]">
@@ -303,6 +355,90 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
       )}
 
       <div className="p-4 sm:p-6 space-y-6">
+        {/* Feature 5: 2FA Skretch-PIN (Two-Factor Scratch-off Verification) */}
+        {product.scratch_pin && (
+          <div className="rounded-xl border border-[#1F1F23] bg-black/60 p-4 sm:p-5 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div>
+                <div className="text-xs font-semibold text-white flex items-center space-x-1.5">
+                  <KeyRound className="h-4 w-4 text-amber-400" strokeWidth={1.75} />
+                  <span>2FA Skretch-PIN Himoyasi</span>
+                  <span className="rounded bg-amber-400/10 border border-amber-400/30 px-1.5 py-0.2 text-[9px] font-mono text-amber-400">
+                    Klonlashdan 100% himoya
+                  </span>
+                </div>
+                <p className="text-[11px] text-[#71717A] mt-1 leading-relaxed">
+                  Qallob do‘kondagi tashqi QR-kodni rasmga olib nusxalasa ham, qadoq ichidagi yopiq skretch-qatlam ostidagi 4 xonali PIN-kodni bila olmaydi. Mahsulotni to‘liq tasdiqlash uchun PIN-kodni kiriting.
+                </p>
+              </div>
+
+              {isPinVerified && (
+                <span className="inline-flex items-center space-x-1 rounded-full border border-[#10B981]/30 bg-[#10B981]/15 px-2.5 py-1 text-[11px] font-mono text-[#10B981] shrink-0 self-start sm:self-auto">
+                  <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2.5} />
+                  <span>PIN Tasdiqlangan</span>
+                </span>
+              )}
+            </div>
+
+            {!isPinVerified ? (
+              <form onSubmit={handleVerifyPin} className="space-y-2 pt-1">
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      maxLength={6}
+                      value={scratchPinInput}
+                      onChange={(e) => setScratchPinInput(e.target.value.replace(/\D/g, ''))}
+                      placeholder="Skretch PIN (masalan: 7492)"
+                      disabled={isPinVerifying}
+                      className="w-full rounded-xl border border-[#1F1F23] bg-black py-2.5 px-3.5 font-mono text-sm tracking-widest text-white placeholder-[#52525B] focus:border-white/40 focus:outline-none transition-colors"
+                    />
+                    <span className="absolute right-3 top-2.5 text-[10px] font-mono text-zinc-600">
+                      Demo PIN: {product.scratch_pin}
+                    </span>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isPinVerifying || !scratchPinInput.trim()}
+                    className="inline-flex items-center justify-center space-x-1.5 rounded-xl bg-white px-5 py-2.5 text-xs font-semibold text-black hover:bg-[#F4F4F5] shadow-[0_0_20px_rgba(255,255,255,0.15)] disabled:opacity-40 transition-all shrink-0 min-h-[40px]"
+                  >
+                    {isPinVerifying ? (
+                      <RefreshCw className="h-3.5 w-3.5 animate-spin" strokeWidth={2} />
+                    ) : (
+                      <>
+                        <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2} />
+                        <span>PIN-kodni tasdiqlash</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="rounded-lg border border-[#10B981]/30 bg-[#10B981]/10 p-3 text-xs text-[#10B981] flex items-center space-x-2">
+                <ShieldCheck className="h-4 w-4 shrink-0" strokeWidth={2} />
+                <span>Qadoq ichki kriptografik PIN-kodi muvaffaqiyatli tasdiqlandi. Kod sizning nomingizga biriktirildi.</span>
+              </div>
+            )}
+
+            {pinMessage && (
+              <div
+                className={`p-3 rounded-lg border text-xs flex items-center space-x-2 animate-in fade-in ${
+                  pinMessage.isError
+                    ? 'border-[#EF4444]/40 bg-[#EF4444]/15 text-[#EF4444]'
+                    : 'border-[#10B981]/40 bg-[#10B981]/15 text-[#10B981]'
+                }`}
+              >
+                {pinMessage.isError ? (
+                  <AlertOctagon className="h-4 w-4 shrink-0" strokeWidth={2} />
+                ) : (
+                  <Check className="h-4 w-4 shrink-0" strokeWidth={2.5} />
+                )}
+                <span className="leading-relaxed">{pinMessage.text}</span>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Feature 2: Ownership Claim Action Button (when not yet claimed) */}
         {!isClaimed && (
           <div className="rounded-xl border border-[#1F1F23] bg-black/60 p-4.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3.5">
@@ -450,7 +586,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
             <div className="rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] p-6 text-center animate-pulse">
               <RefreshCw className="h-5 w-5 animate-spin mx-auto mb-2 text-[#888888]" />
               <div className="text-xs font-semibold text-[#FAFAFA]">
-                AslCheck AI tahlil qilmoqda...
+                AslCheck Yordamchi tahlil qilmoqda...
               </div>
               <div className="text-[11px] text-[#525252] mt-0.5">
                 Tarkib, qolgan yaroqlilik kunlari va kontrafakt indeksi hisoblanmoqda

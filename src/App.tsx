@@ -102,9 +102,9 @@ export function App() {
         </Suspense>
       </main>
 
-      {/* Floating Action Controls: Minimalist Awwwards Dock */}
+      {/* Floating Action Controls: Minimalist Awwwards Dock (Hidden on mobile to avoid overlapping footer/content) */}
       {activeTab !== 'ai' && (
-        <div className="no-print fixed bottom-4 right-4 z-30 flex items-center rounded-full border border-[#1F1F23] bg-[#0A0A0C]/90 p-1 shadow-[0_12px_32px_rgba(0,0,0,0.85)] backdrop-blur-xl">
+        <div className="no-print hidden sm:flex fixed bottom-4 right-4 z-30 items-center rounded-full border border-[#1F1F23] bg-[#0A0A0C]/90 p-1 shadow-[0_12px_32px_rgba(0,0,0,0.85)] backdrop-blur-xl">
           <button
             type="button"
             onClick={() => setIsVideoGuideOpen(true)}

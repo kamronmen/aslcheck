@@ -512,7 +512,7 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
                 {!isUser && (
                   <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-[#141414]">
                     <span className="font-semibold text-xs text-[#FAFAFA] flex items-center space-x-1">
-                      <span>AslCheck AI</span>
+                      <span>AslCheck Yordamchi</span>
                       <VerifiedSealIcon className="h-3 w-3 text-[#10B981]" strokeWidth={1.75} />
                     </span>
                     <span className="text-[10px] text-[#525252] font-mono">{msg.timestamp}</span>
@@ -691,7 +691,7 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
           <span className="flex items-center space-x-1">
             <CheckCircle2 className="h-3 w-3 text-[#10B981] shrink-0" strokeWidth={1.75} />
             <span className="truncate">
-              Ovozli savol bering — AslCheck AI tinglab o‘zbek tilida javob beradi
+              Ovozli savol bering — AslCheck Yordamchi tinglab o‘zbek tilida javob beradi
             </span>
           </span>
           <span className="hidden sm:inline font-mono text-[10px]">

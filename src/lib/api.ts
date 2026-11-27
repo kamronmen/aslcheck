@@ -42,6 +42,9 @@ const INITIAL_DEMO_PRODUCTS: ProductWithManufacturer[] = [
     is_flagged: false,
     is_claimed: false,
     claimed_at: null,
+    scratch_pin: '7492',
+    is_pin_verified: false,
+    velocity_alert: null,
     created_at: new Date(Date.now() - 86400000 * 10).toISOString(),
     manufacturers: DEMO_MANUFACTURER,
   },
@@ -60,6 +63,9 @@ const INITIAL_DEMO_PRODUCTS: ProductWithManufacturer[] = [
     is_flagged: true,
     is_claimed: true,
     claimed_at: new Date(Date.now() - 86400000 * 5).toISOString(),
+    scratch_pin: '8310',
+    is_pin_verified: false,
+    velocity_alert: "1 soat ichida 4 ta turli viloyatda (Toshkent, Samarqand, Andijon, Buxoro) 15 marta skanerlangan. Qallob bitta QR-kodni ko'paytirib 20 ta soxta qutiga yopishtirganligi ehtimoli: 98%.",
     created_at: new Date(Date.now() - 86400000 * 30).toISOString(),
     manufacturers: DEMO_MANUFACTURER,
   },
@@ -79,13 +85,40 @@ const INITIAL_DEMO_LOGS: Record<string, ScanLog[]> = {
   ],
   '22222222-2222-2222-2222-222222222222': [
     {
-      id: 'log-2',
+      id: 'log-2a',
       product_id: '22222222-2222-2222-2222-222222222222',
-      scanned_at: new Date(Date.now() - 3600000 * 5).toISOString(),
+      scanned_at: new Date(Date.now() - 60000 * 8).toISOString(),
+      device_info: 'Redmi Note 13 (Chrome)',
+      location_note: 'Toshkent, Chilonzor bozori (QR tekshiruv)',
+      is_report: false,
+      report_message: null,
+    },
+    {
+      id: 'log-2b',
+      product_id: '22222222-2222-2222-2222-222222222222',
+      scanned_at: new Date(Date.now() - 60000 * 22).toISOString(),
       device_info: 'Samsung Galaxy S24 (Chrome)',
       location_note: 'Samarqand, Siyob bozori (QR tekshiruv)',
+      is_report: false,
+      report_message: null,
+    },
+    {
+      id: 'log-2c',
+      product_id: '22222222-2222-2222-2222-222222222222',
+      scanned_at: new Date(Date.now() - 60000 * 45).toISOString(),
+      device_info: 'iPhone 14 (Safari)',
+      location_note: 'Andijon, Yangi bozor (QR tekshiruv)',
       is_report: true,
       report_message: 'Ushbu qadoqdagi xuddi shu seriya raqami boshqa do‘konda ham sotilmoqda!',
+    },
+    {
+      id: 'log-2d',
+      product_id: '22222222-2222-2222-2222-222222222222',
+      scanned_at: new Date(Date.now() - 3600000 * 1.5).toISOString(),
+      device_info: 'Honor X9b (Chrome)',
+      location_note: 'Buxoro, Karvon bozori (QR tekshiruv)',
+      is_report: false,
+      report_message: null,
     },
   ],
 };
@@ -356,6 +389,52 @@ export async function claimProduct(
   }
 
   return { success: true, claimed_at: now };
+}
+
+/**
+ * 2FA Skretch-PIN Tekshiruvi
+ * Qallob tashqi QR kodni rasmga olib nusxalagan taqdirda ham,
+ * qadoq ichidagi yopiq skretch-qatlam PIN kodini bila olmaydi.
+ */
+export async function verifyScratchPin(
+  productId: string,
+  enteredPin: string
+): Promise<{ success: boolean; message: string }> {
+  const localProducts = getLocalProducts();
+  const prod = localProducts.find((p) => p.id === productId);
+  if (!prod) {
+    return { success: false, message: 'Mahsulot topilmadi.' };
+  }
+
+  const expectedPin = prod.scratch_pin || '7492';
+  if (enteredPin.trim() === expectedPin) {
+    const now = new Date().toISOString();
+    prod.is_claimed = true;
+    prod.claimed_at = now;
+    prod.is_pin_verified = true;
+    saveLocalProducts(localProducts);
+
+    if (isSupabaseConfigured) {
+      try {
+        await supabase
+          .from('products')
+          .update({ is_claimed: true, claimed_at: now })
+          .eq('id', productId);
+      } catch (err) {
+        console.warn('Supabase pin verify error:', err);
+      }
+    }
+
+    return {
+      success: true,
+      message: '2FA Skretch-PIN muvaffaqiyatli tasdiqlandi! Qadoq 100% asl va o‘zingizga biriktirildi.',
+    };
+  } else {
+    return {
+      success: false,
+      message: 'Skretch-PIN mos kelmadi! Mahsulot soxta qadoqqa ko‘chirilgan bo‘lishi mumkin.',
+    };
+  }
 }
 
 /**
