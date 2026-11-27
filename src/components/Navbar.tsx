@@ -101,9 +101,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               type="button"
               onClick={onOpenVideoGuide}
               title="Ishlatish yo‘riqnomasi videosini ko‘rish (1:11 min)"
-              className="hidden items-center space-x-1.5 rounded-lg border border-white/10 bg-[#0E0E0E] px-2.5 py-1.5 text-[11px] font-medium text-[#D4D4D4] hover:border-emerald-500/40 hover:bg-[#171717] hover:text-white transition-colors sm:inline-flex"
+              className="hidden items-center space-x-1.5 rounded-lg border border-[#26262A] bg-[#121214] px-2.5 py-1.5 text-[11px] font-medium text-zinc-300 hover:border-zinc-500 hover:bg-[#18181B] hover:text-white transition-colors sm:inline-flex"
             >
-              <Film className="h-3.5 w-3.5 text-emerald-400" strokeWidth={1.75} />
+              <Film className="h-3.5 w-3.5 text-zinc-400" strokeWidth={1.75} />
               <span>Yo‘riqnoma</span>
             </button>
           )}
@@ -114,19 +114,19 @@ export const Navbar: React.FC<NavbarProps> = ({
             target="_blank"
             rel="noopener noreferrer"
             title="Loyiha taqdimotini ochish"
-            className="hidden items-center space-x-1.5 rounded-lg border border-white/10 bg-[#0E0E0E] px-2.5 py-1.5 text-[11px] font-medium text-[#D4D4D4] hover:border-white/25 hover:bg-[#171717] hover:text-white transition-colors lg:inline-flex"
+            className="hidden items-center space-x-1.5 rounded-lg border border-[#26262A] bg-[#121214] px-2.5 py-1.5 text-[11px] font-medium text-zinc-300 hover:border-zinc-500 hover:bg-[#18181B] hover:text-white transition-colors lg:inline-flex"
           >
-            <Presentation className="h-3.5 w-3.5 text-[#10B981]" strokeWidth={1.75} />
+            <Presentation className="h-3.5 w-3.5 text-zinc-400" strokeWidth={1.75} />
             <span>Taqdimot</span>
-            <ArrowUpRight className="h-3 w-3 text-[#737373]" strokeWidth={1.75} />
+            <ArrowUpRight className="h-3 w-3 text-zinc-500" strokeWidth={1.75} />
           </a>
 
           {/* Clean 'Reyestr faol' Status Pill */}
           <div
             title="Milliy himoyalangan reyestr faol ishlamoqda"
-            className="hidden items-center space-x-1.5 rounded-full border border-[#10B981]/30 bg-[#10B981]/10 px-2.5 py-1 text-[11px] text-[#10B981] xl:flex"
+            className="hidden items-center space-x-1.5 rounded-full border border-[#26262A] bg-[#121214] px-2.5 py-1 text-[11px] text-zinc-300 xl:flex"
           >
-            <span className="h-1.5 w-1.5 rounded-full bg-[#10B981] animate-pulse" />
+            <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
             <span className="font-medium text-[11px]">Reyestr faol</span>
           </div>
         </div>

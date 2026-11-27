@@ -30,27 +30,27 @@ const CHAPTERS: Chapter[] = [
   {
     time: 0,
     label: 'Kirish & Bosh sahifa',
-    icon: <ShieldCheck className="h-3 w-3 text-emerald-400" />,
+    icon: <ShieldCheck className="h-3 w-3 text-zinc-400" />,
   },
   {
     time: 12,
     label: '100% Asl Pasport',
-    icon: <CheckCircle2 className="h-3 w-3 text-emerald-400" />,
+    icon: <CheckCircle2 className="h-3 w-3 text-zinc-400" />,
   },
   {
     time: 26,
     label: 'AI Ovozli Ekspert',
-    icon: <Sparkles className="h-3 w-3 text-indigo-400" />,
+    icon: <Sparkles className="h-3 w-3 text-zinc-400" />,
   },
   {
     time: 38,
     label: 'Anti-Klon Ogohlantirish',
-    icon: <AlertTriangle className="h-3 w-3 text-amber-400" />,
+    icon: <AlertTriangle className="h-3 w-3 text-zinc-400" />,
   },
   {
     time: 50,
     label: 'B2B QR Generator',
-    icon: <Factory className="h-3 w-3 text-zinc-300" />,
+    icon: <Factory className="h-3 w-3 text-zinc-400" />,
   },
 ];
 
@@ -105,12 +105,12 @@ export const VideoGuideModal: React.FC<VideoGuideModalProps> = ({ isOpen, onClos
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-4xl rounded-2xl border border-white/10 bg-[#0A0A0A] shadow-[0_24px_70px_rgba(0,0,0,0.95)] overflow-hidden flex flex-col max-h-[92vh]"
+        className="relative w-full max-w-4xl rounded-2xl border border-[#26262A] bg-[#121214] shadow-[0_24px_70px_rgba(0,0,0,0.95)] overflow-hidden flex flex-col max-h-[92vh]"
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/[0.08] px-4 py-3 sm:px-6 sm:py-3.5 bg-[#0D0D0D]">
+        <div className="flex items-center justify-between border-b border-[#26262A] px-4 py-3 sm:px-6 sm:py-3.5 bg-[#0E0E10]">
           <div className="flex items-center space-x-2.5">
-            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-400">
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg border border-[#26262A] bg-[#18181B] text-zinc-300">
               <Film className="h-4 w-4" strokeWidth={1.75} />
             </div>
             <div>
@@ -119,7 +119,7 @@ export const VideoGuideModal: React.FC<VideoGuideModalProps> = ({ isOpen, onClos
                 className="text-xs sm:text-sm font-semibold tracking-tight text-white flex items-center gap-1.5"
               >
                 <span>Ishlatish Yo‘riqnomasi</span>
-                <span className="rounded bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.2 text-[9px] font-mono text-emerald-400">
+                <span className="rounded bg-[#18181B] border border-[#26262A] px-1.5 py-0.2 text-[9px] font-mono text-zinc-400">
                   16:9 HD
                 </span>
               </h2>
@@ -140,7 +140,7 @@ export const VideoGuideModal: React.FC<VideoGuideModalProps> = ({ isOpen, onClos
         </div>
 
         {/* Video Canvas (16:9 Aspect Ratio Container) */}
-        <div className="relative bg-black w-full aspect-video flex items-center justify-center overflow-hidden border-b border-white/[0.06]">
+        <div className="relative bg-black w-full aspect-video flex items-center justify-center overflow-hidden border-b border-[#26262A]">
           <video
             ref={videoRef}
             src="/aslcheck-pro-demo-16x9.mp4"
@@ -156,10 +156,10 @@ export const VideoGuideModal: React.FC<VideoGuideModalProps> = ({ isOpen, onClos
         </div>
 
         {/* Interactive Chapters Strip */}
-        <div className="bg-[#0D0D0D] p-3 sm:p-4 border-b border-white/[0.06] overflow-x-auto scrollbar-thin">
+        <div className="bg-[#0E0E10] p-3 sm:p-4 border-b border-[#26262A] overflow-x-auto scrollbar-thin">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[10px] uppercase tracking-wider font-mono text-[#737373] flex items-center gap-1">
-              <Play className="h-2.5 w-2.5 text-emerald-400" /> Bo‘limlar bo‘yicha o‘tish:
+              <Play className="h-2.5 w-2.5 text-zinc-400" /> Bo‘limlar bo‘yicha o‘tish:
             </span>
             <span className="text-[10px] font-mono text-[#888888]">
               {Math.floor(currentTime / 60)}:
@@ -177,13 +177,13 @@ export const VideoGuideModal: React.FC<VideoGuideModalProps> = ({ isOpen, onClos
                   onClick={() => handleSeek(ch.time)}
                   className={`inline-flex items-center space-x-1.5 rounded-lg px-2.5 py-1 text-[11px] font-medium transition-all shrink-0 ${
                     isActive
-                      ? 'border border-emerald-500/40 bg-emerald-500/15 text-white'
-                      : 'border border-white/5 bg-[#141414] text-[#A0A0A0] hover:border-white/20 hover:text-white'
+                      ? 'border border-zinc-400 bg-zinc-800 text-white shadow-sm'
+                      : 'border border-[#26262A] bg-[#16161A] text-[#A0A0A0] hover:border-zinc-500 hover:text-white'
                   }`}
                 >
                   {ch.icon}
                   <span>{ch.label}</span>
-                  <span className="text-[9px] font-mono text-[#525252]">
+                  <span className="text-[9px] font-mono text-[#737373]">
                     {String(Math.floor(ch.time / 60))}:{String(ch.time % 60).padStart(2, '0')}
                   </span>
                 </button>
@@ -193,7 +193,7 @@ export const VideoGuideModal: React.FC<VideoGuideModalProps> = ({ isOpen, onClos
         </div>
 
         {/* Footer Actions */}
-        <div className="p-3 sm:p-4 bg-[#080808] flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs">
+        <div className="p-3 sm:p-4 bg-[#0A0A0C] border-t border-[#26262A] flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs">
           <div className="flex items-center space-x-2 text-[#737373] text-[11px]">
             <span>Ovoz: Gemini AI O‘zbekcha diktor</span>
             <span>•</span>
@@ -204,9 +204,9 @@ export const VideoGuideModal: React.FC<VideoGuideModalProps> = ({ isOpen, onClos
             <a
               href="/aslcheck-pro-demo-16x9.mp4"
               download="aslcheck-pro-demo-16x9.mp4"
-              className="inline-flex items-center justify-center space-x-1.5 rounded-lg border border-white/10 bg-[#141414] px-3 py-1.5 text-xs font-medium text-[#D4D4D4] hover:border-white/25 hover:bg-[#1F1F1F] hover:text-white transition-colors"
+              className="inline-flex items-center justify-center space-x-1.5 rounded-lg border border-[#26262A] bg-[#18181B] px-3 py-1.5 text-xs font-medium text-zinc-300 hover:border-zinc-500 hover:bg-[#202024] hover:text-white transition-colors"
             >
-              <Download className="h-3.5 w-3.5 text-emerald-400" strokeWidth={1.75} />
+              <Download className="h-3.5 w-3.5 text-zinc-400" strokeWidth={1.75} />
               <span>Videoni yuklab olish</span>
             </a>
 
@@ -214,11 +214,11 @@ export const VideoGuideModal: React.FC<VideoGuideModalProps> = ({ isOpen, onClos
               href={PRESENTATION_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center space-x-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/20 transition-colors"
+              className="inline-flex items-center justify-center space-x-1.5 rounded-lg border border-[#26262A] bg-[#18181B] px-3 py-1.5 text-xs font-medium text-zinc-300 hover:border-zinc-500 hover:bg-[#202024] hover:text-white transition-colors"
             >
-              <Presentation className="h-3.5 w-3.5" strokeWidth={1.75} />
+              <Presentation className="h-3.5 w-3.5 text-zinc-400" strokeWidth={1.75} />
               <span>Taqdimot</span>
-              <ArrowUpRight className="h-3 w-3" strokeWidth={1.75} />
+              <ArrowUpRight className="h-3 w-3 text-zinc-500" strokeWidth={1.75} />
             </a>
           </div>
         </div>
