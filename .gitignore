@@ -27,3 +27,7 @@ dist-ssr
 *.sw?
 
 .vercel
+
+# Video generation temp assets
+/video_assets
+/aslcheck-pro-demo-16x9.mp4

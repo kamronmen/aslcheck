@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle2, Factory, Presentation, ArrowUpRight } from 'lucide-react';
+import { CheckCircle2, Factory, Presentation, ArrowUpRight, Film } from 'lucide-react';
 import { AslBrandMark, AiCoreIcon } from './Icons';
 
 export const PRESENTATION_URL = 'https://share.gemini.google/5V0IB1DPWl83';
@@ -9,9 +9,14 @@ export type NavTab = 'verify' | 'ai' | 'producer';
 interface NavbarProps {
   activeTab: NavTab;
   setActiveTab: (tab: NavTab) => void;
+  onOpenVideoGuide?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
+export const Navbar: React.FC<NavbarProps> = ({
+  activeTab,
+  setActiveTab,
+  onOpenVideoGuide,
+}) => {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[#1F1F1F] bg-black/95 backdrop-blur-md">
       <div className="mx-auto flex h-14 sm:h-16 max-w-6xl items-center justify-between px-3 sm:px-6">
@@ -38,8 +43,8 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
           </div>
         </div>
 
-        {/* Center / Right: 3 Segmented Tabs & Status */}
-        <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+        {/* Center / Right: 3 Segmented Tabs & Actions */}
+        <div className="flex items-center space-x-1.5 sm:space-x-2.5 min-w-0">
           <nav className="flex rounded-lg border border-[#1F1F1F] bg-[#0A0A0A] p-0.5 sm:p-1 max-w-full">
             {/* 1. Tekshirish Tab */}
             <button
@@ -89,6 +94,19 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
               <span className="sm:hidden">Kabinet</span>
             </button>
           </nav>
+
+          {/* Video Guide Trigger Button */}
+          {onOpenVideoGuide && (
+            <button
+              type="button"
+              onClick={onOpenVideoGuide}
+              title="Ishlatish yo‘riqnomasi videosini ko‘rish (1:11 min)"
+              className="hidden items-center space-x-1.5 rounded-lg border border-white/10 bg-[#0E0E0E] px-2.5 py-1.5 text-[11px] font-medium text-[#D4D4D4] hover:border-emerald-500/40 hover:bg-[#171717] hover:text-white transition-colors sm:inline-flex"
+            >
+              <Film className="h-3.5 w-3.5 text-emerald-400" strokeWidth={1.75} />
+              <span>Yo‘riqnoma</span>
+            </button>
+          )}
 
           {/* Presentation Link (Desktop) */}
           <a
