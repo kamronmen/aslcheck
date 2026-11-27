@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { RefreshCw } from 'lucide-react';
-import { Navbar, type NavTab } from './components/Navbar';
+import { RefreshCw, Presentation, ArrowUpRight } from 'lucide-react';
+import { Navbar, PRESENTATION_URL, type NavTab } from './components/Navbar';
 import { VerifyPage } from './components/VerifyPage';
 import { AslBrandMark } from './components/Icons';
 import { supabase, isSupabaseConfigured } from './lib/supabase';
@@ -92,6 +92,21 @@ export function App() {
         </Suspense>
       </main>
 
+      {/* Floating Edge Presentation Button (hidden during AI chat & printing) */}
+      {activeTab !== 'ai' && (
+        <a
+          href={PRESENTATION_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          title="AslCheck taqdimotini ochish"
+          className="no-print fixed bottom-4 right-4 z-30 inline-flex items-center space-x-1.5 rounded-full border border-white/15 border-t-white/25 bg-[#0C0C0C]/90 px-3.5 py-2 text-xs font-medium text-[#FAFAFA] shadow-[0_10px_32px_rgba(0,0,0,0.85)] backdrop-blur-md hover:border-white/35 hover:bg-[#171717] transition-all"
+        >
+          <Presentation className="h-3.5 w-3.5 text-[#10B981]" strokeWidth={1.75} />
+          <span>Taqdimot</span>
+          <ArrowUpRight className="h-3 w-3 text-[#888888]" strokeWidth={1.75} />
+        </a>
+      )}
+
       <footer className="border-t border-[#1F1F1F] bg-[#050505] py-8 text-xs text-[#525252]">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center space-x-2">
@@ -101,7 +116,18 @@ export function App() {
             <span>Milliy mahsulotlar haqiqiyligi reyestri</span>
           </div>
 
-          <div className="flex items-center space-x-2 text-[11px] text-[#525252]">
+          <div className="flex items-center space-x-3 text-[11px] text-[#525252]">
+            <a
+              href={PRESENTATION_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center space-x-1 text-[#888888] hover:text-[#FAFAFA] transition-colors"
+            >
+              <Presentation className="h-3 w-3 text-[#10B981]" strokeWidth={1.75} />
+              <span>Taqdimot</span>
+              <ArrowUpRight className="h-3 w-3" strokeWidth={1.75} />
+            </a>
+            <span>•</span>
             <span>2026</span>
             <span>•</span>
             <span>O‘zbekiston Respublikasi</span>
