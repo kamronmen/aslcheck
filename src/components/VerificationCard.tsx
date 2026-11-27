@@ -186,7 +186,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
   const manufacturer = product.manufacturers;
 
   return (
-    <div className="w-full max-w-2xl mx-auto overflow-hidden rounded-xl border border-white/[0.06] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] shadow-[0_24px_60px_rgba(0,0,0,0.85)] animate-in fade-in duration-300">
+    <div className="w-full max-w-2xl mx-auto overflow-hidden rounded-2xl border border-[#1F1F23] bg-[#0A0A0C] shadow-[0_24px_60px_rgba(0,0,0,0.9)] animate-in fade-in duration-300">
       {/* Top Accent Glow Bar inside Passport Header */}
       <div
         className={`h-[2px] w-full bg-gradient-to-r from-transparent ${
@@ -305,13 +305,13 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
       <div className="p-4 sm:p-6 space-y-6">
         {/* Feature 2: Ownership Claim Action Button (when not yet claimed) */}
         {!isClaimed && (
-          <div className="rounded-xl border border-[#1F1F1F] bg-[#0D0D0D] p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="rounded-xl border border-[#1F1F23] bg-black/60 p-4.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3.5">
             <div>
-              <div className="text-xs font-semibold text-[#FAFAFA] flex items-center space-x-1.5">
+              <div className="text-xs font-semibold text-white flex items-center space-x-1.5">
                 <ShoppingBag className="h-3.5 w-3.5 text-zinc-300" strokeWidth={1.75} />
                 <span>Ushbu mahsulotni xarid qildingizmi?</span>
               </div>
-              <p className="text-[11px] text-[#888888] mt-0.5 leading-relaxed">
+              <p className="text-[11px] text-[#71717A] mt-0.5 leading-relaxed">
                 Kodni o‘zingizga band qiling — boshqa hech kim ushbu kodni qayta faollashtirolmaydi.
               </p>
             </div>
@@ -319,7 +319,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
               type="button"
               onClick={handleClaim}
               disabled={isClaiming}
-              className="flex items-center justify-center space-x-2 rounded-lg bg-[#FAFAFA] px-4 py-2.5 text-xs font-bold text-black hover:bg-[#E5E5E5] disabled:opacity-50 transition-colors shrink-0 shadow-sm min-h-[40px]"
+              className="flex items-center justify-center space-x-2 rounded-xl bg-white px-5 py-3 text-xs font-semibold text-black shadow-[0_0_30px_rgba(255,255,255,0.18)] hover:bg-[#F4F4F5] hover:shadow-[0_0_35px_rgba(255,255,255,0.28)] disabled:opacity-50 transition-all shrink-0 min-h-[42px]"
             >
               <Check className="h-3.5 w-3.5" strokeWidth={2.5} />
               <span>{isClaiming ? 'Band qilinmoqda...' : 'Sotib oldim — Kodni band qilish'}</span>
@@ -620,7 +620,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
                       className="inline-flex items-center space-x-1.5 text-xs text-zinc-300 hover:text-[#FAFAFA] transition-colors"
                     >
                       <AiCoreIcon className="h-3.5 w-3.5" strokeWidth={1.75} />
-                      <span>AI Ekspert bilan to‘liq muloqot qilish →</span>
+                      <span>AslCheck Yordamchi bilan to‘liq muloqot qilish →</span>
                     </button>
                   </div>
                 )}

@@ -16,6 +16,7 @@ import { QrScannerModal } from './QrScannerModal';
 import { VerificationCard } from './VerificationCard';
 import { AudioPlayerButton } from './AudioPlayerButton';
 import { AslBrandMark, AiCoreIcon, VisionLensIcon } from './Icons';
+import { UzbekGirihPattern } from './UzbekGirihPattern';
 import { verifyProduct, lookupProductByCode } from '../lib/api';
 import { verifyImageWithVision } from '../lib/ai';
 import { extractSerialCode, compressImageForVision } from '../lib/qr';
@@ -229,23 +230,9 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
   };
 
   return (
-    <div className="relative overflow-hidden">
-      {/* Subtle Architectural Dot-Grid & Ambient Spotlight */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-[420px]"
-        style={{
-          backgroundImage: 'radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)',
-          backgroundSize: '24px 24px',
-          maskImage: 'radial-gradient(ellipse 85% 75% at 50% 0%, black 35%, transparent 100%)',
-          WebkitMaskImage:
-            'radial-gradient(ellipse 85% 75% at 50% 0%, black 35%, transparent 100%)',
-        }}
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-8 -translate-x-1/2 h-56 w-[90%] max-w-xl rounded-full bg-gradient-to-r from-white/10 via-zinc-400/10 to-white/10 opacity-[0.05] blur-3xl"
-      />
+    <div className="relative overflow-hidden bg-[#000000]">
+      {/* Authentic Uzbek Girih Architectural Pattern & Ethereal Aura */}
+      <UzbekGirihPattern />
 
       <div className="relative mx-auto max-w-4xl px-3 py-6 sm:px-6 sm:py-12">
       {/* Hidden input & temp decoder mount for Hybrid Vision Forensics */}
@@ -258,27 +245,27 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
       />
       <div id="vision-qr-decoder-temp" className="hidden" />
 
-      {/* Hero / Header */}
-      <div className="text-center mb-6 sm:mb-10">
-        <div className="inline-flex items-center space-x-1.5 rounded-full border border-[#26262A] bg-[#121214] px-3 py-1 text-xs text-[#A0A0A0] mb-3 sm:mb-4 shadow-sm backdrop-blur-sm">
-          <AslBrandMark className="h-3.5 w-3.5 text-[#FAFAFA]" strokeWidth={1.5} />
+      {/* Hero / Header: Pure Two-tone Minimalist Typography */}
+      <div className="text-center mb-8 sm:mb-12">
+        <div className="inline-flex items-center space-x-2 rounded-full border border-[#1F1F23] bg-[#0A0A0C] px-3.5 py-1 text-xs text-[#71717A] mb-4 sm:mb-5 shadow-sm">
+          <AslBrandMark className="h-3.5 w-3.5 text-white" strokeWidth={1.5} />
           <span>Litsenziyalangan Mahsulot Reyestri</span>
         </div>
-        <h1 className="text-2xl sm:text-4xl font-bold tracking-tight bg-gradient-to-b from-white to-zinc-300 bg-clip-text text-transparent">
-          Mahsulot Haqiqiyligini Tekshirish
+        <h1 className="text-3xl sm:text-5xl font-semibold tracking-tight text-white leading-tight">
+          <span>Mahsulot haqiqiyligini</span> <span className="text-[#71717A]">tekshiring.</span>
         </h1>
-        <p className="mt-2.5 text-xs sm:text-sm text-[#888888] max-w-md mx-auto leading-relaxed">
-          Qadoqdagi unikal AslCheck seriya kodini kiriting, QR-kodni skanerlang yoki qadoq suratini AI Vizual Ekspertizaga yuboring.
+        <p className="mt-3 text-xs sm:text-sm text-[#71717A] max-w-lg mx-auto leading-relaxed">
+          Qadoqdagi unikal seriya kodini kiriting, QR-kodni skanerlang yoki qadoq fotosuratini AslCheck Yordamchiga taqdim eting.
         </p>
       </div>
 
-      {/* Main Verification Input Box */}
-      <div className="mx-auto max-w-2xl rounded-2xl border border-[#26262A] bg-[#121214] p-4 sm:p-6 shadow-[0_16px_40px_rgba(0,0,0,0.6)]">
-        <form onSubmit={handleFormSubmit} className="space-y-3">
-          <div className="flex flex-col sm:flex-row gap-2">
+      {/* Main Verification Input Box: Pure #0A0A0C with 1px #1F1F23 */}
+      <div className="mx-auto max-w-2xl rounded-2xl border border-[#1F1F23] bg-[#0A0A0C] p-5 sm:p-7 shadow-[0_24px_60px_rgba(0,0,0,0.9)]">
+        <form onSubmit={handleFormSubmit} className="space-y-3.5">
+          <div className="flex flex-col sm:flex-row gap-2.5">
             <div className="relative flex-1">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-                <Search className="h-4 w-4 text-[#525252]" strokeWidth={1.75} />
+                <Search className="h-4 w-4 text-[#71717A]" strokeWidth={1.75} />
               </div>
               <input
                 ref={codeInputRef}
@@ -287,13 +274,13 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
                 onChange={(e) => setInputCode(e.target.value.toUpperCase())}
                 placeholder="Masalan: ASL-2026-001"
                 disabled={isLoading || isVisionLoading}
-                className="w-full rounded-xl border border-[#26262A] bg-[#0A0A0C] py-3 pl-10 pr-3 font-mono text-base font-medium tracking-wide text-[#FAFAFA] placeholder-[#525252] focus:border-zinc-500 focus:outline-none transition-colors min-h-[44px]"
+                className="w-full rounded-xl border border-[#1F1F23] bg-black py-3.5 pl-11 pr-3 font-mono text-base font-medium tracking-wide text-white placeholder-[#52525B] focus:border-white/40 focus:outline-none transition-colors min-h-[44px]"
               />
             </div>
             <button
               type="submit"
               disabled={isLoading || isVisionLoading}
-              className="flex items-center justify-center space-x-1.5 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-black hover:bg-zinc-200 disabled:opacity-60 transition-colors shadow-[0_1px_16px_rgba(255,255,255,0.16)] min-h-[44px] shrink-0"
+              className="flex items-center justify-center space-x-1.5 rounded-xl bg-white px-6 py-3.5 text-sm font-semibold text-black hover:bg-[#F4F4F5] disabled:opacity-60 transition-all shadow-[0_0_30px_rgba(255,255,255,0.18)] hover:shadow-[0_0_35px_rgba(255,255,255,0.28)] min-h-[44px] shrink-0"
             >
               {isLoading ? (
                 <RefreshCw className="h-4 w-4 animate-spin" strokeWidth={2} />
@@ -306,15 +293,15 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
             </button>
           </div>
 
-          {/* Dual Hardware Action Row: Live QR Scanner + AI Vision Forensics */}
+          {/* Dual Hardware Action Row: Secondary Buttons in Transparent Black with #27272A border */}
           <div className="pt-1 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <button
               type="button"
               disabled={isVisionLoading}
               onClick={() => setIsScannerOpen(true)}
-              className="flex w-full items-center justify-center space-x-2 rounded-xl border border-[#26262A] bg-[#16161A] py-3 text-xs sm:text-sm font-medium text-[#FAFAFA] hover:bg-[#1E1E24] hover:border-zinc-500 disabled:opacity-40 transition-colors min-h-[44px]"
+              className="flex w-full items-center justify-center space-x-2 rounded-xl border border-[#27272A] bg-black/50 py-3 text-xs sm:text-sm font-medium text-zinc-300 hover:text-white hover:border-zinc-500 hover:bg-black/80 disabled:opacity-40 transition-colors min-h-[44px]"
             >
-              <QrCode className="h-4 w-4 text-[#FAFAFA]" strokeWidth={1.75} />
+              <QrCode className="h-4 w-4 text-zinc-400" strokeWidth={1.75} />
               <span>QR-kodni skanerlash</span>
             </button>
 
@@ -322,52 +309,52 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
               type="button"
               disabled={isVisionLoading}
               onClick={() => visionFileInputRef.current?.click()}
-              className="flex w-full items-center justify-center space-x-2 rounded-xl border border-[#26262A] bg-[#16161A] py-3 text-xs sm:text-sm font-medium text-[#FAFAFA] hover:bg-[#1E1E24] hover:border-zinc-500 disabled:opacity-40 transition-colors min-h-[44px]"
+              className="flex w-full items-center justify-center space-x-2 rounded-xl border border-[#27272A] bg-black/50 py-3 text-xs sm:text-sm font-medium text-zinc-300 hover:text-white hover:border-zinc-500 hover:bg-black/80 disabled:opacity-40 transition-colors min-h-[44px]"
             >
               {isVisionLoading ? (
-                <RefreshCw className="h-4 w-4 animate-spin text-zinc-300" strokeWidth={1.75} />
+                <RefreshCw className="h-4 w-4 animate-spin text-zinc-400" strokeWidth={1.75} />
               ) : (
-                <VisionLensIcon className="h-4 w-4 text-zinc-300" strokeWidth={1.75} />
+                <VisionLensIcon className="h-4 w-4 text-zinc-400" strokeWidth={1.75} />
               )}
               <span>AI Vizual Ekspertiza</span>
             </button>
           </div>
         </form>
 
-        {/* Sleek Integrated Demo Pills (Neutral with semantic status dots) */}
-        <div className="mt-4 pt-3.5 border-t border-[#26262A] flex flex-wrap items-center justify-between gap-2">
-          <span className="text-[11px] text-[#737373] font-mono tracking-wide">
+        {/* Sleek Integrated Demo Pills (Pure Minimalist Monochrome with Semantic Dots) */}
+        <div className="mt-4 pt-3.5 border-t border-[#1F1F23] flex flex-wrap items-center justify-between gap-2">
+          <span className="text-[11px] text-[#71717A] font-mono tracking-wide">
             Sinov uchun kodlar:
           </span>
           <div className="flex flex-wrap items-center gap-1.5">
             <button
               type="button"
               onClick={() => handleDemoClick('ASL-2026-001')}
-              className="inline-flex items-center space-x-1.5 rounded-lg border border-[#26262A] bg-[#16161A] px-2.5 py-1 text-[11px] font-mono text-[#D4D4D8] hover:border-zinc-500 hover:text-white transition-colors"
+              className="inline-flex items-center space-x-1.5 rounded-lg border border-[#1F1F23] bg-black/60 px-2.5 py-1 text-[11px] font-mono text-zinc-400 hover:border-[#27272A] hover:text-white transition-colors"
             >
               <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
               <span>ASL-2026-001</span>
-              <span className="text-[10px] text-zinc-500 font-sans">(Asl)</span>
+              <span className="text-[10px] text-[#71717A] font-sans">(Asl)</span>
             </button>
 
             <button
               type="button"
               onClick={() => handleDemoClick('ASL-2026-999')}
-              className="inline-flex items-center space-x-1.5 rounded-lg border border-[#26262A] bg-[#16161A] px-2.5 py-1 text-[11px] font-mono text-[#D4D4D8] hover:border-zinc-500 hover:text-white transition-colors"
+              className="inline-flex items-center space-x-1.5 rounded-lg border border-[#1F1F23] bg-black/60 px-2.5 py-1 text-[11px] font-mono text-zinc-400 hover:border-[#27272A] hover:text-white transition-colors"
             >
               <span className="h-1.5 w-1.5 rounded-full bg-[#F59E0B]" />
               <span>ASL-2026-999</span>
-              <span className="text-[10px] text-zinc-500 font-sans">(Shubhali)</span>
+              <span className="text-[10px] text-[#71717A] font-sans">(Shubhali)</span>
             </button>
 
             <button
               type="button"
               onClick={() => handleDemoClick('FAKE-000')}
-              className="inline-flex items-center space-x-1.5 rounded-lg border border-[#26262A] bg-[#16161A] px-2.5 py-1 text-[11px] font-mono text-[#D4D4D8] hover:border-zinc-500 hover:text-white transition-colors"
+              className="inline-flex items-center space-x-1.5 rounded-lg border border-[#1F1F23] bg-black/60 px-2.5 py-1 text-[11px] font-mono text-zinc-400 hover:border-[#27272A] hover:text-white transition-colors"
             >
               <span className="h-1.5 w-1.5 rounded-full bg-[#EF4444]" />
               <span>FAKE-000</span>
-              <span className="text-[10px] text-zinc-500 font-sans">(Topilmadi)</span>
+              <span className="text-[10px] text-[#71717A] font-sans">(Topilmadi)</span>
             </button>
           </div>
         </div>
@@ -581,40 +568,42 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
 
       {/* Verification Result Anchor (auto-scrolled into view on mobile/desktop) */}
       <div ref={resultSectionRef} className="scroll-mt-20">
-        {/* AslCheck Master Bento Architecture (Enterprise / Fintech Registry Style) */}
+        {/* AslCheck Master Bento Architecture: Awwwards / Jimo Pure Black (#0A0A0C, #1F1F23) */}
         {!isLoading && !verificationResult && !visionResult && !isVisionLoading && !visionError && (
-          <div className="mt-8 mx-auto max-w-4xl space-y-3.5">
-            {/* Section Header */}
+          <div className="mt-10 mx-auto max-w-4xl space-y-4">
+            {/* Section Header: Two-tone Minimalist Typography */}
             <div className="flex items-center justify-between px-1">
               <div className="flex items-center space-x-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-zinc-400" />
-                <h2 className="text-xs font-mono font-medium tracking-wider uppercase text-zinc-400">
-                  Tizim Reglamenti & Texnik Imkoniyatlar
+                <span className="h-1.5 w-1.5 rounded-full bg-zinc-500" />
+                <h2 className="text-xs font-mono font-medium tracking-wider uppercase">
+                  <span className="text-white">Tizim reglamenti</span>{' '}
+                  <span className="text-[#71717A]">& texnik imkoniyatlar</span>
                 </h2>
               </div>
-              <span className="text-[11px] font-mono text-zinc-500 hidden sm:inline-block">
+              <span className="text-[11px] font-mono text-[#71717A] hidden sm:inline-block">
                 Standart v2.4 • Raqamli Reyestr
               </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-5 sm:gap-6">
               {/* CARD 1: HERO VIDEO GUIDE (md:col-span-7) */}
-              <div className="md:col-span-7 rounded-2xl border border-[#26262A] bg-[#121214] p-4 sm:p-5 flex flex-col justify-between shadow-[0_12px_32px_rgba(0,0,0,0.6)] hover:border-zinc-500 transition-colors">
+              <div className="md:col-span-7 rounded-2xl border border-[#1F1F23] bg-[#0A0A0C] p-6 sm:p-7 flex flex-col justify-between shadow-[0_16px_40px_rgba(0,0,0,0.7)] hover:border-zinc-500 transition-colors">
                 <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="inline-flex items-center space-x-1.5 rounded-md border border-[#26262A] bg-[#18181B] px-2 py-0.5 text-[10px] font-mono text-zinc-300">
+                  <div className="flex items-center justify-between mb-3.5">
+                    <span className="inline-flex items-center space-x-1.5 rounded-md border border-[#1F1F23] bg-black/60 px-2.5 py-0.5 text-[10px] font-mono text-zinc-400">
                       <Film className="h-3 w-3 text-zinc-400" />
                       <span>Video Reglament • 1:11 min</span>
                     </span>
-                    <span className="text-[10px] font-mono text-zinc-500">
+                    <span className="text-[10px] font-mono text-[#71717A]">
                       1080p HD
                     </span>
                   </div>
 
-                  <h3 className="text-base sm:text-lg font-bold tracking-tight text-white">
-                    Tizimning Ishlash Reglamenti
+                  <h3 className="text-base sm:text-lg font-semibold tracking-tight">
+                    <span className="text-white">Tizimning ishlash reglamenti</span>{' '}
+                    <span className="text-[#71717A]">• rasmiy yo‘riqnoma</span>
                   </h3>
-                  <p className="mt-1 text-xs text-zinc-400 leading-relaxed">
+                  <p className="mt-1.5 text-xs text-[#71717A] leading-relaxed">
                     QR-kod verifikatsiyasi, raqamli pasport, AI tahlil va anti-kontrafakt protokoli bo‘yicha rasmiy video qo‘llanma.
                   </p>
                 </div>
@@ -625,7 +614,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
                   tabIndex={0}
                   onClick={onOpenVideoGuide}
                   onKeyDown={(e) => e.key === 'Enter' && onOpenVideoGuide?.()}
-                  className="mt-4 relative aspect-[16/9] w-full rounded-xl overflow-hidden border border-[#26262A] bg-black cursor-pointer group shadow-inner"
+                  className="mt-5 relative aspect-[16/9] w-full rounded-xl overflow-hidden border border-[#1F1F23] bg-black cursor-pointer group shadow-inner"
                 >
                   <img
                     src="/video-poster.jpg"
@@ -633,13 +622,13 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
                     className="h-full w-full object-cover opacity-75 group-hover:opacity-95 transition-opacity duration-300"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent flex items-center justify-center">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-black/70 text-white backdrop-blur-md group-hover:scale-105 group-hover:bg-white/20 transition-all">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-black/80 text-white backdrop-blur-md shadow-[0_0_24px_rgba(255,255,255,0.16)] group-hover:scale-105 group-hover:bg-white/20 transition-all">
                       <Play className="h-4 w-4 fill-white translate-x-0.5" />
                     </div>
                   </div>
 
                   {/* Micro Footer Indicator */}
-                  <div className="absolute bottom-2 inset-x-2 flex items-center justify-between text-[10px] font-mono text-zinc-300 bg-[#121214]/85 backdrop-blur-md px-2.5 py-1 rounded-lg border border-[#26262A]">
+                  <div className="absolute bottom-2.5 inset-x-2.5 flex items-center justify-between text-[10px] font-mono text-zinc-300 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-[#1F1F23]">
                     <span className="flex items-center gap-1.5 text-zinc-300">
                       <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
                       <span>Ovozli tushuntirish</span>
@@ -649,105 +638,108 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
                 </div>
 
                 {/* Bottom Quick Chapters */}
-                <div className="mt-3.5 pt-3 border-t border-[#26262A] flex flex-wrap items-center gap-1.5 text-[10px] font-mono text-zinc-400">
+                <div className="mt-4 pt-3.5 border-t border-[#1F1F23] flex flex-wrap items-center gap-1.5 text-[10px] font-mono text-[#71717A]">
                   <span className="text-zinc-600">Mavzular:</span>
-                  <span className="rounded border border-[#26262A] bg-[#161618] px-2 py-0.5 text-zinc-400">00:12 Pasport</span>
-                  <span className="rounded border border-[#26262A] bg-[#161618] px-2 py-0.5 text-zinc-400">00:26 AI Tahlil</span>
-                  <span className="rounded border border-[#26262A] bg-[#161618] px-2 py-0.5 text-zinc-400">00:38 Klon Radari</span>
-                  <span className="rounded border border-[#26262A] bg-[#161618] px-2 py-0.5 text-zinc-400">00:50 B2B QR</span>
+                  <span className="rounded border border-[#1F1F23] bg-black/50 px-2 py-0.5 text-zinc-400">00:12 Pasport</span>
+                  <span className="rounded border border-[#1F1F23] bg-black/50 px-2 py-0.5 text-zinc-400">00:26 AslCheck Yordamchi</span>
+                  <span className="rounded border border-[#1F1F23] bg-black/50 px-2 py-0.5 text-zinc-400">00:38 Klon Radari</span>
+                  <span className="rounded border border-[#1F1F23] bg-black/50 px-2 py-0.5 text-zinc-400">00:50 B2B QR</span>
                 </div>
               </div>
 
-              {/* CARD 2: RAQAMLI TARKIB EKSPERTIZASI (md:col-span-5) */}
-              <div className="md:col-span-5 rounded-2xl border border-[#26262A] bg-[#121214] p-4 sm:p-5 flex flex-col justify-between shadow-[0_12px_32px_rgba(0,0,0,0.6)] hover:border-zinc-500 transition-colors">
+              {/* CARD 2: ASLCHECK YORDAMCHI (md:col-span-5) */}
+              <div className="md:col-span-5 rounded-2xl border border-[#1F1F23] bg-[#0A0A0C] p-6 sm:p-7 flex flex-col justify-between shadow-[0_16px_40px_rgba(0,0,0,0.7)] hover:border-zinc-500 transition-colors">
                 <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="inline-flex items-center space-x-1.5 rounded-md border border-[#26262A] bg-[#18181B] px-2 py-0.5 text-[10px] font-mono text-zinc-300">
+                  <div className="flex items-center justify-between mb-3.5">
+                    <span className="inline-flex items-center space-x-1.5 rounded-md border border-[#1F1F23] bg-black/60 px-2.5 py-0.5 text-[10px] font-mono text-zinc-300">
                       <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
-                      <span>Raqamli Ekspertiza • Faol</span>
+                      <span>AslCheck Yordamchi • Faol</span>
                     </span>
-                    <span className="text-[10px] font-mono text-zinc-500">Gemini 2.5</span>
+                    <span className="text-[10px] font-mono text-[#71717A]">Gemini 2.5</span>
                   </div>
 
-                  <h3 className="text-base font-bold tracking-tight text-white">
-                    Raqamli Tarkib Ekspertizasi
+                  <h3 className="text-base font-semibold tracking-tight">
+                    <span className="text-white">AslCheck Yordamchi</span>{' '}
+                    <span className="text-[#71717A]">— tarkib tahlili</span>
                   </h3>
-                  <p className="mt-1 text-xs text-zinc-400 leading-relaxed">
-                    Mahsulot standarti, E-qo‘shimchalar va laboratoriya parametrlari bo‘yicha avtomatlashtirilgan ekspert tahlili.
+                  <p className="mt-1.5 text-xs text-[#71717A] leading-relaxed">
+                    Mahsulot standarti, E-qo‘shimchalar va laboratoriya parametrlari bo‘yicha avtomatlashtirilgan aqlli tahlilchi.
                   </p>
                 </div>
 
-                {/* Minimalist Monochrome Waveform */}
-                <div className="my-3.5 rounded-xl border border-[#26262A] bg-[#0A0A0C] p-3 flex items-center justify-between">
-                  <div className="flex items-center space-x-1">
+                {/* Gemini AI Ovoz To'lqini: Nozik ko'k-binafsha nur */}
+                <div className="my-4 rounded-xl border border-[#1F1F23] bg-black/60 p-3.5 flex items-center justify-between">
+                  <div className="flex items-center space-x-1.5">
                     {[40, 75, 55, 90, 65, 80, 45, 95, 60, 85, 50, 70].map((h, i) => (
                       <div
                         key={i}
-                        className="w-1 bg-zinc-400/80 rounded-full animate-pulse"
+                        className="w-1 rounded-full bg-gradient-to-t from-blue-500/80 via-indigo-400 to-violet-300 shadow-[0_0_10px_rgba(99,102,241,0.4)] animate-pulse"
                         style={{ height: `${h * 0.28}px`, animationDelay: `${i * 90}ms` }}
                       />
                     ))}
                   </div>
-                  <span className="text-[10px] font-mono text-zinc-500">Akustik chastota</span>
+                  <span className="text-[10px] font-mono text-[#71717A]">AI Ovoz to‘lqini</span>
                 </div>
 
                 {/* Question Chips */}
-                <div className="space-y-1.5 mb-3">
+                <div className="space-y-1.5 mb-4">
                   <button
                     type="button"
                     onClick={() => onNavigateToAi?.("Tog' asali tarkibida qanday vitaminlar va tabiiy fermentlar bor?")}
-                    className="w-full text-left truncate rounded-lg border border-[#26262A] bg-[#161618] hover:bg-[#1E1E22] hover:border-zinc-500 px-2.5 py-1.5 text-[11px] text-zinc-300 transition-colors"
+                    className="w-full text-left truncate rounded-lg border border-[#1F1F23] bg-black/50 hover:bg-[#141416] hover:border-[#27272A] px-2.5 py-1.5 text-[11px] text-zinc-300 transition-colors"
                   >
                     💬 "Asal tabiiyligini qanday tekshiradi?"
                   </button>
                   <button
                     type="button"
                     onClick={() => onNavigateToAi?.("Oziq-ovqat mahsulotlaridagi E-raqamlar xavfli ekanligini qanday bilish mumkin?")}
-                    className="w-full text-left truncate rounded-lg border border-[#26262A] bg-[#161618] hover:bg-[#1E1E22] hover:border-zinc-500 px-2.5 py-1.5 text-[11px] text-zinc-300 transition-colors"
+                    className="w-full text-left truncate rounded-lg border border-[#1F1F23] bg-black/50 hover:bg-[#141416] hover:border-[#27272A] px-2.5 py-1.5 text-[11px] text-zinc-300 transition-colors"
                   >
                     💬 "E-moddalar va allergenlar tahlili"
                   </button>
                 </div>
 
+                {/* Primary CTA button: Pure White with Ethereal Aura */}
                 <button
                   type="button"
                   onClick={() => onNavigateToAi?.()}
-                  className="w-full inline-flex items-center justify-center space-x-1.5 rounded-xl border border-[#26262A] bg-[#18181B] py-2 text-xs font-medium text-zinc-200 hover:bg-[#202024] hover:text-white hover:border-zinc-500 transition-colors shadow-sm"
+                  className="w-full inline-flex items-center justify-center space-x-2 rounded-xl bg-white text-black font-semibold py-3 text-xs shadow-[0_0_30px_rgba(255,255,255,0.18)] hover:bg-[#F4F4F5] hover:shadow-[0_0_35px_rgba(255,255,255,0.28)] transition-all min-h-[42px]"
                 >
-                  <AiCoreIcon className="h-3.5 w-3.5 text-zinc-400" />
-                  <span>Ekspert tahliliga o‘tish</span>
-                  <ArrowRight className="h-3 w-3 text-zinc-400" />
+                  <AiCoreIcon className="h-3.5 w-3.5 text-black" />
+                  <span>AI bilan muloqot</span>
+                  <ArrowRight className="h-3 w-3 text-black" />
                 </button>
               </div>
 
               {/* CARD 3: ANTI-KLON HIMOYASI (md:col-span-6) */}
-              <div className="md:col-span-6 rounded-2xl border border-[#26262A] bg-[#121214] p-4 sm:p-5 flex flex-col justify-between shadow-[0_12px_32px_rgba(0,0,0,0.6)] hover:border-zinc-500 transition-colors">
+              <div className="md:col-span-6 rounded-2xl border border-[#1F1F23] bg-[#0A0A0C] p-6 sm:p-7 flex flex-col justify-between shadow-[0_16px_40px_rgba(0,0,0,0.7)] hover:border-zinc-500 transition-colors">
                 <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="inline-flex items-center space-x-1.5 rounded-md border border-[#26262A] bg-[#18181B] px-2 py-0.5 text-[10px] font-mono text-zinc-300">
+                  <div className="flex items-center justify-between mb-3.5">
+                    <span className="inline-flex items-center space-x-1.5 rounded-md border border-[#1F1F23] bg-black/60 px-2.5 py-0.5 text-[10px] font-mono text-zinc-300">
                       <span className="h-1.5 w-1.5 rounded-full bg-[#F59E0B]" />
                       <span>Kriptografik Filtr</span>
                     </span>
-                    <span className="text-[10px] font-mono text-zinc-500">Real-vaqt</span>
+                    <span className="text-[10px] font-mono text-[#71717A]">Real-vaqt</span>
                   </div>
 
-                  <h3 className="text-base font-bold tracking-tight text-white">
-                    Anti-Kontrafakt & Klon Radari
+                  <h3 className="text-base font-semibold tracking-tight">
+                    <span className="text-white">Anti-kontrafakt</span>{' '}
+                    <span className="text-[#71717A]">va klon radari</span>
                   </h3>
-                  <p className="mt-1 text-xs text-zinc-400 leading-relaxed">
+                  <p className="mt-1.5 text-xs text-[#71717A] leading-relaxed">
                     Nusxalangan yoki shubhali hududda takroriy skanerlangan kodlarni real-vaqt rejimida aniqlash va bloklash protokoli.
                   </p>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-[#26262A] flex items-center justify-between text-xs">
+                <div className="mt-5 pt-3.5 border-t border-[#1F1F23] flex items-center justify-between text-xs">
                   <div className="flex items-center space-x-2">
                     <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
-                    <span className="text-[11px] font-mono text-zinc-400">Monitoring faol</span>
+                    <span className="text-[11px] font-mono text-[#71717A]">Monitoring faol</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleDemoClick('ASL-2026-999')}
-                    className="text-[11px] text-zinc-300 hover:text-white font-medium underline underline-offset-2"
+                    className="text-[11px] text-zinc-300 hover:text-white font-medium underline underline-offset-2 transition-colors"
                   >
                     Shubhali kodni tekshirish →
                   </button>
@@ -755,31 +747,32 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
               </div>
 
               {/* CARD 4: ISHLAB CHIQARUVCHI B2B KABINETI (md:col-span-6) */}
-              <div className="md:col-span-6 rounded-2xl border border-[#26262A] bg-[#121214] p-4 sm:p-5 flex flex-col justify-between shadow-[0_12px_32px_rgba(0,0,0,0.6)] hover:border-zinc-500 transition-colors">
+              <div className="md:col-span-6 rounded-2xl border border-[#1F1F23] bg-[#0A0A0C] p-6 sm:p-7 flex flex-col justify-between shadow-[0_16px_40px_rgba(0,0,0,0.7)] hover:border-zinc-500 transition-colors">
                 <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="inline-flex items-center space-x-1.5 rounded-md border border-[#26262A] bg-[#18181B] px-2 py-0.5 text-[10px] font-mono text-zinc-300">
+                  <div className="flex items-center justify-between mb-3.5">
+                    <span className="inline-flex items-center space-x-1.5 rounded-md border border-[#1F1F23] bg-black/60 px-2.5 py-0.5 text-[10px] font-mono text-zinc-300">
                       <Factory className="h-3 w-3 text-zinc-400" />
                       <span>B2B Tizim Integratsiyasi</span>
                     </span>
-                    <span className="text-[10px] font-mono text-zinc-500">Tezkor B2B</span>
+                    <span className="text-[10px] font-mono text-[#71717A]">Tezkor B2B</span>
                   </div>
 
-                  <h3 className="text-base font-bold tracking-tight text-white">
-                    Korxona Partiyalari & QR Generator
+                  <h3 className="text-base font-semibold tracking-tight">
+                    <span className="text-white">Korxona partiyalari</span>{' '}
+                    <span className="text-[#71717A]">& QR generator</span>
                   </h3>
-                  <p className="mt-1 text-xs text-zinc-400 leading-relaxed">
+                  <p className="mt-1.5 text-xs text-[#71717A] leading-relaxed">
                     Ishlab chiqaruvchilar uchun xavfsiz unikal QR-kodlar generatsiyasi, partiya sertifikatsiyasi va reyestr boshqaruvi.
                   </p>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-[#26262A] flex items-center justify-between text-xs">
-                  <span className="text-[11px] font-mono text-zinc-500">A4 Chop etish • Excel import</span>
+                <div className="mt-5 pt-3.5 border-t border-[#1F1F23] flex items-center justify-between text-xs">
+                  <span className="text-[11px] font-mono text-[#71717A]">A4 Chop etish • Excel import</span>
                   {onNavigateToProducer && (
                     <button
                       type="button"
                       onClick={onNavigateToProducer}
-                      className="text-[11px] text-zinc-200 hover:text-white font-medium flex items-center gap-1 transition-colors"
+                      className="text-[11px] text-zinc-300 hover:text-white font-medium flex items-center gap-1 transition-colors"
                     >
                       <span>Korxona kabinetiga o‘tish</span>
                       <ArrowRight className="h-3 w-3" />

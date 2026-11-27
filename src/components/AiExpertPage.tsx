@@ -46,7 +46,7 @@ export const AiExpertPage: React.FC<AiExpertPageProps> = ({
       {
         id: 'msg-welcome',
         role: 'assistant',
-        text: `Assalomu alaykum! Men **AslCheck AI Ekspert** — mahsulotlar sifati, tarkibi va kontrafaktdan himoyalanish bo‘yicha rasmiy tahlilchiman.
+        text: `Assalomu alaykum! Men **AslCheck Yordamchi** — mahsulotlar sifati, tarkibi va kontrafaktdan himoyalanish bo‘yicha rasmiy tahlilchiman.
 
 Quyidagi masalalarda aniq yordam bera olaman:
 • Qadoqdagi tarkib va E-qo‘shimchalar (allergenlar, konservantlar) tahlili
@@ -399,22 +399,23 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
   return (
     <div className="mx-auto max-w-4xl px-3 py-4 sm:px-6 sm:py-6 flex flex-col h-[calc(100dvh-4rem)] min-h-[calc(100dvh-130px)] max-h-[920px]">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 pb-3 border-b border-[#1F1F1F]">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 pb-3 border-b border-[#1F1F23]">
         <div className="flex items-center space-x-3">
-          <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900 text-[#FAFAFA] shadow-inner shrink-0">
-            <AiCoreIcon className="h-4 w-4 sm:h-5 sm:w-5 text-[#FAFAFA]" strokeWidth={1.75} />
+          <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl border border-[#1F1F23] bg-[#0A0A0C] text-white shadow-inner shrink-0">
+            <AiCoreIcon className="h-4 w-4 sm:h-5 sm:w-5 text-white" strokeWidth={1.75} />
           </div>
           <div>
             <div className="flex items-center space-x-2">
-              <h1 className="text-sm sm:text-lg font-bold tracking-tight text-[#FAFAFA]">
-                AslCheck AI Ekspert
+              <h1 className="text-sm sm:text-lg font-semibold tracking-tight">
+                <span className="text-white">AslCheck Yordamchi</span>{' '}
+                <span className="text-[#71717A]">• Aqlli tahlil</span>
               </h1>
-              <span className="inline-flex items-center space-x-1 rounded-full border border-[#10B981]/30 bg-[#10B981]/10 px-2 py-0.5 text-[9px] sm:text-[10px] font-mono font-medium text-[#10B981]">
+              <span className="inline-flex items-center space-x-1 rounded-full border border-[#1F1F23] bg-[#0A0A0C] px-2 py-0.5 text-[9px] sm:text-[10px] font-mono text-zinc-300">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#10B981] animate-pulse" />
                 <span>FAOL</span>
               </span>
             </div>
-            <p className="text-[11px] sm:text-xs text-[#888888] truncate">
+            <p className="text-[11px] sm:text-xs text-[#71717A] truncate">
               Mahsulotlar sifati, tarkibi va kontrafaktga qarshi tahlilchi
             </p>
           </div>
@@ -432,7 +433,7 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
             className={`flex items-center space-x-1.5 rounded-lg border px-2.5 py-1.5 text-xs transition-colors min-h-[34px] ${
               autoSpeak
                 ? 'border-[#10B981]/40 bg-[#10B981]/10 text-[#10B981]'
-                : 'border-[#1F1F1F] bg-[#0A0A0A] text-[#888888] hover:text-[#FAFAFA] hover:bg-[#141414]'
+                : 'border-[#1F1F23] bg-[#0A0A0C] text-[#71717A] hover:text-white hover:border-[#27272A]'
             }`}
           >
             {autoSpeak ? (
@@ -447,7 +448,7 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
             type="button"
             onClick={handleClearHistory}
             title="Muloqot tarixini tozalash"
-            className="flex items-center space-x-1.5 rounded-lg border border-[#1F1F1F] bg-[#0A0A0A] px-2.5 py-1.5 text-xs text-[#888888] hover:text-[#FAFAFA] hover:bg-[#141414] transition-colors min-h-[34px]"
+            className="flex items-center space-x-1.5 rounded-lg border border-[#1F1F23] bg-[#0A0A0C] px-2.5 py-1.5 text-xs text-[#71717A] hover:text-white hover:border-[#27272A] transition-colors min-h-[34px]"
           >
             <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} />
             <span>Tozalash</span>
@@ -648,7 +649,7 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
         ) : (
           <form
             onSubmit={handleSubmit}
-            className="flex items-center gap-1.5 rounded-xl border border-white/[0.08] border-t-white/15 bg-gradient-to-b from-[#111111] to-[#080808] p-1.5 focus-within:border-white/40 transition-colors"
+            className="flex items-center gap-1.5 rounded-xl border border-[#1F1F23] bg-[#0A0A0C] p-1.5 focus-within:border-white/30 transition-all shadow-[0_12px_32px_rgba(0,0,0,0.85)]"
           >
             <input
               ref={inputRef}
@@ -657,7 +658,7 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Savol yozing..."
               disabled={isLoading}
-              className="flex-1 min-w-0 bg-transparent px-2.5 py-2 text-base sm:text-sm text-[#FAFAFA] placeholder-[#525252] focus:outline-none min-h-[38px]"
+              className="flex-1 min-w-0 bg-transparent px-3 py-2 text-base sm:text-sm text-white placeholder-[#52525B] focus:outline-none min-h-[38px]"
             />
             <button
               type="button"
@@ -665,14 +666,14 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
               disabled={isLoading}
               title="Mikrofon orqali o‘zbekcha ovozli savol berish"
               aria-label="Ovozli savol berish"
-              className="flex items-center justify-center rounded-lg border border-[#262626] bg-[#141414] px-2.5 py-2 text-[#D4D4D4] hover:text-white hover:border-[#3A3A3A] hover:bg-[#1C1C1C] disabled:opacity-30 transition-colors min-h-[38px] min-w-[38px] shrink-0"
+              className="flex items-center justify-center rounded-lg border border-[#27272A] bg-black/60 px-2.5 py-2 text-zinc-300 hover:text-white hover:border-zinc-500 disabled:opacity-30 transition-colors min-h-[38px] min-w-[38px] shrink-0"
             >
               <Mic className="h-4 w-4" strokeWidth={1.85} />
             </button>
             <button
               type="submit"
               disabled={isLoading || !inputValue.trim()}
-              className="flex items-center space-x-1.5 rounded-lg bg-white px-3 sm:px-3.5 py-2 text-xs font-semibold text-black hover:bg-zinc-200 disabled:opacity-30 transition-colors shadow-sm min-h-[38px] shrink-0"
+              className="flex items-center space-x-1.5 rounded-lg bg-white px-3.5 sm:px-4 py-2 text-xs font-semibold text-black hover:bg-[#F4F4F5] disabled:opacity-30 transition-all shadow-[0_0_20px_rgba(255,255,255,0.18)] min-h-[38px] shrink-0"
             >
               {isLoading ? (
                 <RefreshCw className="h-3.5 w-3.5 animate-spin" strokeWidth={2} />

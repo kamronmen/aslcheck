@@ -102,25 +102,25 @@ export function App() {
         </Suspense>
       </main>
 
-      {/* Floating Action Controls: Enterprise Monochrome Dock */}
+      {/* Floating Action Controls: Minimalist Awwwards Dock */}
       {activeTab !== 'ai' && (
-        <div className="no-print fixed bottom-4 right-4 z-30 flex items-center rounded-full border border-[#26262A] bg-[#121214]/95 p-1 shadow-[0_12px_32px_rgba(0,0,0,0.85)] backdrop-blur-xl">
+        <div className="no-print fixed bottom-4 right-4 z-30 flex items-center rounded-full border border-[#1F1F23] bg-[#0A0A0C]/90 p-1 shadow-[0_12px_32px_rgba(0,0,0,0.85)] backdrop-blur-xl">
           <button
             type="button"
             onClick={() => setIsVideoGuideOpen(true)}
             title="Ishlatish yo‘riqnomasi videosini ko‘rish"
-            className="inline-flex items-center space-x-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-zinc-300 hover:text-white hover:bg-white/10 transition-colors"
+            className="inline-flex items-center space-x-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-[#71717A] hover:text-white hover:bg-white/5 transition-colors"
           >
             <Film className="h-3.5 w-3.5 text-zinc-400" strokeWidth={1.75} />
             <span>Yo‘riqnoma</span>
           </button>
-          <div className="h-3.5 w-[1px] bg-[#26262A]" />
+          <div className="h-3.5 w-[1px] bg-[#1F1F23]" />
           <a
             href={PRESENTATION_URL}
             target="_blank"
             rel="noopener noreferrer"
             title="AslCheck taqdimotini ochish"
-            className="inline-flex items-center space-x-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-zinc-300 hover:text-white hover:bg-white/10 transition-colors"
+            className="inline-flex items-center space-x-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-[#71717A] hover:text-white hover:bg-white/5 transition-colors"
           >
             <Presentation className="h-3.5 w-3.5 text-zinc-400" strokeWidth={1.75} />
             <span>Taqdimot</span>
@@ -135,20 +135,20 @@ export function App() {
         onClose={() => setIsVideoGuideOpen(false)}
       />
 
-      <footer className="border-t border-[#1F1F1F] bg-[#050505] pt-8 pb-20 sm:pb-8 text-xs text-[#525252]">
+      <footer className="border-t border-[#1F1F23] bg-black pt-8 pb-20 sm:pb-8 text-xs text-[#71717A]">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center space-x-2">
-            <AslBrandMark className="h-4 w-4 text-[#888888]" strokeWidth={1.75} />
-            <span className="font-semibold text-[#888888]">AslCheck</span>
+            <AslBrandMark className="h-4 w-4 text-[#71717A]" strokeWidth={1.75} />
+            <span className="font-semibold text-white">AslCheck</span>
             <span>—</span>
             <span>Milliy mahsulotlar haqiqiyligi reyestri</span>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 text-[11px] text-[#525252]">
+          <div className="flex flex-wrap items-center justify-center gap-3 text-[11px] text-[#71717A]">
             <button
               type="button"
               onClick={() => setIsVideoGuideOpen(true)}
-              className="inline-flex items-center space-x-1 text-[#888888] hover:text-white transition-colors"
+              className="inline-flex items-center space-x-1 text-[#71717A] hover:text-white transition-colors"
             >
               <Film className="h-3 w-3 text-zinc-400" strokeWidth={1.75} />
               <span>Ishlatish yo‘riqnomasi</span>
@@ -158,9 +158,9 @@ export function App() {
               href={PRESENTATION_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center space-x-1 text-[#888888] hover:text-[#FAFAFA] transition-colors"
+              className="inline-flex items-center space-x-1 text-[#71717A] hover:text-white transition-colors"
             >
-              <Presentation className="h-3 w-3 text-[#10B981]" strokeWidth={1.75} />
+              <Presentation className="h-3 w-3 text-zinc-400" strokeWidth={1.75} />
               <span>Taqdimot</span>
               <ArrowUpRight className="h-3 w-3" strokeWidth={1.75} />
             </a>
