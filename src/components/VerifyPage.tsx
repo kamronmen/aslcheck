@@ -10,6 +10,7 @@ import {
   X,
   Play,
   Film,
+  Factory,
 } from 'lucide-react';
 import { QrScannerModal } from './QrScannerModal';
 import { VerificationCard } from './VerificationCard';
@@ -26,6 +27,7 @@ import type {
 
 interface VerifyPageProps {
   onNavigateToAi?: (question?: string) => void;
+  onNavigateToProducer?: () => void;
   onOpenVideoGuide?: () => void;
 }
 
@@ -45,6 +47,7 @@ function getInitialCodeFromUrl(): string {
 
 export const VerifyPage: React.FC<VerifyPageProps> = ({
   onNavigateToAi,
+  onNavigateToProducer,
   onOpenVideoGuide,
 }) => {
   const [inputCode, setInputCode] = useState<string>(getInitialCodeFromUrl);
@@ -331,76 +334,43 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
           </div>
         </form>
 
-        {/* Quick Demo Strip */}
-        <div className="mt-5 pt-4 border-t border-[#141414]">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <span className="text-[11px] text-[#525252] uppercase tracking-wider font-mono">
-              Jonli demo sinov kodlari:
-            </span>
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => handleDemoClick('ASL-2026-001')}
-                className="flex items-center space-x-1.5 rounded-md border border-[#10B981]/30 bg-[#10B981]/10 px-2.5 py-1 text-[11px] font-mono text-[#10B981] hover:bg-[#10B981]/20 transition-colors min-h-[32px]"
-              >
-                <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
-                <span>ASL-2026-001</span>
-                <span className="text-[10px] text-[#888888]">(Haqiqiy)</span>
-              </button>
+        {/* Sleek Integrated Demo Pills */}
+        <div className="mt-4 pt-3.5 border-t border-white/[0.06] flex flex-wrap items-center justify-between gap-2">
+          <span className="text-[11px] text-[#737373] font-mono tracking-wide">
+            Sinov uchun kodlar:
+          </span>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => handleDemoClick('ASL-2026-001')}
+              className="inline-flex items-center space-x-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-mono font-medium text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/50 transition-all"
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>ASL-2026-001</span>
+              <span className="text-[10px] text-zinc-400 font-sans">(Asl)</span>
+            </button>
 
-              <button
-                type="button"
-                onClick={() => handleDemoClick('ASL-2026-999')}
-                className="flex items-center space-x-1.5 rounded-md border border-[#F59E0B]/30 bg-[#F59E0B]/10 px-2.5 py-1 text-[11px] font-mono text-[#F59E0B] hover:bg-[#F59E0B]/20 transition-colors min-h-[32px]"
-              >
-                <span className="h-1.5 w-1.5 rounded-full bg-[#F59E0B]" />
-                <span>ASL-2026-999</span>
-                <span className="text-[10px] text-[#888888]">(Shubhali)</span>
-              </button>
+            <button
+              type="button"
+              onClick={() => handleDemoClick('ASL-2026-999')}
+              className="inline-flex items-center space-x-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[11px] font-mono font-medium text-amber-400 hover:bg-amber-500/20 hover:border-amber-500/50 transition-all"
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+              <span>ASL-2026-999</span>
+              <span className="text-[10px] text-zinc-400 font-sans">(Klon)</span>
+            </button>
 
-              <button
-                type="button"
-                onClick={() => handleDemoClick('FAKE-000')}
-                className="flex items-center space-x-1.5 rounded-md border border-[#EF4444]/30 bg-[#EF4444]/10 px-2.5 py-1 text-[11px] font-mono text-[#EF4444] hover:bg-[#EF4444]/20 transition-colors min-h-[32px]"
-              >
-                <span className="h-1.5 w-1.5 rounded-full bg-[#EF4444]" />
-                <span>FAKE-000</span>
-                <span className="text-[10px] text-[#888888]">(Topilmadi)</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => handleDemoClick('FAKE-000')}
+              className="inline-flex items-center space-x-1.5 rounded-full border border-rose-500/30 bg-rose-500/10 px-2.5 py-1 text-[11px] font-mono text-rose-400 hover:bg-rose-500/20 hover:border-rose-500/50 transition-all"
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-rose-400" />
+              <span>FAKE-000</span>
+              <span className="text-[10px] text-zinc-400 font-sans">(Topilmadi)</span>
+            </button>
           </div>
         </div>
-      </div>
-
-      {/* Prominent AI Assistant Banner */}
-      <div className="mt-5 mx-auto max-w-2xl rounded-xl border border-white/[0.06] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-[0_14px_40px_rgba(0,0,0,0.7)]">
-        <div className="flex items-start space-x-3">
-          <div className="flex w-10 h-10 shrink-0 items-center justify-center rounded-xl bg-zinc-900 border border-zinc-800 text-[#FAFAFA]">
-            <AiCoreIcon className="w-5 h-5 text-[#FAFAFA]" strokeWidth={1.75} />
-          </div>
-          <div>
-            <div className="text-xs font-semibold text-[#FAFAFA] flex items-center space-x-2">
-              <span>AslCheck AI Ekspert</span>
-              <span className="inline-flex items-center space-x-1 rounded-full border border-[#10B981]/30 bg-[#10B981]/10 px-1.5 py-0.5 text-[9px] font-mono font-medium text-[#10B981]">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
-                <span>FAOL</span>
-              </span>
-            </div>
-            <p className="text-[11px] text-[#888888] mt-0.5 leading-relaxed">
-              Mahsulot tabiiyligi, E-qo‘shimchalar yoki qadoqning asl ekanligi bo‘yicha savolingiz bormi?
-            </p>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => onNavigateToAi?.()}
-          className="shrink-0 flex items-center justify-center space-x-1.5 rounded-lg border border-[#262626] bg-[#141414] px-3.5 py-2.5 text-xs font-semibold text-[#FAFAFA] hover:bg-[#1E1E1E] hover:border-[#444444] transition-colors min-h-[40px]"
-        >
-          <AiCoreIcon className="h-3.5 w-3.5 text-zinc-300" strokeWidth={1.75} />
-          <span>AI bilan maslahat</span>
-          <ArrowRight className="h-3.5 w-3.5" strokeWidth={2} />
-        </button>
       </div>
 
       {/* Vision Forensics Loading State */}
@@ -611,90 +581,218 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
 
       {/* Verification Result Anchor (auto-scrolled into view on mobile/desktop) */}
       <div ref={resultSectionRef} className="scroll-mt-20">
-        {/* Empty-state 3-step Architecture Bento Strip */}
+        {/* AslCheck Master Bento Architecture (Unified 4-Quadrant Showcase) */}
         {!isLoading && !verificationResult && !visionResult && !isVisionLoading && !visionError && (
-          <div className="mt-6 mx-auto max-w-2xl grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="rounded-xl border border-white/[0.06] border-t-white/10 bg-gradient-to-b from-[#0E0E0E] to-[#060606] p-3.5 space-y-1.5">
-              <div className="flex items-center justify-between">
-                <QrCode className="h-4 w-4 text-[#FAFAFA]" strokeWidth={1.75} />
-                <span className="font-mono text-[10px] text-[#525252]">01</span>
+          <div className="mt-8 mx-auto max-w-4xl space-y-3.5">
+            {/* Section Header */}
+            <div className="flex items-center justify-between px-1">
+              <div className="flex items-center space-x-2">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <h2 className="text-xs font-mono font-semibold tracking-wider uppercase text-zinc-400">
+                  Platforma Imkoniyatlari & Video Qo‘llanma
+                </h2>
               </div>
-              <div className="text-xs font-semibold text-[#FAFAFA]">Tezkor QR Pasport</div>
-              <p className="text-[11px] text-[#737373] leading-relaxed">
-                Kamera yoki rasm orqali 1 soniyada zavod pasportini oching.
-              </p>
+              <span className="text-[11px] font-mono text-zinc-600 hidden sm:inline-block">
+                v2.4 PRO • Gemini AI Powered
+              </span>
             </div>
 
-            <div className="rounded-xl border border-white/[0.06] border-t-white/10 bg-gradient-to-b from-[#0E0E0E] to-[#060606] p-3.5 space-y-1.5">
-              <div className="flex items-center justify-between">
-                <CloneAlertIcon className="h-4 w-4 text-[#10B981]" strokeWidth={1.75} />
-                <span className="font-mono text-[10px] text-[#525252]">02</span>
-              </div>
-              <div className="text-xs font-semibold text-[#FAFAFA]">Anti-Clone Himoya</div>
-              <p className="text-[11px] text-[#737373] leading-relaxed">
-                Klonlangan kodlar, limit oshishi va muddati o‘tishini darhol tutadi.
-              </p>
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5">
+              {/* CARD 1: HERO VIDEO GUIDE (md:col-span-7) */}
+              <div className="md:col-span-7 rounded-2xl border border-white/[0.08] border-t-emerald-500/40 bg-gradient-to-b from-[#0F1714] via-[#090D0B] to-[#060606] p-4 sm:p-5 flex flex-col justify-between relative overflow-hidden group shadow-[0_20px_50px_rgba(0,0,0,0.85)] hover:border-emerald-500/50 transition-all duration-300">
+                {/* Ambient glow highlight */}
+                <div className="pointer-events-none absolute -right-12 -top-12 h-44 w-44 rounded-full bg-emerald-500/10 blur-3xl group-hover:bg-emerald-500/20 transition-all" />
 
-            <div className="rounded-xl border border-white/[0.06] border-t-white/10 bg-gradient-to-b from-[#0E0E0E] to-[#060606] p-3.5 space-y-1.5">
-              <div className="flex items-center justify-between">
-                <AiCoreIcon className="h-4 w-4 text-zinc-200" strokeWidth={1.75} />
-                <span className="font-mono text-[10px] text-[#525252]">03</span>
-              </div>
-              <div className="text-xs font-semibold text-[#FAFAFA]">O‘zbekcha AI & Ovoz</div>
-              <p className="text-[11px] text-[#737373] leading-relaxed">
-                Qadoq kriminalistikasi, tarkib tahlili va jonli ovozli maslahat.
-              </p>
-            </div>
-          </div>
-        )}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="inline-flex items-center space-x-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-mono font-medium text-emerald-400">
+                      <Film className="h-3 w-3" />
+                      <span>Video Qo‘llanma • 1:11 min</span>
+                    </span>
+                    <span className="text-[10px] font-mono text-zinc-500">
+                      1080p HD
+                    </span>
+                  </div>
 
-        {/* Video Guide (Ishlatish Yo'riqnomasi) Showcase Banner */}
-        {!isLoading && !verificationResult && !visionResult && !isVisionLoading && !visionError && (
-          <div className="mt-4 mx-auto max-w-2xl rounded-2xl border border-white/[0.08] border-t-white/20 bg-gradient-to-r from-[#0D1512] via-[#0A0D0C] to-[#080808] p-3.5 sm:p-4.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5 shadow-[0_16px_40px_rgba(0,0,0,0.7)]">
-            <div className="flex items-center space-x-3.5 min-w-0">
-              <button
-                type="button"
-                onClick={onOpenVideoGuide}
-                title="Videoni tomosha qilish"
-                className="relative h-14 w-24 shrink-0 rounded-xl overflow-hidden border border-emerald-500/30 bg-black group shadow-md focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
-              >
-                <img
-                  src="/video-poster.jpg"
-                  alt="AslCheck Video Yo'riqnoma"
-                  className="h-full w-full object-cover opacity-85 group-hover:scale-105 group-hover:opacity-100 transition-all duration-300"
-                />
-                <div className="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/20 transition-colors">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500 text-black shadow-lg group-hover:scale-110 transition-transform">
-                    <Play className="h-3.5 w-3.5 fill-black translate-x-0.5" />
+                  <h3 className="text-base sm:text-lg font-bold tracking-tight text-white group-hover:text-emerald-300 transition-colors">
+                    AslCheck PRO qanday ishlaydi?
+                  </h3>
+                  <p className="mt-1.5 text-xs text-zinc-400 leading-relaxed">
+                    QR skanerlash, raqamli pasport, o‘zbekcha AI ovozli tahlil va soxta kod radari bo‘yicha 1 daqiqalik rasmiy video qo‘llanma.
+                  </p>
+                </div>
+
+                {/* Video Preview Box with Play Overlay */}
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={onOpenVideoGuide}
+                  onKeyDown={(e) => e.key === 'Enter' && onOpenVideoGuide?.()}
+                  className="mt-4 relative aspect-[16/9] w-full rounded-xl overflow-hidden border border-white/10 bg-black cursor-pointer shadow-inner"
+                >
+                  <img
+                    src="/video-poster.jpg"
+                    alt="Video yo'riqnoma preview"
+                    className="h-full w-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-center justify-center">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full border border-emerald-400/50 bg-emerald-500 text-black shadow-[0_0_30px_rgba(16,185,129,0.5)] group-hover:scale-110 transition-transform">
+                      <Play className="h-5 w-5 fill-black translate-x-0.5" />
+                    </div>
+                  </div>
+
+                  {/* Chapter Chips overlay on bottom */}
+                  <div className="absolute bottom-2 inset-x-2 flex items-center justify-between text-[10px] font-mono text-zinc-300 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/10">
+                    <span className="flex items-center gap-1">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <span>Ovozli tushuntirish</span>
+                    </span>
+                    <span className="text-emerald-400">Ko‘rish uchun bosing →</span>
                   </div>
                 </div>
-              </button>
 
-              <div className="min-w-0">
-                <div className="flex items-center space-x-2">
-                  <span className="text-xs sm:text-sm font-semibold tracking-tight text-white flex items-center gap-1.5">
-                    <Film className="h-3.5 w-3.5 text-emerald-400" />
-                    <span>Ishlatish yo‘riqnomasi</span>
-                  </span>
-                  <span className="rounded bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.2 text-[9px] font-mono text-emerald-400">
-                    1:11 min
-                  </span>
+                {/* Bottom Quick Chapters */}
+                <div className="mt-3.5 pt-3 border-t border-white/[0.06] flex flex-wrap items-center gap-1.5 text-[10px] font-mono text-zinc-400">
+                  <span className="text-zinc-600">Mavzular:</span>
+                  <span className="rounded bg-white/5 px-2 py-0.5 text-zinc-300">00:12 Pasport</span>
+                  <span className="rounded bg-white/5 px-2 py-0.5 text-zinc-300">00:26 AI Ovoz</span>
+                  <span className="rounded bg-white/5 px-2 py-0.5 text-zinc-300">00:38 Klon Radari</span>
+                  <span className="rounded bg-white/5 px-2 py-0.5 text-zinc-300">00:50 B2B QR</span>
                 </div>
-                <p className="mt-0.5 text-[11px] text-[#A0A0A0] line-clamp-1 sm:line-clamp-none">
-                  QR skanerlash, AI ovozli ekspert va B2B kabinet bo‘yicha to‘liq video yo‘riqnoma.
-                </p>
+              </div>
+
+              {/* CARD 2: AI OVOZLI EKSPERT (md:col-span-5) */}
+              <div className="md:col-span-5 rounded-2xl border border-white/[0.08] border-t-indigo-500/40 bg-gradient-to-b from-[#111018] via-[#0B0A0F] to-[#060606] p-4 sm:p-5 flex flex-col justify-between shadow-[0_20px_50px_rgba(0,0,0,0.85)] hover:border-indigo-500/40 transition-all duration-300 relative overflow-hidden group">
+                <div className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-indigo-500/10 blur-3xl group-hover:bg-indigo-500/20 transition-all" />
+
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="inline-flex items-center space-x-1.5 rounded-full border border-indigo-500/30 bg-indigo-500/15 px-2.5 py-0.5 text-[10px] font-mono font-medium text-indigo-300">
+                      <AiCoreIcon className="h-3 w-3" />
+                      <span>AI Ovozli Ekspert • FAOL</span>
+                    </span>
+                    <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" />
+                  </div>
+
+                  <h3 className="text-base font-bold tracking-tight text-white group-hover:text-indigo-200 transition-colors">
+                    Gemini AI bilan muloqot
+                  </h3>
+                  <p className="mt-1 text-xs text-zinc-400 leading-relaxed">
+                    Mahsulot tarkibi, E-moddalar, laboratoriya tahlili va tabiiylik darajasini ovozli tarzda so‘rang.
+                  </p>
+                </div>
+
+                {/* Animated Waveform Visualizer Mockup */}
+                <div className="my-3.5 rounded-xl border border-white/5 bg-black/60 p-3 flex items-center justify-between">
+                  <div className="flex items-center space-x-1">
+                    {[40, 75, 55, 90, 65, 80, 45, 95, 60, 85, 50, 70].map((h, i) => (
+                      <div
+                        key={i}
+                        className="w-1 bg-gradient-to-t from-indigo-500 to-emerald-400 rounded-full animate-pulse"
+                        style={{ height: `${h * 0.28}px`, animationDelay: `${i * 90}ms` }}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-[10px] font-mono text-zinc-400">O‘zbekcha ovoz</span>
+                </div>
+
+                {/* Quick Question Chips */}
+                <div className="space-y-1.5 mb-3">
+                  <button
+                    type="button"
+                    onClick={() => onNavigateToAi?.("Tog' asali tarkibida qanday vitaminlar va tabiiy fermentlar bor?")}
+                    className="w-full text-left truncate rounded-lg border border-white/5 bg-white/[0.02] hover:bg-white/[0.06] hover:border-white/15 px-2.5 py-1.5 text-[11px] text-zinc-300 transition-colors"
+                  >
+                    💬 "Asal tabiiyligini qanday tekshiradi?"
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onNavigateToAi?.("Oziq-ovqat mahsulotlaridagi E-raqamlar xavfli ekanligini qanday bilish mumkin?")}
+                    className="w-full text-left truncate rounded-lg border border-white/5 bg-white/[0.02] hover:bg-white/[0.06] hover:border-white/15 px-2.5 py-1.5 text-[11px] text-zinc-300 transition-colors"
+                  >
+                    💬 "E-moddalar va allergenlar tahlili"
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => onNavigateToAi?.()}
+                  className="w-full inline-flex items-center justify-center space-x-1.5 rounded-xl border border-indigo-500/40 bg-indigo-500/15 py-2 text-xs font-semibold text-indigo-300 hover:bg-indigo-500/25 transition-all shadow-sm"
+                >
+                  <AiCoreIcon className="h-3.5 w-3.5" />
+                  <span>AI bilan gaplashish</span>
+                  <ArrowRight className="h-3 w-3" />
+                </button>
+              </div>
+
+              {/* CARD 3: ANTI-KLON HIMOYASI (md:col-span-6) */}
+              <div className="md:col-span-6 rounded-2xl border border-white/[0.08] border-t-amber-500/40 bg-gradient-to-b from-[#14100C] via-[#0E0C09] to-[#060606] p-4 sm:p-5 flex flex-col justify-between shadow-[0_20px_50px_rgba(0,0,0,0.85)] hover:border-amber-500/40 transition-all duration-300 relative overflow-hidden group">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="inline-flex items-center space-x-1.5 rounded-full border border-amber-500/30 bg-amber-500/15 px-2.5 py-0.5 text-[10px] font-mono font-medium text-amber-400">
+                      <CloneAlertIcon className="h-3 w-3" />
+                      <span>Kriptografik Anti-Klon</span>
+                    </span>
+                    <span className="text-[10px] font-mono text-zinc-500">Real-vaqt</span>
+                  </div>
+
+                  <h3 className="text-base font-bold tracking-tight text-white group-hover:text-amber-200 transition-colors">
+                    Soxta Kod & Klon Radari
+                  </h3>
+                  <p className="mt-1 text-xs text-zinc-400 leading-relaxed">
+                    Agar bitta QR-kod bir vaqtning o‘zida turli nuqtalarda skanerlansa yoki limitdan oshsa, tizim zudlik bilan qizil ogohlantirish beradi va xaritada shubhali nuqtani belgilaydi.
+                  </p>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between text-xs">
+                  <div className="flex items-center space-x-2">
+                    <div className="flex h-2 w-2 rounded-full bg-amber-400 animate-ping" />
+                    <span className="text-[11px] font-mono text-zinc-300">Klon filtri faol</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleDemoClick('ASL-2026-999')}
+                    className="text-[11px] text-amber-400 hover:text-amber-300 font-medium underline underline-offset-2"
+                  >
+                    Klon kodni sinash →
+                  </button>
+                </div>
+              </div>
+
+              {/* CARD 4: ISHLAB CHIQARUVCHI B2B KABINETI (md:col-span-6) */}
+              <div className="md:col-span-6 rounded-2xl border border-white/[0.08] border-t-zinc-400/40 bg-gradient-to-b from-[#141414] via-[#0E0E0E] to-[#060606] p-4 sm:p-5 flex flex-col justify-between shadow-[0_20px_50px_rgba(0,0,0,0.85)] hover:border-zinc-500/40 transition-all duration-300 relative overflow-hidden group">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="inline-flex items-center space-x-1.5 rounded-full border border-white/15 bg-white/5 px-2.5 py-0.5 text-[10px] font-mono font-medium text-zinc-300">
+                      <Factory className="h-3 w-3" />
+                      <span>Ishlab Chiqaruvchi Kabineti</span>
+                    </span>
+                    <span className="text-[10px] font-mono text-emerald-400">Tezkor B2B</span>
+                  </div>
+
+                  <h3 className="text-base font-bold tracking-tight text-white group-hover:text-zinc-200 transition-colors">
+                    1 Bosishda 100 ta Unikal QR
+                  </h3>
+                  <p className="mt-1 text-xs text-zinc-400 leading-relaxed">
+                    AI Smart Fill, Excel import yoki 1 bosishda partiyani ko‘paytirish orqali yuzlab kriptografik himoyalangan QR kodlarni generatsiya qiling va A4 formatda chop eting.
+                  </p>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between text-xs">
+                  <span className="text-[11px] font-mono text-zinc-400">A4 Chop etish • Excel import</span>
+                  {onNavigateToProducer && (
+                    <button
+                      type="button"
+                      onClick={onNavigateToProducer}
+                      className="text-[11px] text-zinc-200 hover:text-white font-semibold flex items-center gap-1 group-hover:translate-x-0.5 transition-transform"
+                    >
+                      <span>Kabinetga o‘tish</span>
+                      <ArrowRight className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
-
-            <button
-              type="button"
-              onClick={onOpenVideoGuide}
-              className="inline-flex items-center justify-center space-x-1.5 rounded-xl border border-emerald-500/40 bg-emerald-500/15 px-3.5 py-2 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/25 hover:border-emerald-500/60 transition-all shrink-0 w-full sm:w-auto shadow-sm"
-            >
-              <Play className="h-3 w-3 fill-emerald-400" />
-              <span>Videoni ko‘rish</span>
-            </button>
           </div>
         )}
 

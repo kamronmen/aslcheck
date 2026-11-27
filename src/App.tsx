@@ -85,6 +85,7 @@ export function App() {
         {activeTab === 'verify' && (
           <VerifyPage
             onNavigateToAi={handleNavigateToAi}
+            onNavigateToProducer={() => setActiveTab('producer')}
             onOpenVideoGuide={() => setIsVideoGuideOpen(true)}
           />
         )}
@@ -101,31 +102,29 @@ export function App() {
         </Suspense>
       </main>
 
-      {/* Floating Action Controls: Yo'riqnoma & Taqdimot */}
+      {/* Floating Action Controls: Unified Obsidian Glass Dock */}
       {activeTab !== 'ai' && (
-        <div className="no-print fixed bottom-4 right-4 z-30 flex items-center space-x-2">
-          {/* Yo'riqnoma Video Pill */}
+        <div className="no-print fixed bottom-4 right-4 z-30 flex items-center rounded-full border border-white/10 border-t-white/20 bg-[#0C0C0C]/90 p-1 shadow-[0_12px_40px_rgba(0,0,0,0.9)] backdrop-blur-xl">
           <button
             type="button"
             onClick={() => setIsVideoGuideOpen(true)}
             title="Ishlatish yo‘riqnomasi videosini ko‘rish"
-            className="inline-flex items-center space-x-1.5 rounded-full border border-emerald-500/30 bg-[#0C0C0C]/90 px-3.5 py-2 text-xs font-semibold text-emerald-400 shadow-[0_10px_32px_rgba(0,0,0,0.85)] backdrop-blur-md hover:border-emerald-500/50 hover:bg-[#141414] transition-all"
+            className="inline-flex items-center space-x-1.5 rounded-full px-3 py-1.5 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/15 transition-all"
           >
-            <Film className="h-3.5 w-3.5 text-emerald-400" strokeWidth={1.75} />
+            <Film className="h-3.5 w-3.5" strokeWidth={1.75} />
             <span>Yo‘riqnoma</span>
           </button>
-
-          {/* Taqdimot Pill */}
+          <div className="h-3.5 w-[1px] bg-white/15" />
           <a
             href={PRESENTATION_URL}
             target="_blank"
             rel="noopener noreferrer"
             title="AslCheck taqdimotini ochish"
-            className="inline-flex items-center space-x-1.5 rounded-full border border-white/15 border-t-white/25 bg-[#0C0C0C]/90 px-3.5 py-2 text-xs font-medium text-[#FAFAFA] shadow-[0_10px_32px_rgba(0,0,0,0.85)] backdrop-blur-md hover:border-white/35 hover:bg-[#171717] transition-all"
+            className="inline-flex items-center space-x-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-zinc-300 hover:text-white hover:bg-white/10 transition-all"
           >
-            <Presentation className="h-3.5 w-3.5 text-[#10B981]" strokeWidth={1.75} />
+            <Presentation className="h-3.5 w-3.5 text-zinc-400" strokeWidth={1.75} />
             <span>Taqdimot</span>
-            <ArrowUpRight className="h-3 w-3 text-[#888888]" strokeWidth={1.75} />
+            <ArrowUpRight className="h-3 w-3 text-zinc-500" strokeWidth={1.75} />
           </a>
         </div>
       )}
@@ -136,7 +135,7 @@ export function App() {
         onClose={() => setIsVideoGuideOpen(false)}
       />
 
-      <footer className="border-t border-[#1F1F1F] bg-[#050505] py-8 text-xs text-[#525252]">
+      <footer className="border-t border-[#1F1F1F] bg-[#050505] pt-8 pb-20 sm:pb-8 text-xs text-[#525252]">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center space-x-2">
             <AslBrandMark className="h-4 w-4 text-[#888888]" strokeWidth={1.75} />
