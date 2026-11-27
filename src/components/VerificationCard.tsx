@@ -389,9 +389,9 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
                       maxLength={6}
                       value={scratchPinInput}
                       onChange={(e) => setScratchPinInput(e.target.value.replace(/\D/g, ''))}
-                      placeholder="Skretch PIN (masalan: 7492)"
+                      placeholder="4 xonali PIN"
                       disabled={isPinVerifying}
-                      className="w-full rounded-xl border border-[#1F1F23] bg-black py-2.5 px-3.5 font-mono text-sm tracking-widest text-white placeholder-[#52525B] focus:border-white/40 focus:outline-none transition-colors"
+                      className="w-full rounded-xl border border-[#1F1F23] bg-black py-2.5 pl-3.5 pr-28 font-mono text-sm tracking-widest text-white placeholder-[#52525B] focus:border-white/40 focus:outline-none transition-colors"
                     />
                     <span className="absolute right-3 top-2.5 text-[10px] font-mono text-zinc-600">
                       Demo PIN: {product.scratch_pin}
