@@ -260,25 +260,25 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
   };
 
   return (
-    <div className="mt-6 rounded-xl border border-white/[0.08] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] p-4 sm:p-6 shadow-[0_20px_50px_rgba(0,0,0,0.8)] animate-in fade-in duration-200">
+    <div className="mt-6 rounded-2xl border border-[#1F1F23] border-t-white/[0.1] bg-[#0A0A0C] p-5 sm:p-6 shadow-[0_20px_50px_rgba(0,0,0,0.85)] animate-in fade-in duration-200">
       {/* Panel Header + Mode Switcher */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-[#1F1F1F]">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-[#18181B]">
         <div className="flex items-center space-x-2">
-          <BatchGridIcon className="h-4 w-4 text-[#FAFAFA] shrink-0" strokeWidth={1.5} />
-          <h2 className="text-sm font-semibold text-[#FAFAFA]">
+          <BatchGridIcon className="h-4 w-4 text-white shrink-0" strokeWidth={1.5} />
+          <h2 className="text-sm font-semibold text-white">
             Tez Mahsulot Qo‘shish (AI / Partiya / Excel)
           </h2>
         </div>
 
         <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2">
-          <div className="inline-flex rounded-lg border border-[#1F1F1F] bg-[#000000] p-0.5">
+          <div className="inline-flex rounded-xl border border-[#1F1F23] bg-black p-0.5">
             <button
               type="button"
               onClick={() => setActiveMode('quick')}
-              className={`inline-flex items-center space-x-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors min-h-[32px] ${
+              className={`inline-flex items-center space-x-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all min-h-[32px] ${
                 activeMode === 'quick'
-                  ? 'bg-white text-black font-semibold'
-                  : 'text-[#888888] hover:text-[#FAFAFA]'
+                  ? 'bg-white text-black font-semibold shadow-[0_0_16px_rgba(255,255,255,0.16)]'
+                  : 'text-[#71717A] hover:text-white'
               }`}
             >
               <AiCoreIcon className="h-3.5 w-3.5" strokeWidth={1.75} />
@@ -287,10 +287,10 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
             <button
               type="button"
               onClick={() => setActiveMode('bulk')}
-              className={`inline-flex items-center space-x-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors min-h-[32px] ${
+              className={`inline-flex items-center space-x-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all min-h-[32px] ${
                 activeMode === 'bulk'
-                  ? 'bg-white text-black font-semibold'
-                  : 'text-[#888888] hover:text-[#FAFAFA]'
+                  ? 'bg-white text-black font-semibold shadow-[0_0_16px_rgba(255,255,255,0.16)]'
+                  : 'text-[#71717A] hover:text-white'
               }`}
             >
               <FileSpreadsheet className="h-3.5 w-3.5" strokeWidth={1.75} />
@@ -302,7 +302,7 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
             type="button"
             onClick={onClose}
             aria-label="Oynani yopish"
-            className="rounded-lg border border-[#1F1F1F] bg-[#0A0A0A] p-1.5 text-[#888888] hover:text-[#FAFAFA] min-h-[34px] min-w-[34px] flex items-center justify-center"
+            className="rounded-lg border border-[#1F1F23] bg-black p-1.5 text-[#71717A] hover:text-white hover:border-[#27272A] min-h-[34px] min-w-[34px] flex items-center justify-center transition-colors"
           >
             <X className="h-4 w-4" strokeWidth={1.75} />
           </button>
@@ -311,7 +311,7 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
 
       {/* Status Toast */}
       {aiStatusMsg && (
-        <div className="mt-4 flex items-center justify-between gap-2 rounded-lg border border-[#10B981]/30 bg-[#10B981]/10 px-3 py-2 text-xs text-[#A7F3D0]">
+        <div className="mt-4 flex items-center justify-between gap-2 rounded-xl border border-[#10B981]/30 bg-[#10B981]/10 px-3.5 py-2.5 text-xs text-[#A7F3D0]">
           <span className="flex items-center space-x-1.5">
             <CheckCircle2 className="h-3.5 w-3.5 text-[#10B981] shrink-0" strokeWidth={2} />
             <span>{aiStatusMsg}</span>
@@ -319,7 +319,7 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
           <button
             type="button"
             onClick={() => setAiStatusMsg(null)}
-            className="text-[#888888] hover:text-white p-0.5"
+            className="text-[#71717A] hover:text-white p-0.5"
           >
             <X className="h-3 w-3" />
           </button>
@@ -330,13 +330,13 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
       {activeMode === 'quick' && (
         <div className="mt-4 space-y-5">
           {/* AI Smart Fill Strip */}
-          <div className="rounded-xl border border-white/[0.08] bg-[#050505] p-3.5 sm:p-4 space-y-2.5">
+          <div className="rounded-xl border border-[#1F1F23] bg-[#050507] p-4 space-y-2.5">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-              <div className="flex items-center space-x-1.5 text-xs font-semibold text-[#FAFAFA]">
-                <AiCoreIcon className="h-3.5 w-3.5 text-[#10B981]" strokeWidth={1.75} />
+              <div className="flex items-center space-x-1.5 text-xs font-semibold text-white">
+                <AiCoreIcon className="h-3.5 w-3.5 text-indigo-400" strokeWidth={1.75} />
                 <span>AI Aqlli To‘ldirish — 1 gap yozing yoki qadoq rasmini yuklang</span>
               </div>
-              <span className="text-[10px] font-mono text-[#666666]">
+              <span className="text-[10px] font-mono text-[#71717A]">
                 1 yoki bir nechta mahsulotni ajratadi
               </span>
             </div>
@@ -354,7 +354,7 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
                 }}
                 placeholder="Masalan: Tog' asali 500g, Partiya B-12, muddati 2 yil, tarkibi gul nektari, 20 ta"
                 disabled={isAiFilling}
-                className="flex-1 rounded-lg border border-[#1F1F1F] bg-[#000000] px-3.5 py-2 text-base sm:text-sm text-[#FAFAFA] placeholder-[#525252] focus:border-[#FAFAFA] focus:outline-none min-h-[42px]"
+                className="flex-1 rounded-xl border border-[#1F1F23] bg-black px-3.5 py-2 text-base sm:text-sm text-white placeholder-[#52525B] focus:border-white/40 focus:outline-none min-h-[42px]"
               />
 
               <input
@@ -371,9 +371,9 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
                   onClick={() => photoInputRef.current?.click()}
                   disabled={isAiFilling}
                   title="Qadoq yorlig‘i suratidan AI orqali to‘ldirish"
-                  className="flex-1 sm:flex-initial inline-flex items-center justify-center space-x-1.5 rounded-lg border border-[#262626] bg-[#111111] px-3 py-2 text-xs font-medium text-[#FAFAFA] hover:bg-[#1A1A1A] disabled:opacity-40 transition-colors min-h-[42px]"
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center space-x-1.5 rounded-xl border border-[#27272A] bg-black px-3 py-2 text-xs font-medium text-white hover:border-zinc-500 disabled:opacity-40 transition-colors min-h-[42px]"
                 >
-                  <ImagePlus className="h-3.5 w-3.5 text-[#10B981]" strokeWidth={1.75} />
+                  <ImagePlus className="h-3.5 w-3.5 text-zinc-300" strokeWidth={1.75} />
                   <span>Qadoq rasmi</span>
                 </button>
 
@@ -381,16 +381,16 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
                   type="button"
                   onClick={() => void handleRunAiSmartFill()}
                   disabled={isAiFilling || !aiPromptText.trim()}
-                  className="flex-1 sm:flex-initial inline-flex items-center justify-center space-x-1.5 rounded-lg bg-[#1A1A1A] border border-[#2E2E2E] px-3.5 py-2 text-xs font-semibold text-[#FAFAFA] hover:bg-[#242424] disabled:opacity-40 transition-colors min-h-[42px]"
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center space-x-1.5 rounded-xl border border-[#27272A] bg-[#0A0A0C] px-3.5 py-2 text-xs font-semibold text-white hover:border-zinc-500 disabled:opacity-40 transition-colors min-h-[42px]"
                 >
                   {isAiFilling ? (
                     <>
-                      <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                      <RefreshCw className="h-3.5 w-3.5 animate-spin text-indigo-400" />
                       <span>Tahlil...</span>
                     </>
                   ) : (
                     <>
-                      <AiCoreIcon className="h-3.5 w-3.5" strokeWidth={1.75} />
+                      <AiCoreIcon className="h-3.5 w-3.5 text-indigo-400" strokeWidth={1.75} />
                       <span>AI To‘ldirsin</span>
                     </>
                   )}
@@ -399,7 +399,7 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
             </div>
 
             <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-              <span className="text-[10px] font-mono text-[#525252] mr-1">Namuna:</span>
+              <span className="text-[10px] font-mono text-[#71717A] mr-1">Namuna:</span>
               {AI_QUICK_EXAMPLES.map((example, idx) => (
                 <button
                   key={idx}
@@ -409,7 +409,7 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
                     setAiPromptText(example);
                     void handleRunAiSmartFill(example);
                   }}
-                  className="rounded-md border border-[#1F1F1F] bg-[#0A0A0A] px-2 py-1 text-[10px] text-[#888888] hover:text-[#FAFAFA] hover:border-[#333333] transition-colors truncate max-w-full"
+                  className="rounded-lg border border-[#1F1F23] bg-black px-2 py-1 text-[10px] text-[#71717A] hover:text-white hover:border-[#27272A] transition-colors truncate max-w-full"
                 >
                   {example}
                 </button>
@@ -421,7 +421,7 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
           <form onSubmit={handleQuickSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-[#888888] mb-1.5">
+                <label className="block text-xs font-medium text-[#71717A] mb-1.5">
                   Mahsulot nomi *
                 </label>
                 <input
@@ -430,18 +430,18 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
                   placeholder="Masalan: Tabiiy Tog' Asali (1 kg)"
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
-                  className="w-full rounded-lg border border-[#1F1F1F] bg-[#000000] px-3.5 py-2.5 text-base sm:text-sm text-[#FAFAFA] placeholder-[#525252] focus:border-[#FAFAFA] focus:outline-none min-h-[42px]"
+                  className="w-full rounded-xl border border-[#1F1F23] bg-black px-3.5 py-2.5 text-base sm:text-sm text-white placeholder-[#52525B] focus:border-white/40 focus:outline-none min-h-[42px]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#888888] mb-1.5">
+                <label className="block text-xs font-medium text-[#71717A] mb-1.5">
                   Kategoriya
                 </label>
                 <select
                   value={formCategory}
                   onChange={(e) => setFormCategory(e.target.value)}
-                  className="w-full rounded-lg border border-[#1F1F1F] bg-[#000000] px-3.5 py-2.5 text-base sm:text-sm text-[#FAFAFA] focus:border-[#FAFAFA] focus:outline-none min-h-[42px]"
+                  className="w-full rounded-xl border border-[#1F1F23] bg-black px-3.5 py-2.5 text-base sm:text-sm text-white focus:border-white/40 focus:outline-none min-h-[42px]"
                 >
                   {CATEGORIES.map((cat) => (
                     <option key={cat} value={cat}>
@@ -453,10 +453,10 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
 
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-medium text-[#FAFAFA]">
+                  <label className="text-xs font-medium text-white">
                     Miqdori (unikal QR-kodlar) *
                   </label>
-                  <span className="text-[10px] text-[#888888]">1 dan 100 gacha</span>
+                  <span className="text-[10px] text-[#71717A]">1 dan 100 gacha</span>
                 </div>
                 <input
                   type="number"
@@ -465,7 +465,7 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
                   required
                   value={formQuantity}
                   onChange={(e) => setFormQuantity(Math.max(1, Math.min(100, Number(e.target.value) || 1)))}
-                  className="w-full rounded-lg border border-[#262626] bg-[#000000] px-3.5 py-2.5 font-mono text-base sm:text-sm font-bold text-[#FAFAFA] focus:border-[#FAFAFA] focus:outline-none min-h-[42px]"
+                  className="w-full rounded-xl border border-[#1F1F23] bg-black px-3.5 py-2.5 font-mono text-base sm:text-sm font-bold text-white focus:border-white/40 focus:outline-none min-h-[42px]"
                 />
                 <div className="mt-1.5 flex flex-wrap gap-1.5">
                   {QUICK_QUANTITIES.map((qty) => (
@@ -476,7 +476,7 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
                       className={`rounded-md px-2 py-0.5 font-mono text-[10px] border transition-colors ${
                         formQuantity === qty
                           ? 'border-white bg-white text-black font-bold'
-                          : 'border-[#1F1F1F] bg-[#0A0A0A] text-[#888888] hover:text-white'
+                          : 'border-[#1F1F23] bg-[#050507] text-[#71717A] hover:text-white'
                       }`}
                     >
                       {qty} ta
@@ -487,13 +487,13 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
 
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-medium text-[#888888]">
+                  <label className="text-xs font-medium text-[#71717A]">
                     Boshlang‘ich Seriya Kodi
                   </label>
                   <button
                     type="button"
                     onClick={() => setFormSerialCode(generateRandomSerial())}
-                    className="inline-flex items-center space-x-1 text-[10px] text-[#888888] hover:text-white font-mono"
+                    className="inline-flex items-center space-x-1 text-[10px] text-[#71717A] hover:text-white font-mono"
                   >
                     <RefreshCw className="h-2.5 w-2.5" />
                     <span>Avto yaratish</span>
@@ -504,24 +504,24 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
                   required
                   value={formSerialCode}
                   onChange={(e) => setFormSerialCode(e.target.value.toUpperCase())}
-                  className="w-full rounded-lg border border-[#1F1F1F] bg-[#000000] px-3.5 py-2.5 font-mono text-base sm:text-sm text-[#FAFAFA] focus:border-[#FAFAFA] focus:outline-none min-h-[42px]"
+                  className="w-full rounded-xl border border-[#1F1F23] bg-black px-3.5 py-2.5 font-mono text-base sm:text-sm text-white focus:border-white/40 focus:outline-none min-h-[42px]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#888888] mb-1.5">
+                <label className="block text-xs font-medium text-[#71717A] mb-1.5">
                   Partiya raqami
                 </label>
                 <input
                   type="text"
                   value={formBatch}
                   onChange={(e) => setFormBatch(e.target.value)}
-                  className="w-full rounded-lg border border-[#1F1F1F] bg-[#000000] px-3.5 py-2.5 font-mono text-base sm:text-sm text-[#FAFAFA] focus:border-[#FAFAFA] focus:outline-none min-h-[42px]"
+                  className="w-full rounded-xl border border-[#1F1F23] bg-black px-3.5 py-2.5 font-mono text-base sm:text-sm text-white focus:border-white/40 focus:outline-none min-h-[42px]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#888888] mb-1.5">
+                <label className="block text-xs font-medium text-[#71717A] mb-1.5">
                   Maksimal xavfsiz skanerlar
                 </label>
                 <input
@@ -530,25 +530,25 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
                   max={20}
                   value={formMaxSafeScans}
                   onChange={(e) => setFormMaxSafeScans(Number(e.target.value))}
-                  className="w-full rounded-lg border border-[#1F1F1F] bg-[#000000] px-3.5 py-2.5 font-mono text-base sm:text-sm text-[#FAFAFA] focus:border-[#FAFAFA] focus:outline-none min-h-[42px]"
+                  className="w-full rounded-xl border border-[#1F1F23] bg-black px-3.5 py-2.5 font-mono text-base sm:text-sm text-white focus:border-white/40 focus:outline-none min-h-[42px]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-[#888888] mb-1.5">
+                <label className="block text-xs font-medium text-[#71717A] mb-1.5">
                   Ishlab chiqarilgan sana
                 </label>
                 <input
                   type="date"
                   value={formManufactureDate}
                   onChange={(e) => setFormManufactureDate(e.target.value)}
-                  className="w-full rounded-lg border border-[#1F1F1F] bg-[#000000] px-3.5 py-2.5 font-mono text-base sm:text-sm text-[#FAFAFA] focus:border-[#FAFAFA] focus:outline-none min-h-[42px]"
+                  className="w-full rounded-xl border border-[#1F1F23] bg-black px-3.5 py-2.5 font-mono text-base sm:text-sm text-white focus:border-white/40 focus:outline-none min-h-[42px]"
                 />
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-medium text-[#888888]">
+                  <label className="text-xs font-medium text-[#71717A]">
                     Yaroqlilik muddati
                   </label>
                   <div className="flex items-center space-x-1">
@@ -563,7 +563,7 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
                         onClick={() =>
                           setFormExpiryDate(addMonthsIso(formManufactureDate, preset.months))
                         }
-                        className="rounded border border-[#1F1F1F] bg-[#0A0A0A] px-1.5 py-0.5 text-[10px] font-mono text-[#888888] hover:text-white hover:border-[#333333]"
+                        className="rounded border border-[#1F1F23] bg-[#050507] px-1.5 py-0.5 text-[10px] font-mono text-[#71717A] hover:text-white hover:border-[#27272A]"
                       >
                         {preset.label}
                       </button>
@@ -574,12 +574,12 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
                   type="date"
                   value={formExpiryDate}
                   onChange={(e) => setFormExpiryDate(e.target.value)}
-                  className="w-full rounded-lg border border-[#1F1F1F] bg-[#000000] px-3.5 py-2.5 font-mono text-base sm:text-sm text-[#FAFAFA] focus:border-[#FAFAFA] focus:outline-none min-h-[42px]"
+                  className="w-full rounded-xl border border-[#1F1F23] bg-black px-3.5 py-2.5 font-mono text-base sm:text-sm text-white focus:border-white/40 focus:outline-none min-h-[42px]"
                 />
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-xs font-medium text-[#888888] mb-1.5">
+                <label className="block text-xs font-medium text-[#71717A] mb-1.5">
                   Tarkibi va xomashyosi
                 </label>
                 <textarea
@@ -587,16 +587,16 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
                   placeholder="Masalan: 100% tabiiy tog' asal mumi, glyukozasiz, konservantlarsiz."
                   value={formIngredients}
                   onChange={(e) => setFormIngredients(e.target.value)}
-                  className="w-full rounded-lg border border-[#1F1F1F] bg-[#000000] px-3.5 py-2.5 text-base sm:text-sm text-[#FAFAFA] placeholder-[#525252] focus:border-[#FAFAFA] focus:outline-none resize-none"
+                  className="w-full rounded-xl border border-[#1F1F23] bg-black px-3.5 py-2.5 text-base sm:text-sm text-white placeholder-[#52525B] focus:border-white/40 focus:outline-none resize-none"
                 />
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row justify-end gap-2 pt-3 border-t border-[#1F1F1F]">
+            <div className="flex flex-col sm:flex-row justify-end gap-2 pt-3 border-t border-[#18181B]">
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-lg border border-[#1F1F1F] bg-[#141414] px-4 py-2.5 text-xs font-medium text-[#888888] hover:text-[#FAFAFA] min-h-[42px]"
+                className="rounded-xl border border-[#1F1F23] bg-black px-4 py-2.5 text-xs font-medium text-[#71717A] hover:text-white min-h-[42px]"
               >
                 Bekor qilish
               </button>
@@ -604,7 +604,7 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
               <button
                 type="submit"
                 disabled={isSubmitting || !formName.trim()}
-                className="flex items-center justify-center space-x-2 rounded-lg bg-white px-5 py-2.5 text-xs font-bold text-black hover:bg-zinc-200 disabled:opacity-40 transition-colors shadow-sm min-h-[42px]"
+                className="flex items-center justify-center space-x-2 rounded-xl bg-white px-5 py-2.5 text-xs font-semibold text-black hover:bg-[#F4F4F5] disabled:opacity-40 transition-all shadow-[0_0_24px_rgba(255,255,255,0.16)] min-h-[42px]"
               >
                 {isSubmitting ? (
                   <>
@@ -630,27 +630,27 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
       {/* TAB 2: EXCEL / CSV BULK IMPORT */}
       {activeMode === 'bulk' && (
         <div className="mt-4 space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#1F1F1F] bg-[#050505] p-3">
-            <p className="text-xs text-[#888888]">
-              Excel yoki Google Sheets’dan qatorlarni nusxalab tashlang (<code className="text-[#FAFAFA]">Ctrl+V</code>) yoki <code className="text-[#FAFAFA]">.csv</code> fayl yuklang.
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#1F1F23] bg-[#050507] p-3.5">
+            <p className="text-xs text-[#71717A]">
+              Excel yoki Google Sheets’dan qatorlarni nusxalab tashlang (<code className="text-white">Ctrl+V</code>) yoki <code className="text-white">.csv</code> fayl yuklang.
             </p>
 
             <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
                 onClick={() => downloadCsvTemplate()}
-                className="inline-flex items-center space-x-1.5 rounded-lg border border-[#262626] bg-[#111111] px-2.5 py-1.5 text-[11px] font-medium text-[#FAFAFA] hover:bg-[#1B1B1B]"
+                className="inline-flex items-center space-x-1.5 rounded-lg border border-[#1F1F23] bg-black px-2.5 py-1.5 text-[11px] font-medium text-zinc-200 hover:border-[#27272A]"
               >
-                <Download className="h-3.5 w-3.5 text-[#888888]" />
+                <Download className="h-3.5 w-3.5 text-[#71717A]" />
                 <span>Namuna CSV</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => parseAndSetBulkText(SAMPLE_TSV_TEXT)}
-                className="inline-flex items-center space-x-1.5 rounded-lg border border-[#262626] bg-[#111111] px-2.5 py-1.5 text-[11px] font-medium text-[#10B981] hover:bg-[#1B1B1B]"
+                className="inline-flex items-center space-x-1.5 rounded-lg border border-[#1F1F23] bg-black px-2.5 py-1.5 text-[11px] font-medium text-zinc-200 hover:border-[#27272A]"
               >
-                <ClipboardList className="h-3.5 w-3.5" />
+                <ClipboardList className="h-3.5 w-3.5 text-zinc-400" />
                 <span>Namuna jadvalni to‘ldirish</span>
               </button>
 
@@ -664,7 +664,7 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
               <button
                 type="button"
                 onClick={() => csvFileInputRef.current?.click()}
-                className="inline-flex items-center space-x-1.5 rounded-lg border border-white/20 bg-[#181818] px-3 py-1.5 text-[11px] font-semibold text-white hover:bg-[#222222]"
+                className="inline-flex items-center space-x-1.5 rounded-lg border border-[#27272A] bg-[#0A0A0C] px-3 py-1.5 text-[11px] font-semibold text-white hover:border-zinc-500"
               >
                 <FileSpreadsheet className="h-3.5 w-3.5" />
                 <span>Fayl yuklash (.csv)</span>
@@ -677,22 +677,22 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
             value={bulkText}
             onChange={(e) => parseAndSetBulkText(e.target.value)}
             placeholder={`Nomi\tKategoriya\tPartiya\tMiqdori\tMuddati\tTarkibi\nTabiiy Asal (1kg)\tOziq-ovqat\tBATCH-01\t10\t2028-10-15\t100% gul nektari`}
-            className="w-full rounded-xl border border-[#1F1F1F] bg-[#000000] p-3.5 font-mono text-base sm:text-xs text-[#FAFAFA] placeholder-[#525252] focus:border-[#FAFAFA] focus:outline-none"
+            className="w-full rounded-xl border border-[#1F1F23] bg-black p-3.5 font-mono text-base sm:text-xs text-white placeholder-[#52525B] focus:border-white/40 focus:outline-none"
           />
 
           {bulkWarnings.length > 0 && (
-            <div className="rounded-lg border border-[#F59E0B]/30 bg-[#F59E0B]/10 px-3 py-2 text-[11px] text-[#FCD34D]">
+            <div className="rounded-xl border border-[#F59E0B]/30 bg-[#F59E0B]/10 px-3 py-2 text-[11px] text-[#FCD34D]">
               {bulkWarnings[0]}
             </div>
           )}
 
           {/* Parsed Preview Rows */}
           {bulkItems.length > 0 && (
-            <div className="rounded-xl border border-[#1F1F1F] bg-[#050505] overflow-hidden">
-              <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 border-b border-[#1F1F1F] bg-[#0A0A0A]">
-                <span className="text-xs font-semibold text-[#FAFAFA]">
+            <div className="rounded-xl border border-[#1F1F23] bg-[#050507] overflow-hidden">
+              <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 border-b border-[#18181B] bg-[#0A0A0C]">
+                <span className="text-xs font-semibold text-white">
                   Tayyor ro‘yxat: {bulkItems.length} xil mahsulot •{' '}
-                  <span className="font-mono text-[#10B981]">
+                  <span className="font-mono text-zinc-300">
                     Jami {Math.min(100, totalBulkQrCount)} ta QR-kod
                   </span>
                 </span>
@@ -708,34 +708,34 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
                 {bulkItems.map((item) => (
                   <div
                     key={item.id}
-                    className="rounded-lg border border-[#1F1F1F] bg-[#000000] p-3 space-y-2"
+                    className="rounded-xl border border-[#1F1F23] bg-black p-3 space-y-2"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <div className="text-xs font-semibold text-[#FAFAFA]">
+                        <div className="text-xs font-semibold text-white">
                           {item.product_name}
                         </div>
-                        <div className="text-[10px] font-mono text-[#888888]">
+                        <div className="text-[10px] font-mono text-[#71717A]">
                           {item.category} • {item.batch_number} • {item.expiry_date}
                         </div>
                       </div>
                       <button
                         type="button"
                         onClick={() => handleRemoveBulkRow(item.id)}
-                        className="text-[#525252] hover:text-[#EF4444] p-1"
+                        className="text-[#52525B] hover:text-[#EF4444] p-1"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
                     </div>
-                    <div className="flex items-center justify-between pt-1 border-t border-[#141414]">
-                      <span className="text-[11px] text-[#888888]">QR soni:</span>
+                    <div className="flex items-center justify-between pt-1.5 border-t border-[#18181B]">
+                      <span className="text-[11px] text-[#71717A]">QR soni:</span>
                       <input
                         type="number"
                         min={1}
                         max={100}
                         value={item.quantity}
                         onChange={(e) => handleUpdateBulkQty(item.id, Number(e.target.value))}
-                        className="w-20 rounded border border-[#262626] bg-[#0A0A0A] px-2 py-1 font-mono text-xs text-white text-center"
+                        className="w-20 rounded-lg border border-[#1F1F23] bg-[#0A0A0C] px-2 py-1 font-mono text-xs text-white text-center"
                       />
                     </div>
                   </div>
@@ -745,7 +745,7 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
               {/* Desktop Preview Table */}
               <div className="hidden md:block max-h-72 overflow-y-auto overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="border-b border-[#1F1F1F] bg-[#0A0A0A] text-[10px] font-mono uppercase text-[#666666]">
+                  <thead className="border-b border-[#18181B] bg-[#0A0A0C] text-[10px] font-mono uppercase text-[#71717A]">
                     <tr>
                       <th className="px-3.5 py-2">Mahsulot nomi</th>
                       <th className="px-3.5 py-2">Kategoriya</th>
@@ -755,17 +755,17 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
                       <th className="px-3.5 py-2 text-right">Amal</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#141414]">
+                  <tbody className="divide-y divide-[#18181B]">
                     {bulkItems.map((item) => (
-                      <tr key={item.id} className="hover:bg-[#0D0D0D]">
-                        <td className="px-3.5 py-2 font-medium text-[#FAFAFA]">
+                      <tr key={item.id} className="hover:bg-[#111114]">
+                        <td className="px-3.5 py-2 font-medium text-white">
                           {item.product_name}
                         </td>
-                        <td className="px-3.5 py-2 text-[#888888]">{item.category}</td>
-                        <td className="px-3.5 py-2 font-mono text-[#888888]">
+                        <td className="px-3.5 py-2 text-[#71717A]">{item.category}</td>
+                        <td className="px-3.5 py-2 font-mono text-[#71717A]">
                           {item.batch_number}
                         </td>
-                        <td className="px-3.5 py-2 font-mono text-[#888888]">
+                        <td className="px-3.5 py-2 font-mono text-[#71717A]">
                           {item.expiry_date}
                         </td>
                         <td className="px-3.5 py-2">
@@ -777,7 +777,7 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
                             onChange={(e) =>
                               handleUpdateBulkQty(item.id, Number(e.target.value))
                             }
-                            className="w-16 rounded border border-[#262626] bg-[#000000] px-2 py-1 font-mono text-xs text-white text-center focus:border-white focus:outline-none"
+                            className="w-16 rounded-lg border border-[#1F1F23] bg-black px-2 py-1 font-mono text-xs text-white text-center focus:border-white/40 focus:outline-none"
                           />
                         </td>
                         <td className="px-3.5 py-2 text-right">
@@ -785,7 +785,7 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
                             type="button"
                             onClick={() => handleRemoveBulkRow(item.id)}
                             aria-label="Qatorni o‘chirish"
-                            className="p-1 text-[#525252] hover:text-[#EF4444]"
+                            className="p-1 text-[#52525B] hover:text-[#EF4444]"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </button>
@@ -798,11 +798,11 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
             </div>
           )}
 
-          <div className="flex flex-col sm:flex-row justify-end gap-2 pt-3 border-t border-[#1F1F1F]">
+          <div className="flex flex-col sm:flex-row justify-end gap-2 pt-3 border-t border-[#18181B]">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg border border-[#1F1F1F] bg-[#141414] px-4 py-2.5 text-xs font-medium text-[#888888] hover:text-[#FAFAFA] min-h-[42px]"
+              className="rounded-xl border border-[#1F1F23] bg-black px-4 py-2.5 text-xs font-medium text-[#71717A] hover:text-white min-h-[42px]"
             >
               Bekor qilish
             </button>
@@ -811,7 +811,7 @@ export const ProducerQuickAddPanel: React.FC<ProducerQuickAddPanelProps> = ({
               type="button"
               disabled={isSubmitting || bulkItems.length === 0}
               onClick={() => void handleSaveBulkItems()}
-              className="flex items-center justify-center space-x-2 rounded-lg bg-white px-5 py-2.5 text-xs font-bold text-black hover:bg-zinc-200 disabled:opacity-40 transition-colors shadow-sm min-h-[42px]"
+              className="flex items-center justify-center space-x-2 rounded-xl bg-white px-5 py-2.5 text-xs font-semibold text-black hover:bg-[#F4F4F5] disabled:opacity-40 transition-all shadow-[0_0_24px_rgba(255,255,255,0.16)] min-h-[42px]"
             >
               {isSubmitting ? (
                 <>

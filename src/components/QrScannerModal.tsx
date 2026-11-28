@@ -148,13 +148,13 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-md max-h-[90dvh] overflow-y-auto rounded-2xl border border-white/[0.08] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] shadow-[0_24px_70px_rgba(0,0,0,0.9)]"
+        className="relative w-full max-w-md max-h-[90dvh] overflow-y-auto rounded-2xl border border-[#1F1F23] border-t-white/[0.1] bg-[#0A0A0C] shadow-[0_24px_70px_rgba(0,0,0,0.95)]"
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#1F1F1F] px-5 py-4">
+        <div className="flex items-center justify-between border-b border-[#18181B] px-5 py-4">
           <div className="flex items-center space-x-2">
-            <Camera className="h-4 w-4 text-[#FAFAFA]" strokeWidth={1.75} />
-            <h3 className="text-sm font-semibold tracking-tight text-[#FAFAFA]">
+            <Camera className="h-4 w-4 text-white" strokeWidth={1.75} />
+            <h3 className="text-sm font-semibold tracking-tight text-white">
               QR-kodni skanerlash
             </h3>
           </div>
@@ -162,24 +162,24 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
             type="button"
             onClick={() => void handleModalClose()}
             aria-label="Yopish"
-            className="rounded-md p-1.5 text-[#888888] hover:bg-[#141414] hover:text-[#FAFAFA] transition-colors"
+            className="rounded-lg p-1.5 text-[#71717A] hover:bg-white/5 hover:text-white transition-colors"
           >
             <X className="h-4 w-4" strokeWidth={1.75} />
           </button>
         </div>
 
         {/* Mode Selector Tabs */}
-        <div className="flex border-b border-[#1F1F1F] bg-[#050505] p-1">
+        <div className="flex border-b border-[#18181B] bg-black p-1">
           <button
             type="button"
             onClick={() => {
               setActiveMode('camera');
               setErrorMsg(null);
             }}
-            className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-colors ${
+            className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-all ${
               activeMode === 'camera'
-                ? 'bg-[#141414] text-[#FAFAFA] border border-[#262626]'
-                : 'text-[#888888] hover:text-[#FAFAFA]'
+                ? 'bg-white text-black font-semibold'
+                : 'text-[#71717A] hover:text-white'
             }`}
           >
             Jonli Kamera
@@ -191,10 +191,10 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
               setActiveMode('file');
               setErrorMsg(null);
             }}
-            className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-colors ${
+            className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-all ${
               activeMode === 'file'
-                ? 'bg-[#141414] text-[#FAFAFA] border border-[#262626]'
-                : 'text-[#888888] hover:text-[#FAFAFA]'
+                ? 'bg-white text-black font-semibold'
+                : 'text-[#71717A] hover:text-white'
             }`}
           >
             Fayl / Rasm yuklash
@@ -205,29 +205,29 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
         <div className="p-5">
           {activeMode === 'camera' ? (
             <div className="flex flex-col items-center">
-              <div className="relative w-full aspect-square max-w-[280px] overflow-hidden rounded-lg border border-[#1F1F1F] bg-black">
+              <div className="relative w-full aspect-square max-w-[280px] overflow-hidden rounded-xl border border-[#1F1F23] bg-black">
                 <div id={qrContainerId} className="w-full h-full" />
 
                 {isInitializing && (
                   <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90 space-y-2">
-                    <RefreshCw className="h-5 w-5 animate-spin text-[#888888]" strokeWidth={1.75} />
-                    <span className="text-xs text-[#888888]">Kamera ishga tushmoqda...</span>
+                    <RefreshCw className="h-5 w-5 animate-spin text-zinc-400" strokeWidth={1.75} />
+                    <span className="text-xs text-[#71717A]">Kamera ishga tushmoqda...</span>
                   </div>
                 )}
 
                 {!isInitializing && !errorMsg && (
                   <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                    <div className="h-44 w-44 rounded-lg border-2 border-dashed border-[#FAFAFA]/40 relative">
-                      <div className="absolute -top-1 -left-1 h-3 w-3 border-t-2 border-l-2 border-[#FAFAFA]" />
-                      <div className="absolute -top-1 -right-1 h-3 w-3 border-t-2 border-r-2 border-[#FAFAFA]" />
-                      <div className="absolute -bottom-1 -left-1 h-3 w-3 border-b-2 border-l-2 border-[#FAFAFA]" />
-                      <div className="absolute -bottom-1 -right-1 h-3 w-3 border-b-2 border-r-2 border-[#FAFAFA]" />
+                    <div className="h-44 w-44 rounded-lg border-2 border-dashed border-white/40 relative">
+                      <div className="absolute -top-1 -left-1 h-3 w-3 border-t-2 border-l-2 border-white" />
+                      <div className="absolute -top-1 -right-1 h-3 w-3 border-t-2 border-r-2 border-white" />
+                      <div className="absolute -bottom-1 -left-1 h-3 w-3 border-b-2 border-l-2 border-white" />
+                      <div className="absolute -bottom-1 -right-1 h-3 w-3 border-b-2 border-r-2 border-white" />
                     </div>
                   </div>
                 )}
               </div>
 
-              <p className="mt-4 text-center text-xs text-[#888888]">
+              <p className="mt-4 text-center text-xs text-[#71717A]">
                 Kamerani mahsulot qadog‘idagi AslCheck QR-kodiga qarating
               </p>
             </div>
@@ -243,15 +243,15 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="flex flex-col items-center justify-center w-full max-w-[280px] aspect-square rounded-lg border-2 border-dashed border-[#1F1F1F] bg-[#0A0A0A] hover:bg-[#141414] hover:border-[#333333] transition-colors p-6 cursor-pointer"
+                className="flex flex-col items-center justify-center w-full max-w-[280px] aspect-square rounded-xl border-2 border-dashed border-[#1F1F23] bg-[#050507] hover:bg-[#141418] hover:border-zinc-500 transition-colors p-6 cursor-pointer"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[#222222] bg-[#111111] mb-3">
-                  <Image className="h-6 w-6 text-[#FAFAFA]" strokeWidth={1.75} />
+                <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[#1F1F23] bg-black mb-3">
+                  <Image className="h-6 w-6 text-white" strokeWidth={1.75} />
                 </div>
-                <span className="text-xs font-medium text-[#FAFAFA]">
+                <span className="text-xs font-medium text-white">
                   QR-kod rasmini tanlang
                 </span>
-                <span className="mt-1 text-[11px] text-[#525252] text-center">
+                <span className="mt-1 text-[11px] text-[#71717A] text-center">
                   PNG, JPG yoki skrinshot
                 </span>
               </button>
@@ -260,7 +260,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
           )}
 
           {errorMsg && (
-            <div className="mt-4 flex items-start space-x-2.5 rounded-lg border border-[#EF4444]/30 bg-[#EF4444]/10 p-3 text-xs text-[#EF4444]">
+            <div className="mt-4 flex items-start space-x-2.5 rounded-xl border border-[#EF4444]/30 bg-[#EF4444]/10 p-3 text-xs text-[#EF4444]">
               <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" strokeWidth={1.75} />
               <div className="flex-1 leading-relaxed">{errorMsg}</div>
             </div>
@@ -268,11 +268,11 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="border-t border-[#1F1F1F] bg-[#050505] px-5 py-3 flex justify-end">
+        <div className="border-t border-[#18181B] bg-[#050507] px-5 py-3 flex justify-end">
           <button
             type="button"
             onClick={() => void handleModalClose()}
-            className="rounded-md border border-[#1F1F1F] bg-[#111111] px-3.5 py-1.5 text-xs font-medium text-[#FAFAFA] hover:bg-[#1a1a1a] transition-colors"
+            className="rounded-lg border border-[#1F1F23] bg-black px-3.5 py-1.5 text-xs font-medium text-white hover:border-[#27272A] transition-colors"
           >
             Yopish
           </button>

@@ -11,13 +11,15 @@ import {
   Play,
   Film,
   Factory,
+  KeyRound,
+  RotateCcw,
 } from 'lucide-react';
 import { QrScannerModal } from './QrScannerModal';
 import { VerificationCard } from './VerificationCard';
 import { AudioPlayerButton } from './AudioPlayerButton';
 import { AslBrandMark, AiCoreIcon, VisionLensIcon } from './Icons';
 import { UzbekGirihPattern } from './UzbekGirihPattern';
-import { verifyProduct, lookupProductByCode } from '../lib/api';
+import { verifyProduct, lookupProductByCode, resetDemoShowcase } from '../lib/api';
 import { verifyImageWithVision } from '../lib/ai';
 import { extractSerialCode, compressImageForVision } from '../lib/qr';
 import type {
@@ -247,25 +249,26 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
 
       {/* Hero / Header: Pure Two-tone Minimalist Typography */}
       <div className="text-center mb-8 sm:mb-12">
-        <div className="inline-flex items-center space-x-2 rounded-full border border-[#1F1F23] bg-[#0A0A0C] px-3.5 py-1 text-xs text-[#71717A] mb-4 sm:mb-5 shadow-sm">
-          <AslBrandMark className="h-3.5 w-3.5 text-white" strokeWidth={1.5} />
-          <span>Litsenziyalangan Mahsulot Reyestri</span>
+        <div className="inline-flex items-center space-x-2 rounded-full border border-[#1F1F23] border-t-white/[0.12] bg-[#0A0A0C] px-3.5 py-1.5 text-[11px] font-mono text-[#A1A1AA] mb-5 shadow-[0_8px_24px_rgba(0,0,0,0.8)]">
+          <AslBrandMark className="h-3.5 w-3.5 text-white" strokeWidth={1.6} />
+          <span>Milliy Raqamli Reyestr • 5-Qatlamli Himoya</span>
         </div>
-        <h1 className="text-3xl sm:text-5xl font-semibold tracking-tight text-white leading-tight">
+        <h1 className="text-3xl sm:text-5xl md:text-[52px] font-semibold tracking-[-0.03em] text-white leading-[1.08]">
           <span>Mahsulot haqiqiyligini</span> <span className="text-[#71717A]">tekshiring.</span>
         </h1>
-        <p className="mt-3 text-xs sm:text-sm text-[#71717A] max-w-lg mx-auto leading-relaxed">
-          Qadoqdagi unikal seriya kodini kiriting, QR-kodni skanerlang yoki qadoq fotosuratini AslCheck Yordamchiga taqdim eting.
+        <p className="mt-4 text-xs sm:text-sm text-[#71717A] max-w-lg mx-auto leading-relaxed">
+          Qadoqdagi unikal seriya kodini kiriting, QR-kodni skanerlang yoki qadoq fotosuratini{' '}
+          <span className="text-zinc-300 font-medium">AslCheck Yordamchi</span>ga taqdim eting.
         </p>
       </div>
 
-      {/* Main Verification Input Box: Pure #0A0A0C with 1px #1F1F23 */}
-      <div className="mx-auto max-w-2xl rounded-2xl border border-[#1F1F23] bg-[#0A0A0C] p-5 sm:p-7 shadow-[0_24px_60px_rgba(0,0,0,0.9)]">
+      {/* Main Verification Input Box: Pure #0A0A0C with 1px #1F1F23 & subtle specular rim */}
+      <div className="mx-auto max-w-2xl rounded-2xl border border-[#1F1F23] border-t-white/[0.1] bg-[#0A0A0C] p-5 sm:p-7 shadow-[0_28px_70px_rgba(0,0,0,0.92)]">
         <form onSubmit={handleFormSubmit} className="space-y-3.5">
           <div className="flex flex-col sm:flex-row gap-2.5">
-            <div className="relative flex-1">
+            <div className="relative flex-1 group">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
-                <Search className="h-4 w-4 text-[#71717A]" strokeWidth={1.75} />
+                <Search className="h-4 w-4 text-[#71717A] group-focus-within:text-zinc-300 transition-colors" strokeWidth={1.75} />
               </div>
               <input
                 ref={codeInputRef}
@@ -274,13 +277,26 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
                 onChange={(e) => setInputCode(e.target.value.toUpperCase())}
                 placeholder="Masalan: ASL-2026-001"
                 disabled={isLoading || isVisionLoading}
-                className="w-full rounded-xl border border-[#1F1F23] bg-black py-3.5 pl-11 pr-3 font-mono text-base font-medium tracking-wide text-white placeholder-[#52525B] focus:border-white/40 focus:outline-none transition-colors min-h-[44px]"
+                className="w-full rounded-xl border border-[#1F1F23] bg-black py-3.5 pl-11 pr-10 font-mono text-base font-medium tracking-wide text-white placeholder-[#52525B] focus:border-white/35 focus:shadow-[0_0_24px_rgba(255,255,255,0.06)] focus:outline-none transition-all min-h-[46px]"
               />
+              {inputCode && !isLoading && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setInputCode('');
+                    codeInputRef.current?.focus();
+                  }}
+                  aria-label="Kodni tozalash"
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#52525B] hover:text-zinc-300 transition-colors"
+                >
+                  <X className="h-4 w-4" strokeWidth={1.75} />
+                </button>
+              )}
             </div>
             <button
               type="submit"
               disabled={isLoading || isVisionLoading}
-              className="flex items-center justify-center space-x-1.5 rounded-xl bg-white px-6 py-3.5 text-sm font-semibold text-black hover:bg-[#F4F4F5] disabled:opacity-60 transition-all shadow-[0_0_30px_rgba(255,255,255,0.18)] hover:shadow-[0_0_35px_rgba(255,255,255,0.28)] min-h-[44px] shrink-0"
+              className="flex items-center justify-center space-x-1.5 rounded-xl bg-white px-6 py-3.5 text-sm font-semibold text-black hover:bg-[#F4F4F5] disabled:opacity-60 transition-all shadow-[0_0_30px_rgba(255,255,255,0.18)] hover:shadow-[0_0_38px_rgba(255,255,255,0.28)] min-h-[46px] shrink-0"
             >
               {isLoading ? (
                 <RefreshCw className="h-4 w-4 animate-spin" strokeWidth={2} />
@@ -362,10 +378,10 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
 
       {/* Vision Forensics Loading State */}
       {isVisionLoading && (
-        <div className="mt-8 mx-auto max-w-2xl rounded-xl border border-white/[0.08] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] p-6 text-center space-y-2.5 animate-in fade-in">
-          <VisionLensIcon className="h-6 w-6 mx-auto text-zinc-300 animate-pulse" strokeWidth={1.75} />
-          <div className="text-xs font-semibold text-[#FAFAFA]">{visionStageText}</div>
-          <div className="text-[11px] text-[#525252] font-mono">
+        <div className="mt-8 mx-auto max-w-2xl rounded-2xl border border-[#1F1F23] border-t-white/[0.1] bg-[#0A0A0C] p-6 text-center space-y-2.5 animate-in fade-in shadow-[0_20px_50px_rgba(0,0,0,0.85)]">
+          <VisionLensIcon className="h-6 w-6 mx-auto text-indigo-400 animate-pulse" strokeWidth={1.75} />
+          <div className="text-xs font-semibold text-white">{visionStageText}</div>
+          <div className="text-[11px] text-[#71717A] font-mono">
             Hybrid QR Decode + Gemini Vision Cross-Verification
           </div>
         </div>
@@ -373,7 +389,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
 
       {/* Vision Error */}
       {visionError && !isVisionLoading && (
-        <div className="mt-6 mx-auto max-w-2xl rounded-xl border border-[#EF4444]/30 bg-[#EF4444]/10 p-4 flex items-center space-x-3 text-xs text-[#EF4444]">
+        <div className="mt-6 mx-auto max-w-2xl rounded-2xl border border-[#EF4444]/30 bg-[#EF4444]/10 p-4 flex items-center space-x-3 text-xs text-[#EF4444]">
           <XCircle className="h-4 w-4 shrink-0" strokeWidth={1.75} />
           <span>{visionError}</span>
         </div>
@@ -381,12 +397,12 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
 
       {/* Vision Forensics Result Panel */}
       {!isVisionLoading && visionResult && (
-        <div className="mt-8 mx-auto max-w-2xl overflow-hidden rounded-xl border border-white/[0.08] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] shadow-[0_24px_60px_rgba(0,0,0,0.85)] animate-in fade-in duration-300">
+        <div className="mt-8 mx-auto max-w-2xl overflow-hidden rounded-2xl border border-[#1F1F23] border-t-white/[0.1] bg-[#0A0A0C] shadow-[0_24px_60px_rgba(0,0,0,0.9)] animate-in fade-in duration-300">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-[#1F1F1F] bg-[#0D0D0D] px-4 sm:px-5 py-3.5">
+          <div className="flex items-center justify-between border-b border-[#18181B] bg-[#050507] px-4 sm:px-5 py-3.5">
             <div className="flex items-center space-x-2">
-              <VisionLensIcon className="h-4 w-4 text-zinc-300" strokeWidth={1.75} />
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-[#FAFAFA]">
+              <VisionLensIcon className="h-4 w-4 text-indigo-400" strokeWidth={1.75} />
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-white">
                 AI Vizual Kriminalistika Ekspertizasi
               </h3>
             </div>
@@ -396,7 +412,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
                 setVisionResult(null);
                 setVisionPreviewUrl(null);
               }}
-              className="rounded p-1.5 text-[#888888] hover:bg-[#141414] hover:text-[#FAFAFA]"
+              className="rounded-lg p-1.5 text-[#71717A] hover:bg-white/5 hover:text-white transition-colors"
             >
               <X className="h-4 w-4" />
             </button>
@@ -410,7 +426,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
                   <img
                     src={visionPreviewUrl}
                     alt="Tekshirilgan qadoq surati"
-                    className="h-32 w-32 sm:h-36 sm:w-36 rounded-lg border border-[#222222] object-cover bg-black"
+                    className="h-32 w-32 sm:h-36 sm:w-36 rounded-xl border border-[#1F1F23] object-cover bg-black"
                   />
                 </div>
               )}
@@ -419,14 +435,14 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
                 {/* Confidence Score Meter */}
                 <div>
                   <div className="flex items-center justify-between text-xs mb-1">
-                    <span className="font-mono text-[11px] text-[#888888]">
+                    <span className="font-mono text-[11px] text-[#71717A]">
                       Vizual Ishonchlilik Darajasi
                     </span>
-                    <span className="font-mono font-bold text-[#FAFAFA]">
+                    <span className="font-mono font-bold text-white tabular-nums">
                       {visionResult.confidence_score}%
                     </span>
                   </div>
-                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#141414]">
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#18181B]">
                     <div
                       className={`h-full transition-all duration-500 ${
                         visionResult.confidence_score >= 75
@@ -445,7 +461,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
                 {/* Badges Grid */}
                 <div className="flex flex-wrap gap-1.5 sm:gap-2">
                   <span
-                    className={`inline-flex items-center rounded border px-2 py-0.5 text-[11px] font-medium ${
+                    className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-medium ${
                       visionResult.package_match === 'Mos keladi'
                         ? 'border-[#10B981]/30 bg-[#10B981]/10 text-[#10B981]'
                         : visionResult.package_match === 'Mos kelmaydi'
@@ -457,7 +473,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
                   </span>
 
                   <span
-                    className={`inline-flex items-center rounded border px-2 py-0.5 text-[11px] font-medium ${
+                    className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-medium ${
                       visionResult.print_quality === 'Asl zavod bosmasi'
                         ? 'border-[#10B981]/30 bg-[#10B981]/10 text-[#10B981]'
                         : visionResult.print_quality.includes('Shubhali')
@@ -470,7 +486,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
 
                   {visionResult.detected_code &&
                     visionResult.detected_code.toLowerCase() !== 'null' && (
-                      <span className="inline-flex items-center rounded border border-[#262626] bg-[#141414] px-2 py-0.5 font-mono text-[11px] font-semibold text-[#FAFAFA]">
+                      <span className="inline-flex items-center rounded-md border border-[#1F1F23] bg-black px-2 py-0.5 font-mono text-[11px] font-semibold text-white">
                         Kod: {visionResult.detected_code}
                       </span>
                     )}
@@ -478,7 +494,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
 
                 {/* Verdict text + Audio Playback */}
                 <div className="space-y-2 pt-1">
-                  <p className="text-xs text-[#A0A0A0] leading-relaxed break-words">
+                  <p className="text-xs text-[#A1A1AA] leading-relaxed break-words">
                     {visionResult.forensic_verdict}
                   </p>
                   <div className="flex items-center justify-start pt-1">
@@ -495,11 +511,11 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
 
             {/* Forensic Check Rows */}
             {visionResult.forensic_checks && visionResult.forensic_checks.length > 0 && (
-              <div className="space-y-2 border-t border-[#141414] pt-4">
+              <div className="space-y-2 border-t border-[#18181B] pt-4">
                 {visionResult.forensic_checks.map((chk, idx) => (
                   <div
                     key={idx}
-                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-lg border border-[#141414] bg-[#050505] p-3 text-xs"
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-xl border border-[#18181B] bg-[#050507] p-3 text-xs"
                   >
                     <div className="flex items-start space-x-2.5">
                       {chk.status === 'pass' ? (
@@ -519,8 +535,8 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
                         />
                       )}
                       <div>
-                        <div className="font-semibold text-[#FAFAFA]">{chk.label}</div>
-                        <div className="text-[11px] text-[#888888] mt-0.5 leading-relaxed">
+                        <div className="font-semibold text-white">{chk.label}</div>
+                        <div className="text-[11px] text-[#71717A] mt-0.5 leading-relaxed">
                           {chk.detail}
                         </div>
                       </div>
@@ -551,17 +567,17 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
 
       {/* Loading Skeleton */}
       {isLoading && (
-        <div className="mt-8 mx-auto max-w-2xl rounded-xl border border-[#1F1F1F] bg-[#0A0A0A] p-6 animate-pulse">
+        <div className="mt-8 mx-auto max-w-2xl rounded-2xl border border-[#1F1F23] bg-[#0A0A0C] p-6 animate-pulse">
           <div className="flex items-center space-x-3 mb-4">
-            <div className="h-10 w-10 rounded-lg bg-[#141414]" />
+            <div className="h-10 w-10 rounded-lg bg-[#18181B]" />
             <div className="space-y-2 flex-1">
-              <div className="h-4 w-40 rounded bg-[#141414]" />
-              <div className="h-3 w-64 rounded bg-[#141414]" />
+              <div className="h-4 w-40 rounded bg-[#18181B]" />
+              <div className="h-3 w-64 rounded bg-[#18181B]" />
             </div>
           </div>
-          <div className="space-y-3 pt-4 border-t border-[#141414]">
-            <div className="h-20 rounded bg-[#141414]" />
-            <div className="h-16 rounded bg-[#141414]" />
+          <div className="space-y-3 pt-4 border-t border-[#18181B]">
+            <div className="h-20 rounded-xl bg-[#18181B]" />
+            <div className="h-16 rounded-xl bg-[#18181B]" />
           </div>
         </div>
       )}
@@ -577,17 +593,17 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
                 <span className="h-1.5 w-1.5 rounded-full bg-zinc-500" />
                 <h2 className="text-xs font-mono font-medium tracking-wider uppercase">
                   <span className="text-white">Tizim reglamenti</span>{' '}
-                  <span className="text-[#71717A]">& texnik imkoniyatlar</span>
+                  <span className="text-[#71717A]">& 5-qatlamli himoya</span>
                 </h2>
               </div>
               <span className="text-[11px] font-mono text-[#71717A] hidden sm:inline-block">
-                Standart v2.4 • Raqamli Reyestr
+                Standart v2.5 • Kriptografik Reyestr
               </span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-12 gap-5 sm:gap-6">
               {/* CARD 1: HERO VIDEO GUIDE (md:col-span-7) */}
-              <div className="md:col-span-7 rounded-2xl border border-[#1F1F23] bg-[#0A0A0C] p-6 sm:p-7 flex flex-col justify-between shadow-[0_16px_40px_rgba(0,0,0,0.7)] hover:border-zinc-500 transition-colors">
+              <div className="md:col-span-7 rounded-2xl border border-[#1F1F23] border-t-white/[0.08] bg-[#0A0A0C] p-6 sm:p-7 flex flex-col justify-between shadow-[0_16px_40px_rgba(0,0,0,0.7)] hover:border-[#2E2E36] transition-colors">
                 <div>
                   <div className="flex items-center justify-between mb-3.5">
                     <span className="inline-flex items-center space-x-1.5 rounded-md border border-[#1F1F23] bg-black/60 px-2.5 py-0.5 text-[10px] font-mono text-zinc-400">
@@ -604,7 +620,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
                     <span className="text-[#71717A]">• rasmiy yo‘riqnoma</span>
                   </h3>
                   <p className="mt-1.5 text-xs text-[#71717A] leading-relaxed">
-                    QR-kod verifikatsiyasi, raqamli pasport, AI tahlil va anti-kontrafakt protokoli bo‘yicha rasmiy video qo‘llanma.
+                    QR-kod verifikatsiyasi, 2FA Skretch-PIN himoyasi, AI tahlil va anti-kontrafakt protokoli bo‘yicha rasmiy video qo‘llanma.
                   </p>
                 </div>
 
@@ -622,7 +638,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
                     className="h-full w-full object-cover opacity-75 group-hover:opacity-95 transition-opacity duration-300"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent flex items-center justify-center">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-black/80 text-white backdrop-blur-md shadow-[0_0_24px_rgba(255,255,255,0.16)] group-hover:scale-105 group-hover:bg-white/20 transition-all">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/25 bg-black/80 text-white backdrop-blur-md shadow-[0_0_24px_rgba(255,255,255,0.16)] group-hover:scale-105 group-hover:bg-white/20 transition-all">
                       <Play className="h-4 w-4 fill-white translate-x-0.5" />
                     </div>
                   </div>
@@ -630,7 +646,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
                   {/* Micro Footer Indicator */}
                   <div className="absolute bottom-2.5 inset-x-2.5 flex items-center justify-between text-[10px] font-mono text-zinc-300 bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-[#1F1F23]">
                     <span className="flex items-center gap-1.5 text-zinc-300">
-                      <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-zinc-300" />
                       <span>Ovozli tushuntirish</span>
                     </span>
                     <span className="text-zinc-400 group-hover:text-white transition-colors">Ko‘rish uchun bosing →</span>
@@ -648,11 +664,11 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
               </div>
 
               {/* CARD 2: ASLCHECK YORDAMCHI (md:col-span-5) */}
-              <div className="md:col-span-5 rounded-2xl border border-[#1F1F23] bg-[#0A0A0C] p-6 sm:p-7 flex flex-col justify-between shadow-[0_16px_40px_rgba(0,0,0,0.7)] hover:border-zinc-500 transition-colors">
+              <div className="md:col-span-5 rounded-2xl border border-[#1F1F23] border-t-white/[0.08] bg-[#0A0A0C] p-6 sm:p-7 flex flex-col justify-between shadow-[0_16px_40px_rgba(0,0,0,0.7)] hover:border-[#2E2E36] transition-colors">
                 <div>
                   <div className="flex items-center justify-between mb-3.5">
                     <span className="inline-flex items-center space-x-1.5 rounded-md border border-[#1F1F23] bg-black/60 px-2.5 py-0.5 text-[10px] font-mono text-zinc-300">
-                      <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,0.8)]" />
                       <span>AslCheck Yordamchi • Faol</span>
                     </span>
                     <span className="text-[10px] font-mono text-[#71717A]">Gemini 2.5</span>
@@ -663,7 +679,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
                     <span className="text-[#71717A]">— tarkib tahlili</span>
                   </h3>
                   <p className="mt-1.5 text-xs text-[#71717A] leading-relaxed">
-                    Mahsulot standarti, E-qo‘shimchalar va laboratoriya parametrlari bo‘yicha avtomatlashtirilgan aqlli tahlilchi.
+                    Mahsulot standarti, E-qo‘shimchalar va laboratoriya parametrlari bo‘yicha jonli o‘zbekcha ovozli aqlli tahlilchi.
                   </p>
                 </div>
 
@@ -673,12 +689,12 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
                     {[40, 75, 55, 90, 65, 80, 45, 95, 60, 85, 50, 70].map((h, i) => (
                       <div
                         key={i}
-                        className="w-1 rounded-full bg-gradient-to-t from-blue-500/80 via-indigo-400 to-violet-300 shadow-[0_0_10px_rgba(99,102,241,0.4)] animate-pulse"
+                        className="w-1 rounded-full bg-gradient-to-t from-blue-500/80 via-indigo-400 to-violet-300 shadow-[0_0_10px_rgba(99,102,241,0.45)] animate-pulse"
                         style={{ height: `${h * 0.28}px`, animationDelay: `${i * 90}ms` }}
                       />
                     ))}
                   </div>
-                  <span className="text-[10px] font-mono text-[#71717A]">AI Ovoz to‘lqini</span>
+                  <span className="text-[10px] font-mono text-indigo-300/80">AI Ovoz to‘lqini</span>
                 </div>
 
                 {/* Question Chips */}
@@ -686,16 +702,16 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
                   <button
                     type="button"
                     onClick={() => onNavigateToAi?.("Tog' asali tarkibida qanday vitaminlar va tabiiy fermentlar bor?")}
-                    className="w-full text-left truncate rounded-lg border border-[#1F1F23] bg-black/50 hover:bg-[#141416] hover:border-[#27272A] px-2.5 py-1.5 text-[11px] text-zinc-300 transition-colors"
+                    className="w-full text-left truncate rounded-lg border border-[#1F1F23] bg-black/50 hover:bg-[#141418] hover:border-[#27272A] px-3 py-2 text-[11px] text-zinc-300 transition-colors"
                   >
-                    💬 "Asal tabiiyligini qanday tekshiradi?"
+                    "Asal tabiiyligini qanday tekshiradi?"
                   </button>
                   <button
                     type="button"
                     onClick={() => onNavigateToAi?.("Oziq-ovqat mahsulotlaridagi E-raqamlar xavfli ekanligini qanday bilish mumkin?")}
-                    className="w-full text-left truncate rounded-lg border border-[#1F1F23] bg-black/50 hover:bg-[#141416] hover:border-[#27272A] px-2.5 py-1.5 text-[11px] text-zinc-300 transition-colors"
+                    className="w-full text-left truncate rounded-lg border border-[#1F1F23] bg-black/50 hover:bg-[#141418] hover:border-[#27272A] px-3 py-2 text-[11px] text-zinc-300 transition-colors"
                   >
-                    💬 "E-moddalar va allergenlar tahlili"
+                    "E-moddalar va allergenlar tahlili"
                   </button>
                 </div>
 
@@ -711,43 +727,43 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
                 </button>
               </div>
 
-              {/* CARD 3: ANTI-KLON HIMOYASI (md:col-span-6) */}
-              <div className="md:col-span-6 rounded-2xl border border-[#1F1F23] bg-[#0A0A0C] p-6 sm:p-7 flex flex-col justify-between shadow-[0_16px_40px_rgba(0,0,0,0.7)] hover:border-zinc-500 transition-colors">
+              {/* CARD 3: ANTI-KLON, 2FA SKRETCH-PIN VA IMPOSSIBLE TRAVEL (md:col-span-6) */}
+              <div className="md:col-span-6 rounded-2xl border border-[#1F1F23] border-t-white/[0.08] bg-[#0A0A0C] p-6 sm:p-7 flex flex-col justify-between shadow-[0_16px_40px_rgba(0,0,0,0.7)] hover:border-[#2E2E36] transition-colors">
                 <div>
                   <div className="flex items-center justify-between mb-3.5">
                     <span className="inline-flex items-center space-x-1.5 rounded-md border border-[#1F1F23] bg-black/60 px-2.5 py-0.5 text-[10px] font-mono text-zinc-300">
-                      <span className="h-1.5 w-1.5 rounded-full bg-[#F59E0B]" />
-                      <span>Kriptografik Filtr</span>
+                      <KeyRound className="h-3 w-3 text-zinc-400" />
+                      <span>2FA Skretch-PIN & Geo-Radar</span>
                     </span>
                     <span className="text-[10px] font-mono text-[#71717A]">Real-vaqt</span>
                   </div>
 
                   <h3 className="text-base font-semibold tracking-tight">
                     <span className="text-white">Anti-kontrafakt</span>{' '}
-                    <span className="text-[#71717A]">va klon radari</span>
+                    <span className="text-[#71717A]">va 2FA klon himoyasi</span>
                   </h3>
                   <p className="mt-1.5 text-xs text-[#71717A] leading-relaxed">
-                    Nusxalangan yoki shubhali hududda takroriy skanerlangan kodlarni real-vaqt rejimida aniqlash va bloklash protokoli.
+                    Tashqi QR-kod 20 ta qalbaki qutiga ko‘chirilsa ham, qadoq ichidagi maxfiy Skretch-PIN va viloyatlararo Impossible Travel radari qalloblikni fosh qiladi.
                   </p>
                 </div>
 
                 <div className="mt-5 pt-3.5 border-t border-[#1F1F23] flex items-center justify-between text-xs">
                   <div className="flex items-center space-x-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
-                    <span className="text-[11px] font-mono text-[#71717A]">Monitoring faol</span>
+                    <span className="h-1.5 w-1.5 rounded-full bg-zinc-400" />
+                    <span className="text-[11px] font-mono text-[#71717A]">4 viloyat anomal filtr</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleDemoClick('ASL-2026-999')}
-                    className="text-[11px] text-zinc-300 hover:text-white font-medium underline underline-offset-2 transition-colors"
+                    className="text-[11px] text-zinc-300 hover:text-white font-medium underline underline-offset-4 transition-colors"
                   >
-                    Shubhali kodni tekshirish →
+                    Klon radarini sinash →
                   </button>
                 </div>
               </div>
 
               {/* CARD 4: ISHLAB CHIQARUVCHI B2B KABINETI (md:col-span-6) */}
-              <div className="md:col-span-6 rounded-2xl border border-[#1F1F23] bg-[#0A0A0C] p-6 sm:p-7 flex flex-col justify-between shadow-[0_16px_40px_rgba(0,0,0,0.7)] hover:border-zinc-500 transition-colors">
+              <div className="md:col-span-6 rounded-2xl border border-[#1F1F23] border-t-white/[0.08] bg-[#0A0A0C] p-6 sm:p-7 flex flex-col justify-between shadow-[0_16px_40px_rgba(0,0,0,0.7)] hover:border-[#2E2E36] transition-colors">
                 <div>
                   <div className="flex items-center justify-between mb-3.5">
                     <span className="inline-flex items-center space-x-1.5 rounded-md border border-[#1F1F23] bg-black/60 px-2.5 py-0.5 text-[10px] font-mono text-zinc-300">
@@ -762,7 +778,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
                     <span className="text-[#71717A]">& QR generator</span>
                   </h3>
                   <p className="mt-1.5 text-xs text-[#71717A] leading-relaxed">
-                    Ishlab chiqaruvchilar uchun xavfsiz unikal QR-kodlar generatsiyasi, partiya sertifikatsiyasi va reyestr boshqaruvi.
+                    Ishlab chiqaruvchilar uchun xavfsiz unikal QR-kodlar va maxfiy PIN generatsiyasi, partiya sertifikatsiyasi hamda reyestr boshqaruvi.
                   </p>
                 </div>
 
@@ -786,7 +802,40 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
 
         {/* Verification Card Result */}
         {!isLoading && verificationResult && (
-          <div className="mt-8">
+          <div className="mt-8 space-y-3">
+            <div className="mx-auto max-w-2xl flex items-center justify-between px-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setVerificationResult(null);
+                  setVisionResult(null);
+                  setVisionPreviewUrl(null);
+                  setInputCode('');
+                  const cleanUrl = new URL(window.location.href);
+                  cleanUrl.searchParams.delete('code');
+                  window.history.replaceState({}, '', cleanUrl.toString());
+                }}
+                className="inline-flex items-center space-x-1.5 text-[11px] font-mono text-[#71717A] hover:text-white transition-colors"
+              >
+                <RotateCcw className="h-3 w-3" strokeWidth={1.75} />
+                <span>← Tizim reglamentiga qaytish</span>
+              </button>
+
+              {(searchedCode === 'ASL-2026-001' || searchedCode === 'ASL-2026-999') && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    resetDemoShowcase();
+                    void handleVerify(searchedCode, false);
+                  }}
+                  className="inline-flex items-center space-x-1 text-[11px] font-mono text-[#71717A] hover:text-white transition-colors"
+                >
+                  <RefreshCw className="h-3 w-3" strokeWidth={1.75} />
+                  <span>Demo holatini yangilash</span>
+                </button>
+              )}
+            </div>
+
             <VerificationCard
               key={`${searchedCode}-${verificationResult.status}-${verificationResult.product?.id ?? 'none'}-${verificationResult.product?.scan_count ?? 0}`}
               result={verificationResult}

@@ -125,25 +125,121 @@ const INITIAL_DEMO_LOGS: Record<string, ScanLog[]> = {
 
 const LOCAL_PRODUCTS_KEY = 'aslcheck_products_cache';
 const LOCAL_LOGS_KEY = 'aslcheck_logs_cache';
+const DEMO_SHOWCASE_KEY = 'aslcheck_demo_showcase_v1';
+
+interface DemoShowcaseState {
+  scans001: number;
+  isClaimed001: boolean;
+  claimedAt001: string | null;
+  isPinVerified001: boolean;
+  isPinVerified999: boolean;
+}
+
+const DEFAULT_SHOWCASE_STATE: DemoShowcaseState = {
+  scans001: 0,
+  isClaimed001: false,
+  claimedAt001: null,
+  isPinVerified001: false,
+  isPinVerified999: false,
+};
+
+function getDemoShowcaseState(): DemoShowcaseState {
+  try {
+    const raw = sessionStorage.getItem(DEMO_SHOWCASE_KEY);
+    if (!raw) return { ...DEFAULT_SHOWCASE_STATE };
+    return { ...DEFAULT_SHOWCASE_STATE, ...JSON.parse(raw) };
+  } catch {
+    return { ...DEFAULT_SHOWCASE_STATE };
+  }
+}
+
+function saveDemoShowcaseState(state: DemoShowcaseState): void {
+  try {
+    sessionStorage.setItem(DEMO_SHOWCASE_KEY, JSON.stringify(state));
+  } catch {
+    // Ignore storage write errors
+  }
+}
+
+export function resetDemoShowcase(): void {
+  try {
+    sessionStorage.removeItem(DEMO_SHOWCASE_KEY);
+  } catch {
+    // Ignore
+  }
+}
+
+/**
+ * Compute deterministic 4-digit 2FA Scratch-PIN for a product serial code.
+ * Demo codes keep fixed documented PINs (7492 / 8310) while producer batches receive unique codes.
+ */
+export function deriveScratchPin(serialCode: string): string {
+  const code = serialCode.trim().toUpperCase();
+  if (code === 'ASL-2026-001') return '7492';
+  if (code === 'ASL-2026-999') return '8310';
+  let hash = 2166136261;
+  for (let i = 0; i < code.length; i++) {
+    hash ^= code.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  const num = (Math.abs(hash) % 9000) + 1000;
+  return String(num);
+}
+
+function enrichProductSecurityMetadata(prod: ProductWithManufacturer): ProductWithManufacturer {
+  const code = prod.serial_code.trim().toUpperCase();
+  const demo = INITIAL_DEMO_PRODUCTS.find((d) => d.serial_code === code || d.id === prod.id);
+  const scratchPin = prod.scratch_pin || demo?.scratch_pin || deriveScratchPin(code);
+  const velocityAlert =
+    prod.velocity_alert !== undefined ? prod.velocity_alert : demo?.velocity_alert || null;
+
+  if (code === 'ASL-2026-001') {
+    const showcase = getDemoShowcaseState();
+    return {
+      ...prod,
+      scratch_pin: '7492',
+      velocity_alert: null,
+      is_flagged: false,
+      max_safe_scans: 3,
+      scan_count: Math.min(3, Math.max(1, showcase.scans001 || 1)),
+      is_claimed: showcase.isClaimed001,
+      claimed_at: showcase.claimedAt001,
+      is_pin_verified: showcase.isPinVerified001,
+    };
+  }
+
+  if (code === 'ASL-2026-999') {
+    const showcase = getDemoShowcaseState();
+    return {
+      ...prod,
+      scratch_pin: '8310',
+      velocity_alert: INITIAL_DEMO_PRODUCTS[1].velocity_alert,
+      is_flagged: true,
+      max_safe_scans: 3,
+      scan_count: Math.max(15, prod.scan_count || 15),
+      is_claimed: true,
+      is_pin_verified: showcase.isPinVerified999,
+    };
+  }
+
+  return {
+    ...prod,
+    scratch_pin: scratchPin,
+    velocity_alert: velocityAlert,
+  };
+}
 
 function getLocalProducts(): ProductWithManufacturer[] {
   try {
     const raw = localStorage.getItem(LOCAL_PRODUCTS_KEY);
     if (!raw) {
       localStorage.setItem(LOCAL_PRODUCTS_KEY, JSON.stringify(INITIAL_DEMO_PRODUCTS));
-      return INITIAL_DEMO_PRODUCTS;
+      return INITIAL_DEMO_PRODUCTS.map(enrichProductSecurityMetadata);
     }
     const list: ProductWithManufacturer[] = JSON.parse(raw);
-    return list.map((item) => {
-      const demo = INITIAL_DEMO_PRODUCTS.find((d) => d.id === item.id || d.serial_code === item.serial_code);
-      return {
-        ...item,
-        scratch_pin: item.scratch_pin || demo?.scratch_pin || (item.id === 'demo-prod-1' ? '7492' : undefined),
-        velocity_alert: item.velocity_alert !== undefined ? item.velocity_alert : demo?.velocity_alert || null,
-      };
-    });
+    return list.map(enrichProductSecurityMetadata);
   } catch {
-    return INITIAL_DEMO_PRODUCTS;
+    return INITIAL_DEMO_PRODUCTS.map(enrichProductSecurityMetadata);
   }
 }
 
@@ -213,13 +309,7 @@ export async function lookupProductByCode(
         .maybeSingle();
 
       if (!error && data) {
-        const prod = data as unknown as ProductWithManufacturer;
-        const demo = INITIAL_DEMO_PRODUCTS.find((d) => d.serial_code === prod.serial_code || d.id === prod.id);
-        return {
-          ...prod,
-          scratch_pin: prod.scratch_pin || demo?.scratch_pin || (prod.id === 'demo-prod-1' ? '7492' : undefined),
-          velocity_alert: prod.velocity_alert !== undefined ? prod.velocity_alert : demo?.velocity_alert || null,
-        };
+        return enrichProductSecurityMetadata(data as unknown as ProductWithManufacturer);
       }
       if (!error && !data) {
         return null;
@@ -266,51 +356,87 @@ export async function verifyProduct(rawCode: string): Promise<VerificationResult
           errorMessage: 'Ushbu seriya kodi rasmiy bazada ro‘yxatdan o‘tmagan.',
         };
       } else {
-        const product = productData as unknown as ProductWithManufacturer;
-        const newScanCount = (product.scan_count || 0) + 1;
+        const rawProduct = productData as unknown as ProductWithManufacturer;
         const deviceInfo = getClientDeviceInfo();
         const locationNote = 'O‘zbekiston (QR tekshiruv)';
+        const isStageDemo = serialCode === 'ASL-2026-001' || serialCode === 'ASL-2026-999';
 
-        // Increment scan count in Supabase
-        await supabase
-          .from('products')
-          .update({ scan_count: newScanCount })
-          .eq('id', product.id);
+        let logs: ScanLog[] = [];
+        let finalProduct: ProductWithManufacturer;
 
-        // Insert new scan log into scan_logs
-        await supabase.from('scan_logs').insert({
-          product_id: product.id,
-          device_info: deviceInfo,
-          location_note: locationNote,
-          is_report: false,
-          scanned_at: new Date().toISOString(),
-        });
+        if (isStageDemo) {
+          if (serialCode === 'ASL-2026-001') {
+            const showcase = getDemoShowcaseState();
+            const nextScans = showcase.scans001 >= 3 ? 1 : showcase.scans001 + 1;
+            saveDemoShowcaseState({ ...showcase, scans001: nextScans });
+          }
 
-        // Fetch latest 5 scan logs
-        const { data: logsData } = await supabase
-          .from('scan_logs')
-          .select('*')
-          .eq('product_id', product.id)
-          .order('scanned_at', { ascending: false })
-          .limit(5);
+          finalProduct = enrichProductSecurityMetadata(rawProduct);
 
-        const logs: ScanLog[] = logsData || [];
+          const { data: logsData } = await supabase
+            .from('scan_logs')
+            .select('*')
+            .eq('product_id', rawProduct.id)
+            .order('scanned_at', { ascending: false })
+            .limit(4);
 
-        const isAuthentic = !product.is_flagged && newScanCount <= product.max_safe_scans;
+          const currentScanEntry: ScanLog = {
+            id: `demo-live-${Date.now()}`,
+            product_id: rawProduct.id,
+            scanned_at: new Date().toISOString(),
+            device_info: deviceInfo,
+            location_note: serialCode === 'ASL-2026-001' ? 'Toshkent (Jonli tekshiruv)' : locationNote,
+            is_report: false,
+            report_message: null,
+          };
+
+          if (serialCode === 'ASL-2026-999') {
+            const multiCityLogs = INITIAL_DEMO_LOGS['22222222-2222-2222-2222-222222222222'] || [];
+            logs = [currentScanEntry, ...multiCityLogs].slice(0, 5);
+          } else {
+            logs = [currentScanEntry, ...(logsData || [])].slice(0, 5);
+          }
+        } else {
+          const newScanCount = (rawProduct.scan_count || 0) + 1;
+
+          // Increment scan count in Supabase
+          await supabase
+            .from('products')
+            .update({ scan_count: newScanCount })
+            .eq('id', rawProduct.id);
+
+          // Insert new scan log into scan_logs
+          await supabase.from('scan_logs').insert({
+            product_id: rawProduct.id,
+            device_info: deviceInfo,
+            location_note: locationNote,
+            is_report: false,
+            scanned_at: new Date().toISOString(),
+          });
+
+          // Fetch latest 5 scan logs
+          const { data: logsData } = await supabase
+            .from('scan_logs')
+            .select('*')
+            .eq('product_id', rawProduct.id)
+            .order('scanned_at', { ascending: false })
+            .limit(5);
+
+          logs = logsData || [];
+          finalProduct = enrichProductSecurityMetadata({
+            ...rawProduct,
+            scan_count: newScanCount,
+          });
+        }
+
+        const isAuthentic =
+          !finalProduct.is_flagged &&
+          (finalProduct.scan_count || 0) <= (finalProduct.max_safe_scans || 3);
         const status = isAuthentic ? 'AUTHENTIC' : 'SUSPICIOUS';
-
-        const demo = INITIAL_DEMO_PRODUCTS.find((d) => d.serial_code === product.serial_code || d.id === product.id);
-        const scratchPin = product.scratch_pin || demo?.scratch_pin || (product.id === 'demo-prod-1' || serialCode === 'ASL-2026-001' ? '7492' : undefined);
-        const velocityAlert = product.velocity_alert !== undefined ? product.velocity_alert : demo?.velocity_alert || null;
 
         return {
           status,
-          product: {
-            ...product,
-            scratch_pin: scratchPin,
-            velocity_alert: velocityAlert,
-            scan_count: newScanCount,
-          },
+          product: finalProduct,
           logs,
         };
       }
@@ -335,14 +461,22 @@ export async function verifyProduct(rawCode: string): Promise<VerificationResult
   }
 
   const foundProduct = localProducts[foundIdx];
-  const newScanCount = (foundProduct.scan_count || 0) + 1;
+  let updatedProduct: ProductWithManufacturer;
 
-  const updatedProduct: ProductWithManufacturer = {
-    ...foundProduct,
-    scan_count: newScanCount,
-  };
-  localProducts[foundIdx] = updatedProduct;
-  saveLocalProducts(localProducts);
+  if (serialCode === 'ASL-2026-001') {
+    const showcase = getDemoShowcaseState();
+    const nextScans = showcase.scans001 >= 3 ? 1 : showcase.scans001 + 1;
+    saveDemoShowcaseState({ ...showcase, scans001: nextScans });
+    updatedProduct = enrichProductSecurityMetadata(foundProduct);
+  } else {
+    const newScanCount = (foundProduct.scan_count || 0) + 1;
+    updatedProduct = enrichProductSecurityMetadata({
+      ...foundProduct,
+      scan_count: newScanCount,
+    });
+    localProducts[foundIdx] = updatedProduct;
+    saveLocalProducts(localProducts);
+  }
 
   const allLogs = getLocalLogs();
   const newLog: ScanLog = {
@@ -355,12 +489,17 @@ export async function verifyProduct(rawCode: string): Promise<VerificationResult
     report_message: null,
   };
 
-  const productLogs = allLogs[updatedProduct.id] || [];
+  const productLogs =
+    serialCode === 'ASL-2026-999'
+      ? INITIAL_DEMO_LOGS['22222222-2222-2222-2222-222222222222'] || []
+      : allLogs[updatedProduct.id] || [];
   const updatedLogs = [newLog, ...productLogs].slice(0, 5);
   allLogs[updatedProduct.id] = updatedLogs;
   saveLocalLogs(allLogs);
 
-  const isAuthentic = !updatedProduct.is_flagged && newScanCount <= updatedProduct.max_safe_scans;
+  const isAuthentic =
+    !updatedProduct.is_flagged &&
+    (updatedProduct.scan_count || 0) <= (updatedProduct.max_safe_scans || 3);
   const status = isAuthentic ? 'AUTHENTIC' : 'SUSPICIOUS';
 
   return {
@@ -374,9 +513,19 @@ export async function verifyProduct(rawCode: string): Promise<VerificationResult
  * Claim ownership of a product ("Sotib oldim — Kodni band qilish")
  */
 export async function claimProduct(
-  productId: string
+  productId: string,
+  serialCode?: string
 ): Promise<{ success: boolean; claimed_at: string }> {
   const now = new Date().toISOString();
+  const upperCode = serialCode?.trim().toUpperCase();
+
+  if (upperCode === 'ASL-2026-001' || upperCode === 'ASL-2026-999') {
+    const showcase = getDemoShowcaseState();
+    if (upperCode === 'ASL-2026-001') {
+      saveDemoShowcaseState({ ...showcase, isClaimed001: true, claimedAt001: now });
+    }
+    return { success: true, claimed_at: now };
+  }
 
   if (isSupabaseConfigured) {
     try {
@@ -418,14 +567,46 @@ export async function claimProduct(
  */
 export async function verifyScratchPin(
   productId: string,
-  enteredPin: string
+  enteredPin: string,
+  serialCode?: string,
+  expectedPinOverride?: string | null
 ): Promise<{ success: boolean; message: string }> {
+  const upperCode = serialCode?.trim().toUpperCase() || '';
   const localProducts = getLocalProducts();
-  const prod = localProducts.find((p) => p.id === productId);
-  const expectedPin = prod?.scratch_pin || '7492';
+  const prod = localProducts.find(
+    (p) => p.id === productId || (upperCode && p.serial_code.toUpperCase() === upperCode)
+  );
+  const expectedPin =
+    expectedPinOverride?.trim() ||
+    prod?.scratch_pin ||
+    (upperCode ? deriveScratchPin(upperCode) : '7492');
 
   if (enteredPin.trim() === expectedPin) {
     const now = new Date().toISOString();
+
+    if (upperCode === 'ASL-2026-001') {
+      const showcase = getDemoShowcaseState();
+      saveDemoShowcaseState({
+        ...showcase,
+        isClaimed001: true,
+        claimedAt001: now,
+        isPinVerified001: true,
+      });
+      return {
+        success: true,
+        message: '2FA Skretch-PIN muvaffaqiyatli tasdiqlandi! Qadoq 100% asl va o‘zingizga biriktirildi.',
+      };
+    }
+
+    if (upperCode === 'ASL-2026-999') {
+      const showcase = getDemoShowcaseState();
+      saveDemoShowcaseState({ ...showcase, isPinVerified999: true });
+      return {
+        success: true,
+        message: 'Ichki PIN tasdiqlandi, lekin ushbu tashqi QR-kod boshqa viloyatlarda klonlangani sababli baribir shubhali!',
+      };
+    }
+
     if (prod) {
       prod.is_claimed = true;
       prod.claimed_at = now;
@@ -829,7 +1010,9 @@ export async function fetchProducerProducts(
         .order('created_at', { ascending: false });
 
       if (!error) {
-        return (data || []) as unknown as ProductWithManufacturer[];
+        return ((data || []) as unknown as ProductWithManufacturer[]).map(
+          enrichProductSecurityMetadata
+        );
       }
       console.warn('Supabase fetch error, using tenant-filtered local cache:', error.message);
     } catch (err) {

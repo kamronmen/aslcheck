@@ -302,32 +302,32 @@ export const ProducerPage: React.FC = () => {
   return (
     <div className="mx-auto max-w-6xl px-3 py-6 sm:px-6 sm:py-10">
       {/* Multi-Tenant Producer Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-[#1F1F1F]">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-[#18181B]">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#FAFAFA] break-words">
+            <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-white break-words">
               {currentManufacturer.name}
             </h1>
             {currentManufacturer.verified && (
-              <span className="inline-flex items-center space-x-1 rounded border border-[#10B981]/30 bg-[#10B981]/10 px-2 py-0.5 text-[11px] font-medium text-[#10B981]">
+              <span className="inline-flex items-center space-x-1 rounded-md border border-[#10B981]/30 bg-[#10B981]/10 px-2 py-0.5 text-[11px] font-medium text-[#10B981]">
                 <VerifiedSealIcon className="h-3 w-3" strokeWidth={1.75} />
                 <span>Tasdiqlangan</span>
               </span>
             )}
             {isDemoMode && (
-              <span className="rounded border border-[#262626] bg-[#141414] px-2 py-0.5 text-[10px] font-mono text-[#888888]">
+              <span className="rounded-md border border-[#1F1F23] bg-[#0A0A0C] px-2 py-0.5 text-[10px] font-mono text-[#71717A]">
                 DEMO REJIM
               </span>
             )}
           </div>
-          <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#888888]">
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#71717A]">
             <span className="inline-flex items-center space-x-1.5">
-              <Building2 className="h-3.5 w-3.5 text-[#525252]" strokeWidth={1.75} />
+              <Building2 className="h-3.5 w-3.5 text-[#52525B]" strokeWidth={1.75} />
               <span>{currentManufacturer.region}</span>
             </span>
             <span className="inline-flex items-center space-x-1.5 font-mono text-[11px] break-all">
-              <span className="text-[#525252]">Litsenziya:</span>
-              <span className="text-[#FAFAFA]">{currentManufacturer.license_number}</span>
+              <span className="text-[#52525B]">Litsenziya:</span>
+              <span className="text-zinc-200">{currentManufacturer.license_number}</span>
             </span>
           </div>
         </div>
@@ -342,7 +342,7 @@ export const ProducerPage: React.FC = () => {
               }
               setShowAddForm(!showAddForm);
             }}
-            className="flex items-center justify-center space-x-2 rounded-lg bg-white px-4 py-2.5 text-xs font-semibold text-black hover:bg-zinc-200 transition-colors shadow-[0_1px_14px_rgba(255,255,255,0.14)] min-h-[40px]"
+            className="flex items-center justify-center space-x-2 rounded-xl bg-white px-4 py-2.5 text-xs font-semibold text-black hover:bg-[#F4F4F5] transition-all shadow-[0_0_25px_rgba(255,255,255,0.16)] min-h-[40px]"
           >
             <Plus className="h-4 w-4" strokeWidth={2} />
             <span>Yangi Mahsulot Qo‘shish</span>
@@ -357,7 +357,7 @@ export const ProducerPage: React.FC = () => {
             type="button"
             onClick={handleLogout}
             title="Kabinetdan chiqish"
-            className="flex items-center space-x-1.5 rounded-lg border border-[#1F1F1F] bg-[#111111] px-3.5 py-2.5 text-xs font-medium text-[#888888] hover:text-[#FAFAFA] hover:bg-[#161616] transition-colors min-h-[40px]"
+            className="flex items-center space-x-1.5 rounded-xl border border-[#1F1F23] bg-[#0A0A0C] px-3.5 py-2.5 text-xs font-medium text-[#71717A] hover:text-white hover:border-[#27272A] transition-colors min-h-[40px]"
           >
             <LogOut className="h-3.5 w-3.5" strokeWidth={1.75} />
             <span>Chiqish</span>
@@ -365,71 +365,57 @@ export const ProducerPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Top KPI Row */}
-      <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-        <div className="relative overflow-hidden rounded-xl border border-white/[0.06] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] p-4 sm:p-5 shadow-[0_14px_36px_rgba(0,0,0,0.65)]">
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/[0.06] blur-2xl"
-          />
-          <div className="relative flex items-center justify-between text-[#888888]">
+      {/* Top KPI Row: Pure Black #0A0A0C with 1px #1F1F23 */}
+      <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5">
+        <div className="rounded-2xl border border-[#1F1F23] border-t-white/[0.08] bg-[#0A0A0C] p-5 shadow-[0_14px_36px_rgba(0,0,0,0.7)]">
+          <div className="flex items-center justify-between text-[#71717A]">
             <span className="text-xs font-medium">Jami mahsulotlar</span>
-            <Package className="h-4 w-4 text-[#FAFAFA]" strokeWidth={1.75} />
+            <Package className="h-4 w-4 text-zinc-300" strokeWidth={1.75} />
           </div>
-          <div className="relative mt-3 flex items-baseline space-x-2">
-            <span className="text-2xl sm:text-3xl font-bold tracking-tight font-mono text-[#FAFAFA] tabular-nums">
+          <div className="mt-3 flex items-baseline space-x-2">
+            <span className="text-2xl sm:text-3xl font-semibold tracking-tight font-mono text-white tabular-nums">
               {totalProducts}
             </span>
-            <span className="text-xs text-[#525252]">ta ro‘yxatda</span>
+            <span className="text-xs text-[#71717A]">ta ro‘yxatda</span>
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-xl border border-white/[0.06] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] p-4 sm:p-5 shadow-[0_14px_36px_rgba(0,0,0,0.65)]">
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-[#10B981]/[0.1] blur-2xl"
-          />
-          <div className="relative flex items-center justify-between text-[#888888]">
+        <div className="rounded-2xl border border-[#1F1F23] border-t-white/[0.08] bg-[#0A0A0C] p-5 shadow-[0_14px_36px_rgba(0,0,0,0.7)]">
+          <div className="flex items-center justify-between text-[#71717A]">
             <span className="text-xs font-medium">Jami tekshiruvlar</span>
-            <Layers className="h-4 w-4 text-[#10B981]" strokeWidth={1.75} />
+            <Layers className="h-4 w-4 text-zinc-300" strokeWidth={1.75} />
           </div>
-          <div className="relative mt-3 flex items-baseline space-x-2">
-            <span className="text-2xl sm:text-3xl font-bold tracking-tight font-mono text-[#FAFAFA] tabular-nums">
+          <div className="mt-3 flex items-baseline space-x-2">
+            <span className="text-2xl sm:text-3xl font-semibold tracking-tight font-mono text-white tabular-nums">
               {totalScans}
             </span>
-            <span className="text-xs text-[#525252]">marta skanerlandi</span>
+            <span className="text-xs text-[#71717A]">marta skanerlandi</span>
           </div>
         </div>
 
-        <div className="relative overflow-hidden rounded-xl border border-white/[0.06] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] p-4 sm:p-5 shadow-[0_14px_36px_rgba(0,0,0,0.65)]">
-          <div
-            aria-hidden="true"
-            className={`pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full blur-2xl ${
-              suspiciousCount > 0 ? 'bg-[#EF4444]/[0.12]' : 'bg-[#F59E0B]/[0.08]'
-            }`}
-          />
-          <div className="relative flex items-center justify-between text-[#888888]">
+        <div className="rounded-2xl border border-[#1F1F23] border-t-white/[0.08] bg-[#0A0A0C] p-5 shadow-[0_14px_36px_rgba(0,0,0,0.7)]">
+          <div className="flex items-center justify-between text-[#71717A]">
             <span className="text-xs font-medium">Shubhali / Shikoyatlar</span>
             <CloneAlertIcon
-              className={`h-4 w-4 ${suspiciousCount > 0 ? 'text-[#EF4444]' : 'text-[#F59E0B]'}`}
+              className={`h-4 w-4 ${suspiciousCount > 0 ? 'text-[#F59E0B]' : 'text-zinc-400'}`}
               strokeWidth={1.5}
             />
           </div>
-          <div className="relative mt-3 flex items-baseline space-x-2">
+          <div className="mt-3 flex items-baseline space-x-2">
             <span
-              className={`text-2xl sm:text-3xl font-bold tracking-tight font-mono tabular-nums ${
-                suspiciousCount > 0 ? 'text-[#F59E0B]' : 'text-[#FAFAFA]'
+              className={`text-2xl sm:text-3xl font-semibold tracking-tight font-mono tabular-nums ${
+                suspiciousCount > 0 ? 'text-[#F59E0B]' : 'text-white'
               }`}
             >
               {suspiciousCount}
             </span>
-            <span className="text-xs text-[#525252]">ta ogohlantirish</span>
+            <span className="text-xs text-[#71717A]">ta ogohlantirish</span>
           </div>
         </div>
       </div>
 
       {/* 7-Day Smooth SVG Area Spline Chart */}
-      <div className="mt-4">
+      <div className="mt-5">
         <ScanAnalyticsChart data={scanTrend} />
       </div>
 
@@ -448,19 +434,19 @@ export const ProducerPage: React.FC = () => {
       )}
 
       {/* Sub-Tab Navigation: Products vs Reports Radar */}
-      <div className="mt-8 flex border-b border-[#1F1F1F]">
+      <div className="mt-8 flex border-b border-[#18181B]">
         <button
           type="button"
           onClick={() => setActiveSection('products')}
           className={`flex items-center space-x-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors ${
             activeSection === 'products'
-              ? 'border-[#FAFAFA] text-[#FAFAFA]'
-              : 'border-transparent text-[#888888] hover:text-[#FAFAFA]'
+              ? 'border-white text-white'
+              : 'border-transparent text-[#71717A] hover:text-white'
           }`}
         >
           <Package className="h-3.5 w-3.5" strokeWidth={1.75} />
           <span>Mahsulotlar Ro‘yxati</span>
-          <span className="rounded bg-[#141414] px-1.5 py-0.5 text-[10px] font-mono text-[#888888]">
+          <span className="rounded bg-[#0A0A0C] border border-[#1F1F23] px-1.5 py-0.5 text-[10px] font-mono text-[#71717A]">
             {products.length}
           </span>
         </button>
@@ -471,13 +457,13 @@ export const ProducerPage: React.FC = () => {
           className={`flex items-center space-x-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors ${
             activeSection === 'reports'
               ? 'border-[#EF4444] text-[#EF4444]'
-              : 'border-transparent text-[#888888] hover:text-[#FAFAFA]'
+              : 'border-transparent text-[#71717A] hover:text-white'
           }`}
         >
           <ShieldRadarIcon className="h-3.5 w-3.5" strokeWidth={1.5} />
           <span>Kelib tushgan shikoyatlar</span>
           {reports.length > 0 && (
-            <span className="rounded bg-[#EF4444]/20 border border-[#EF4444]/30 px-1.5 py-0.2 text-[10px] font-mono font-bold text-[#EF4444]">
+            <span className="rounded bg-[#EF4444]/15 border border-[#EF4444]/30 px-1.5 py-0.2 text-[10px] font-mono font-bold text-[#EF4444]">
               {reports.length} ta
             </span>
           )}
@@ -486,26 +472,27 @@ export const ProducerPage: React.FC = () => {
 
       {/* SECTION 1: PRODUCTS (MOBILE CARD LIST + DESKTOP TABLE) */}
       {activeSection === 'products' && (
-        <div className="mt-4 rounded-xl border border-white/[0.06] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.75)]">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 border-b border-[#1F1F1F] gap-3">
+        <div className="mt-5 rounded-2xl border border-[#1F1F23] border-t-white/[0.08] bg-[#0A0A0C] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 sm:p-5 border-b border-[#18181B] gap-3">
             <div className="flex items-center space-x-2">
-              <h2 className="text-sm font-semibold tracking-tight text-[#FAFAFA]">
-                Ro‘yxatga Olingan Mahsulotlar
+              <h2 className="text-sm font-semibold tracking-tight">
+                <span className="text-white">Ro‘yxatga olingan</span>{' '}
+                <span className="text-[#71717A]">mahsulotlar</span>
               </h2>
-              <span className="rounded bg-[#141414] border border-[#222222] px-2 py-0.5 text-[11px] font-mono text-[#888888]">
+              <span className="rounded-md bg-black border border-[#1F1F23] px-2 py-0.5 text-[11px] font-mono text-[#71717A]">
                 {filteredProducts.length} ta
               </span>
             </div>
 
             <div className="flex items-center space-x-2">
               <div className="relative w-full sm:w-64">
-                <Search className="h-3.5 w-3.5 absolute left-3 top-3 text-[#525252]" />
+                <Search className="h-3.5 w-3.5 absolute left-3 top-3 text-[#52525B]" />
                 <input
                   type="text"
                   placeholder="Qidirish (seriya, nom, partiya)..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full rounded-lg border border-[#1F1F1F] bg-[#000000] py-2 pl-9 pr-3 text-xs sm:text-sm text-[#FAFAFA] placeholder-[#525252] focus:border-[#FAFAFA] focus:outline-none"
+                  className="w-full rounded-xl border border-[#1F1F23] bg-black py-2 pl-9 pr-3 text-xs sm:text-sm text-white placeholder-[#52525B] focus:border-white/40 focus:outline-none"
                 />
               </div>
               {filteredProducts.length > 0 && (
@@ -516,9 +503,9 @@ export const ProducerPage: React.FC = () => {
                     setIsBatchModalOpen(true);
                   }}
                   title="Ro‘yxatdagi mahsulotlar uchun A4 QR varaq ochish"
-                  className="inline-flex items-center space-x-1.5 rounded-lg border border-[#262626] bg-[#111111] px-2.5 py-2 text-xs font-medium text-[#FAFAFA] hover:bg-[#1A1A1A] transition-colors shrink-0"
+                  className="inline-flex items-center space-x-1.5 rounded-xl border border-[#27272A] bg-black px-3 py-2 text-xs font-medium text-zinc-200 hover:text-white hover:border-zinc-500 transition-colors shrink-0"
                 >
-                  <Printer className="h-3.5 w-3.5 text-[#10B981]" strokeWidth={1.75} />
+                  <Printer className="h-3.5 w-3.5 text-zinc-300" strokeWidth={1.75} />
                   <span className="hidden sm:inline">A4 QR</span>
                 </button>
               )}
@@ -526,7 +513,7 @@ export const ProducerPage: React.FC = () => {
                 type="button"
                 onClick={loadData}
                 title="Yangilash"
-                className="p-2 rounded-lg border border-[#1F1F1F] bg-[#141414] text-[#888888] hover:text-[#FAFAFA] transition-colors shrink-0"
+                className="p-2.5 rounded-xl border border-[#1F1F23] bg-black text-[#71717A] hover:text-white hover:border-[#27272A] transition-colors shrink-0"
               >
                 <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
               </button>
@@ -536,12 +523,12 @@ export const ProducerPage: React.FC = () => {
           {/* 1. Mobile Card List (md:hidden) — Ergonomic Touch Cards */}
           <div className="md:hidden p-3 space-y-3">
             {isLoading && products.length === 0 ? (
-              <div className="py-8 text-center text-[#525252] space-y-2">
-                <RefreshCw className="h-5 w-5 animate-spin mx-auto text-[#888888]" />
+              <div className="py-8 text-center text-[#71717A] space-y-2">
+                <RefreshCw className="h-5 w-5 animate-spin mx-auto text-zinc-400" />
                 <p className="text-xs">Mahsulotlar yuklanmoqda...</p>
               </div>
             ) : filteredProducts.length === 0 ? (
-              <div className="py-8 text-center text-[#525252] text-xs">
+              <div className="py-8 text-center text-[#71717A] text-xs">
                 Ushbu korxona hisobida hozircha mahsulotlar mavjud emas. Yangi mahsulot qo‘shing.
               </div>
             ) : (
@@ -552,21 +539,21 @@ export const ProducerPage: React.FC = () => {
                 return (
                   <div
                     key={p.id}
-                    className="rounded-xl border border-[#1F1F1F] bg-[#050505] p-3.5 space-y-2.5 shadow-sm"
+                    className="rounded-xl border border-[#1F1F23] bg-[#050507] p-3.5 space-y-2.5"
                   >
                     {/* Top Row: Name + Status Pill */}
                     <div className="flex items-start justify-between gap-2">
-                      <div className="font-semibold text-xs sm:text-sm text-[#FAFAFA] break-words">
+                      <div className="font-semibold text-xs sm:text-sm text-white break-words">
                         {p.product_name}
                       </div>
                       <div className="shrink-0">
                         {isSuspicious ? (
-                          <span className="inline-flex items-center space-x-1 rounded border border-[#F59E0B]/30 bg-[#F59E0B]/10 px-2 py-0.5 text-[10px] font-medium text-[#F59E0B]">
+                          <span className="inline-flex items-center space-x-1 rounded-md border border-[#F59E0B]/30 bg-[#F59E0B]/10 px-2 py-0.5 text-[10px] font-medium text-[#F59E0B]">
                             <CloneAlertIcon className="h-3 w-3" strokeWidth={1.5} />
                             <span>Shubhali</span>
                           </span>
                         ) : (
-                          <span className="inline-flex items-center space-x-1 rounded border border-[#10B981]/30 bg-[#10B981]/10 px-2 py-0.5 text-[10px] font-medium text-[#10B981]">
+                          <span className="inline-flex items-center space-x-1 rounded-md border border-[#10B981]/30 bg-[#10B981]/10 px-2 py-0.5 text-[10px] font-medium text-[#10B981]">
                             <CheckCircle2 className="h-3 w-3" strokeWidth={2} />
                             <span>Faol</span>
                           </span>
@@ -576,21 +563,21 @@ export const ProducerPage: React.FC = () => {
 
                     {/* Middle Row: Serial Code + Meta */}
                     <div className="flex flex-wrap items-center gap-2 text-xs">
-                      <span className="rounded bg-[#141414] border border-[#222222] px-2 py-0.5 font-mono text-xs font-semibold text-[#FAFAFA] break-all">
+                      <span className="rounded-md bg-black border border-[#1F1F23] px-2 py-0.5 font-mono text-xs font-semibold text-white break-all">
                         {p.serial_code}
                       </span>
-                      <span className="text-[11px] text-[#888888] font-mono">
+                      <span className="text-[11px] text-[#71717A] font-mono">
                         {p.batch_number}
                       </span>
-                      <span className="text-[11px] text-[#525252]">
+                      <span className="text-[11px] text-[#52525B]">
                         • {p.category}
                       </span>
                     </div>
 
                     {/* Bottom Row: Scans & Action Buttons */}
-                    <div className="flex items-center justify-between pt-2 border-t border-[#141414]">
+                    <div className="flex items-center justify-between pt-2 border-t border-[#18181B]">
                       <div className="text-xs font-mono">
-                        <span className="text-[#525252]">Skaner: </span>
+                        <span className="text-[#71717A]">Skaner: </span>
                         <span
                           className={
                             isSuspicious
@@ -600,7 +587,7 @@ export const ProducerPage: React.FC = () => {
                         >
                           {p.scan_count || 0}
                         </span>
-                        <span className="text-[#525252]"> / {p.max_safe_scans || 3}</span>
+                        <span className="text-[#52525B]"> / {p.max_safe_scans || 3}</span>
                         {p.is_claimed && (
                           <span className="ml-2 text-[10px] text-[#60A5FA] bg-[#3B82F6]/10 border border-[#3B82F6]/30 px-1.5 py-0.2 rounded font-sans">
                             Band
@@ -613,7 +600,7 @@ export const ProducerPage: React.FC = () => {
                           type="button"
                           onClick={() => handleDuplicateProduct(p)}
                           title="Ushbu mahsulotdan nusxa olib tez qo‘shish"
-                          className="inline-flex items-center space-x-1 rounded-lg border border-[#222222] bg-[#0D0D0D] px-2.5 py-1.5 text-xs text-[#A0A0A0] hover:text-[#FAFAFA] hover:bg-[#1A1A1A] transition-colors"
+                          className="inline-flex items-center space-x-1 rounded-lg border border-[#1F1F23] bg-black px-2.5 py-1.5 text-xs text-[#A1A1AA] hover:text-white hover:border-[#27272A] transition-colors"
                         >
                           <Copy className="h-3.5 w-3.5" strokeWidth={1.75} />
                           <span>Nusxa</span>
@@ -622,7 +609,7 @@ export const ProducerPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setSelectedProductForQr(p)}
-                          className="inline-flex items-center space-x-1.5 rounded-lg border border-[#2A2A2A] bg-[#141414] px-3 py-1.5 text-xs font-semibold text-[#FAFAFA] hover:bg-[#1E1E1E] transition-colors"
+                          className="inline-flex items-center space-x-1.5 rounded-lg border border-[#27272A] bg-[#0A0A0C] px-3 py-1.5 text-xs font-semibold text-white hover:border-zinc-500 transition-colors"
                         >
                           <QrCode className="h-3.5 w-3.5" strokeWidth={1.75} />
                           <span>QR-kod</span>
@@ -632,7 +619,7 @@ export const ProducerPage: React.FC = () => {
                           type="button"
                           onClick={() => handleDeleteProduct(p.id, p.product_name)}
                           title="Mahsulotni o‘chirish"
-                          className="p-1.5 rounded-lg text-[#525252] hover:text-[#EF4444] hover:bg-[#EF4444]/10 transition-colors"
+                          className="p-1.5 rounded-lg text-[#52525B] hover:text-[#EF4444] hover:bg-[#EF4444]/10 transition-colors"
                         >
                           <Trash2 className="h-4 w-4" strokeWidth={1.75} />
                         </button>
@@ -647,7 +634,7 @@ export const ProducerPage: React.FC = () => {
           {/* 2. Desktop Table (hidden md:block) */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="border-b border-[#1F1F1F] bg-[#050505] text-[#525252] font-mono uppercase tracking-wider text-[10px]">
+              <thead className="border-b border-[#18181B] bg-[#050507] text-[#71717A] font-mono uppercase tracking-wider text-[10px]">
                 <tr>
                   <th className="px-4 py-3">Seriya Kodi</th>
                   <th className="px-4 py-3">Mahsulot Nomi</th>
@@ -659,17 +646,17 @@ export const ProducerPage: React.FC = () => {
                   <th className="px-4 py-3 text-right">Amallar</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#141414] text-[#FAFAFA]">
+              <tbody className="divide-y divide-[#18181B] text-white">
                 {isLoading && products.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-4 py-8 text-center text-[#525252]">
-                      <RefreshCw className="h-5 w-5 animate-spin mx-auto mb-2 text-[#888888]" />
+                    <td colSpan={8} className="px-4 py-8 text-center text-[#71717A]">
+                      <RefreshCw className="h-5 w-5 animate-spin mx-auto mb-2 text-zinc-400" />
                       <span>Mahsulotlar yuklanmoqda...</span>
                     </td>
                   </tr>
                 ) : filteredProducts.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-4 py-10 text-center text-[#525252]">
+                    <td colSpan={8} className="px-4 py-10 text-center text-[#71717A]">
                       Ushbu korxona hisobida hozircha mahsulotlar mavjud emas. Yangi mahsulot qo‘shing.
                     </td>
                   </tr>
@@ -679,26 +666,26 @@ export const ProducerPage: React.FC = () => {
                       p.is_flagged || (p.scan_count || 0) > (p.max_safe_scans || 3);
 
                     return (
-                      <tr key={p.id} className="hover:bg-[#111111] transition-colors">
-                        <td className="px-4 py-3 font-mono font-semibold text-[#FAFAFA]">
-                          <span className="rounded bg-[#141414] border border-[#222222] px-2 py-0.5 break-all">
+                      <tr key={p.id} className="hover:bg-[#111114] transition-colors">
+                        <td className="px-4 py-3.5 font-mono font-semibold text-white">
+                          <span className="rounded-md bg-black border border-[#1F1F23] px-2 py-0.5 break-all">
                             {p.serial_code}
                           </span>
                         </td>
 
-                        <td className="px-4 py-3 font-medium">
+                        <td className="px-4 py-3.5 font-medium">
                           <div className="break-words">{p.product_name}</div>
                         </td>
 
-                        <td className="px-4 py-3 text-[#888888]">
+                        <td className="px-4 py-3.5 text-[#71717A]">
                           {p.category}
                         </td>
 
-                        <td className="px-4 py-3 font-mono text-[#888888]">
+                        <td className="px-4 py-3.5 font-mono text-[#71717A]">
                           {p.batch_number}
                         </td>
 
-                        <td className="px-4 py-3 font-mono">
+                        <td className="px-4 py-3.5 font-mono tabular-nums">
                           <span
                             className={
                               isSuspicious
@@ -708,43 +695,43 @@ export const ProducerPage: React.FC = () => {
                           >
                             {p.scan_count || 0}
                           </span>
-                          <span className="text-[#525252]">
+                          <span className="text-[#52525B]">
                             {' '}
                             / {p.max_safe_scans || 3}
                           </span>
                         </td>
 
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3.5">
                           {p.is_claimed ? (
-                            <span className="inline-flex items-center space-x-1 rounded border border-[#3B82F6]/30 bg-[#3B82F6]/10 px-1.5 py-0.5 text-[10px] font-medium text-[#60A5FA]">
+                            <span className="inline-flex items-center space-x-1 rounded-md border border-[#3B82F6]/30 bg-[#3B82F6]/10 px-1.5 py-0.5 text-[10px] font-medium text-[#60A5FA]">
                               <span>Band qilingan</span>
                             </span>
                           ) : (
-                            <span className="text-[10px] text-[#525252]">Erkin</span>
+                            <span className="text-[10px] text-[#71717A]">Erkin</span>
                           )}
                         </td>
 
-                        <td className="px-4 py-3">
+                        <td className="px-4 py-3.5">
                           {isSuspicious ? (
-                            <span className="inline-flex items-center space-x-1 rounded border border-[#F59E0B]/30 bg-[#F59E0B]/10 px-2 py-0.5 text-[10px] font-medium text-[#F59E0B]">
+                            <span className="inline-flex items-center space-x-1 rounded-md border border-[#F59E0B]/30 bg-[#F59E0B]/10 px-2 py-0.5 text-[10px] font-medium text-[#F59E0B]">
                               <CloneAlertIcon className="h-3 w-3" strokeWidth={1.5} />
                               <span>Shubhali</span>
                             </span>
                           ) : (
-                            <span className="inline-flex items-center space-x-1 rounded border border-[#10B981]/30 bg-[#10B981]/10 px-2 py-0.5 text-[10px] font-medium text-[#10B981]">
+                            <span className="inline-flex items-center space-x-1 rounded-md border border-[#10B981]/30 bg-[#10B981]/10 px-2 py-0.5 text-[10px] font-medium text-[#10B981]">
                               <CheckCircle2 className="h-3 w-3" strokeWidth={2} />
                               <span>Faol</span>
                             </span>
                           )}
                         </td>
 
-                        <td className="px-4 py-3 text-right">
+                        <td className="px-4 py-3.5 text-right">
                           <div className="inline-flex items-center space-x-1.5">
                             <button
                               type="button"
                               onClick={() => handleDuplicateProduct(p)}
                               title="Nusxa olish"
-                              className="inline-flex items-center space-x-1 rounded-md border border-[#1F1F1F] bg-[#0B0B0B] px-2 py-1 text-xs text-[#888888] hover:text-[#FAFAFA] hover:bg-[#181818] transition-colors"
+                              className="inline-flex items-center space-x-1 rounded-lg border border-[#1F1F23] bg-black px-2 py-1 text-xs text-[#71717A] hover:text-white hover:border-[#27272A] transition-colors"
                             >
                               <Copy className="h-3.5 w-3.5" strokeWidth={1.75} />
                               <span>Nusxa</span>
@@ -753,7 +740,7 @@ export const ProducerPage: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => setSelectedProductForQr(p)}
-                              className="inline-flex items-center space-x-1.5 rounded-md border border-[#222222] bg-[#141414] px-2.5 py-1 text-xs font-medium text-[#FAFAFA] hover:bg-[#1E1E1E] transition-colors"
+                              className="inline-flex items-center space-x-1.5 rounded-lg border border-[#27272A] bg-[#0A0A0C] px-2.5 py-1 text-xs font-medium text-white hover:border-zinc-500 transition-colors"
                             >
                               <QrCode className="h-3.5 w-3.5" strokeWidth={1.75} />
                               <span>QR-kod</span>
@@ -763,7 +750,7 @@ export const ProducerPage: React.FC = () => {
                               type="button"
                               onClick={() => handleDeleteProduct(p.id, p.product_name)}
                               title="Mahsulotni o‘chirish"
-                              className="p-1 rounded-md text-[#525252] hover:text-[#EF4444] hover:bg-[#EF4444]/10 transition-colors"
+                              className="p-1 rounded-lg text-[#52525B] hover:text-[#EF4444] hover:bg-[#EF4444]/10 transition-colors"
                             >
                               <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} />
                             </button>
@@ -781,14 +768,14 @@ export const ProducerPage: React.FC = () => {
 
       {/* SECTION 2: LIVE COUNTERFEIT REPORTS RADAR + AI EXECUTIVE REPORT */}
       {activeSection === 'reports' && (
-        <div className="mt-4 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 rounded-xl border border-white/[0.06] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] gap-3 shadow-lg">
+        <div className="mt-5 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 sm:p-5 rounded-2xl border border-[#1F1F23] border-t-white/[0.08] bg-[#0A0A0C] gap-3 shadow-lg">
             <div>
-              <h2 className="text-sm font-semibold tracking-tight text-[#FAFAFA] flex items-center space-x-2">
+              <h2 className="text-sm font-semibold tracking-tight text-white flex items-center space-x-2">
                 <ShieldRadarIcon className="h-4 w-4 text-[#EF4444]" strokeWidth={1.5} />
                 <span>Jonli Shikoyatlar va Soxtalik Signallari</span>
               </h2>
-              <p className="text-xs text-[#888888] mt-0.5">
+              <p className="text-xs text-[#71717A] mt-0.5">
                 Faqat {currentManufacturer.name} mahsulotlari bo‘yicha kelib tushgan real vaqt signallari
               </p>
             </div>
@@ -798,9 +785,9 @@ export const ProducerPage: React.FC = () => {
                 type="button"
                 onClick={handleRunProducerAiReport}
                 disabled={isAiReportLoading}
-                className="flex items-center space-x-1.5 rounded-lg border border-[#262626] bg-[#141414] hover:bg-[#1E1E1E] px-3.5 py-2 text-xs font-medium text-[#FAFAFA] transition-colors shadow-sm min-h-[38px]"
+                className="flex items-center space-x-1.5 rounded-xl border border-[#27272A] bg-black hover:border-zinc-500 px-3.5 py-2 text-xs font-medium text-white transition-colors min-h-[38px]"
               >
-                <AiCoreIcon className="h-3.5 w-3.5 text-zinc-300" strokeWidth={1.75} />
+                <AiCoreIcon className="h-3.5 w-3.5 text-indigo-400" strokeWidth={1.75} />
                 <span>
                   {isAiReportLoading ? 'AI hisoboti tayyorlanmoqda...' : 'AI Xavfsizlik Hisoboti'}
                 </span>
@@ -809,7 +796,7 @@ export const ProducerPage: React.FC = () => {
               <button
                 type="button"
                 onClick={refreshReports}
-                className="flex items-center space-x-1.5 rounded-lg border border-[#1F1F1F] bg-[#141414] px-3.5 py-2 text-xs text-[#FAFAFA] hover:bg-[#1E1E1E] transition-colors min-h-[38px]"
+                className="flex items-center space-x-1.5 rounded-xl border border-[#1F1F23] bg-black px-3.5 py-2 text-xs text-white hover:border-[#27272A] transition-colors min-h-[38px]"
               >
                 <RefreshCw className={`h-3.5 w-3.5 ${isReportsLoading ? 'animate-spin' : ''}`} />
                 <span>Radarni yangilash</span>
@@ -819,18 +806,19 @@ export const ProducerPage: React.FC = () => {
 
           {/* AI Executive Briefing Card */}
           {aiReport && (
-            <div className="rounded-xl border border-white/[0.08] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] p-4 sm:p-5 space-y-3.5 shadow-[0_18px_45px_rgba(0,0,0,0.75)] animate-in fade-in duration-300">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 pb-3 border-b border-[#1A1A1A]">
+            <div className="relative overflow-hidden rounded-2xl border border-[#1F1F23] bg-[#0A0A0C] p-4 sm:p-5 space-y-3.5 shadow-[0_18px_45px_rgba(0,0,0,0.85)] animate-in fade-in duration-300">
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-indigo-400/50 to-transparent" />
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 pb-3 border-b border-[#18181B]">
                 <div className="flex items-center space-x-2">
-                  <AiCoreIcon className="h-4 w-4 text-zinc-300" strokeWidth={1.75} />
-                  <h3 className="text-xs font-semibold text-[#FAFAFA] tracking-tight">
+                  <AiCoreIcon className="h-4 w-4 text-indigo-400" strokeWidth={1.75} />
+                  <h3 className="text-xs font-semibold text-white tracking-tight">
                     AI Boshqaruv va Kontrafakt Xavfi Tahlili
                   </h3>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
                   <span
-                    className={`inline-flex items-center space-x-1 rounded px-2.5 py-0.5 text-[10px] font-mono font-bold ${
+                    className={`inline-flex items-center space-x-1 rounded-md px-2.5 py-0.5 text-[10px] font-mono font-bold ${
                       aiReport.risk_level === 'Past'
                         ? 'bg-[#10B981]/15 border border-[#10B981]/30 text-[#10B981]'
                         : aiReport.risk_level === 'Yuqori'
@@ -853,24 +841,24 @@ export const ProducerPage: React.FC = () => {
 
               <div className="space-y-3 text-xs">
                 <div>
-                  <span className="text-[10px] text-[#525252] uppercase font-mono tracking-wider block mb-1">
+                  <span className="text-[10px] text-[#71717A] uppercase font-mono tracking-wider block mb-1">
                     Boshqaruv Xulosasi
                   </span>
-                  <p className="text-[#888888] leading-relaxed break-words">
+                  <p className="text-[#A1A1AA] leading-relaxed break-words">
                     {aiReport.executive_summary}
                   </p>
                 </div>
 
                 {aiReport.risky_serial_codes && aiReport.risky_serial_codes.length > 0 && (
-                  <div className="pt-2 border-t border-[#141414]">
-                    <span className="text-[10px] text-[#525252] uppercase font-mono tracking-wider block mb-1.5">
+                  <div className="pt-2 border-t border-[#18181B]">
+                    <span className="text-[10px] text-[#71717A] uppercase font-mono tracking-wider block mb-1.5">
                       Shubhali Seriya Kodlari
                     </span>
                     <div className="flex flex-wrap gap-1.5">
                       {aiReport.risky_serial_codes.map((code, idx) => (
                         <span
                           key={idx}
-                          className="rounded border border-[#F59E0B]/30 bg-[#F59E0B]/10 px-2 py-0.5 font-mono text-[11px] font-semibold text-[#F59E0B] break-all"
+                          className="rounded-md border border-[#F59E0B]/30 bg-[#F59E0B]/10 px-2 py-0.5 font-mono text-[11px] font-semibold text-[#F59E0B] break-all"
                         >
                           {code}
                         </span>
@@ -880,15 +868,15 @@ export const ProducerPage: React.FC = () => {
                 )}
 
                 {aiReport.top_hotspots && aiReport.top_hotspots.length > 0 && (
-                  <div className="pt-2 border-t border-[#141414]">
-                    <span className="text-[10px] text-[#525252] uppercase font-mono tracking-wider block mb-1.5">
+                  <div className="pt-2 border-t border-[#18181B]">
+                    <span className="text-[10px] text-[#71717A] uppercase font-mono tracking-wider block mb-1.5">
                       Aniqlangan Hududlar va Bozorlar
                     </span>
                     <div className="flex flex-wrap gap-2">
                       {aiReport.top_hotspots.map((spot, idx) => (
                         <span
                           key={idx}
-                          className="rounded bg-[#141414] border border-[#262626] px-2.5 py-1 text-[11px] font-medium text-[#FAFAFA] flex items-center space-x-1"
+                          className="rounded-md bg-black border border-[#1F1F23] px-2.5 py-1 text-[11px] font-medium text-white flex items-center space-x-1"
                         >
                           <MapPin className="h-3 w-3 text-[#EF4444]" strokeWidth={1.75} />
                           <span>{spot}</span>
@@ -898,11 +886,11 @@ export const ProducerPage: React.FC = () => {
                   </div>
                 )}
 
-                <div className="pt-2 border-t border-[#141414]">
-                  <span className="text-[10px] text-[#525252] uppercase font-mono tracking-wider block mb-1">
+                <div className="pt-2 border-t border-[#18181B]">
+                  <span className="text-[10px] text-[#71717A] uppercase font-mono tracking-wider block mb-1">
                     Tavsiya Etilgan B2B Himoya Choralari
                   </span>
-                  <p className="text-[#FAFAFA] font-medium leading-relaxed break-words">
+                  <p className="text-white font-medium leading-relaxed break-words">
                     {aiReport.action_recommendation}
                   </p>
                 </div>
@@ -911,12 +899,12 @@ export const ProducerPage: React.FC = () => {
           )}
 
           {reports.length === 0 ? (
-            <div className="p-8 sm:p-12 text-center rounded-xl border border-white/[0.06] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808]">
+            <div className="p-8 sm:p-12 text-center rounded-2xl border border-[#1F1F23] bg-[#0A0A0C]">
               <CheckCircle2 className="h-8 w-8 text-[#10B981] mx-auto mb-2" strokeWidth={1.75} />
-              <div className="text-sm font-semibold text-[#FAFAFA]">
+              <div className="text-sm font-semibold text-white">
                 Hozircha shikoyatlar kelib tushmagan
               </div>
-              <p className="text-xs text-[#888888] mt-1">
+              <p className="text-xs text-[#71717A] mt-1">
                 {currentManufacturer.name} mahsulotlari toza va kontrafakt signallarisiz aylanmoqda.
               </p>
             </div>
@@ -925,21 +913,21 @@ export const ProducerPage: React.FC = () => {
               {reports.map((r) => (
                 <div
                   key={r.id}
-                  className="rounded-xl border border-[#EF4444]/30 border-t-[#EF4444]/55 bg-gradient-to-b from-[#140C0C] to-[#080808] p-4 sm:p-5 shadow-[0_14px_36px_rgba(0,0,0,0.65)] space-y-3"
+                  className="rounded-2xl border border-[#1F1F23] border-l-2 border-l-[#EF4444] bg-[#0A0A0C] p-4 sm:p-5 shadow-[0_14px_36px_rgba(0,0,0,0.7)] space-y-3"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="rounded bg-[#EF4444]/15 border border-[#EF4444]/30 px-2 py-0.5 text-[10px] font-mono font-bold text-[#EF4444] break-all">
+                        <span className="rounded-md bg-[#EF4444]/15 border border-[#EF4444]/30 px-2 py-0.5 text-[10px] font-mono font-bold text-[#EF4444] break-all">
                           {r.product?.serial_code || 'NOMAʼLUM KOD'}
                         </span>
-                        <span className="text-xs font-semibold text-[#FAFAFA] break-words">
+                        <span className="text-xs font-semibold text-white break-words">
                           {r.product?.product_name || 'Ro‘yxatdan o‘tmagan mahsulot'}
                         </span>
                       </div>
                     </div>
 
-                    <div className="text-[11px] text-[#525252] font-mono flex items-center space-x-1 shrink-0">
+                    <div className="text-[11px] text-[#71717A] font-mono flex items-center space-x-1 shrink-0">
                       <Clock className="h-3 w-3" strokeWidth={1.75} />
                       <span>
                         {new Date(r.scanned_at).toLocaleString('uz-UZ', {
@@ -952,13 +940,13 @@ export const ProducerPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="text-xs text-[#888888] flex flex-wrap items-center gap-y-1 gap-x-3 pt-1 border-t border-[#141414]">
-                    <div className="flex items-center space-x-1 text-[#FAFAFA]">
+                  <div className="text-xs text-[#A1A1AA] flex flex-wrap items-center gap-y-1 gap-x-3 pt-2 border-t border-[#18181B]">
+                    <div className="flex items-center space-x-1 text-white">
                       <MapPin className="h-3.5 w-3.5 text-[#EF4444]" strokeWidth={1.75} />
                       <span className="font-medium break-words">{r.location_note || 'Manzil nomaʼlum'}</span>
                     </div>
                     {r.device_info && (
-                      <div className="flex items-center space-x-1 text-[#525252]">
+                      <div className="flex items-center space-x-1 text-[#71717A]">
                         <Smartphone className="h-3 w-3" strokeWidth={1.75} />
                         <span>{r.device_info}</span>
                       </div>
@@ -966,7 +954,7 @@ export const ProducerPage: React.FC = () => {
                   </div>
 
                   {r.report_message && (
-                    <div className="rounded-lg bg-[#050505] border border-[#141414] p-3 text-xs text-[#FAFAFA] leading-relaxed break-words">
+                    <div className="rounded-xl bg-[#050507] border border-[#18181B] p-3 text-xs text-zinc-200 leading-relaxed break-words">
                       &quot;{r.report_message}&quot;
                     </div>
                   )}

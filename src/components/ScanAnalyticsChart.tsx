@@ -137,19 +137,19 @@ export const ScanAnalyticsChart: React.FC<ScanAnalyticsChartProps> = ({ data }) 
     activeX !== null ? Math.max(18, Math.min(82, (activeX / width) * 100)) : 50;
 
   return (
-    <div className="relative rounded-xl border border-white/[0.06] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] p-4 sm:p-5 shadow-[0_16px_40px_rgba(0,0,0,0.6)] overflow-hidden">
+    <div className="relative rounded-2xl border border-[#1F1F23] border-t-white/[0.08] bg-[#0A0A0C] p-5 shadow-[0_16px_40px_rgba(0,0,0,0.7)] overflow-hidden">
       {/* Subtle Header Accent */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
         <div className="flex items-center space-x-2">
-          <div className="flex h-6 w-6 items-center justify-center rounded-md border border-white/10 bg-white/[0.04]">
+          <div className="flex h-6 w-6 items-center justify-center rounded-md border border-[#1F1F23] bg-black">
             <BarChart3 className="h-3.5 w-3.5 text-zinc-300" strokeWidth={1.75} />
           </div>
-          <h2 className="text-xs font-semibold tracking-tight text-[#FAFAFA]">
+          <h2 className="text-xs font-semibold tracking-tight text-white">
             7-Kunlik Skanerlash Faolligi
           </h2>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 text-[11px] font-mono text-[#737373]">
+        <div className="flex flex-wrap items-center gap-3 text-[11px] font-mono text-[#71717A]">
           <span className="flex items-center space-x-1.5">
             <span className="h-2 w-2 rounded-full bg-[#10B981] shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
             <span>Tekshiruv</span>
@@ -158,7 +158,7 @@ export const ScanAnalyticsChart: React.FC<ScanAnalyticsChartProps> = ({ data }) 
             <span className="h-2 w-2 rounded-full bg-[#EF4444]" />
             <span>Shikoyat</span>
           </span>
-          <span className="rounded border border-white/[0.08] bg-black/50 px-2 py-0.5 text-[#D4D4D8] tabular-nums">
+          <span className="rounded-md border border-[#1F1F23] bg-black px-2 py-0.5 text-zinc-300 tabular-nums">
             Jami: {totalActivity}
           </span>
         </div>

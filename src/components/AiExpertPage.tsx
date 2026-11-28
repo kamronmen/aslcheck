@@ -12,6 +12,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { AiCoreIcon, VerifiedSealIcon } from './Icons';
+import { UzbekGirihPattern } from './UzbekGirihPattern';
 import { AudioPlayerButton } from './AudioPlayerButton';
 import { askAiAssistant, askAiWithVoice, type ChatMessage } from '../lib/ai';
 import {
@@ -397,12 +398,14 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
   };
 
   return (
-    <div className="mx-auto max-w-4xl px-3 py-4 sm:px-6 sm:py-6 flex flex-col h-[calc(100dvh-4rem)] min-h-[calc(100dvh-130px)] max-h-[920px]">
+    <div className="relative overflow-hidden bg-black">
+      <UzbekGirihPattern />
+      <div className="relative mx-auto max-w-4xl px-3 py-4 sm:px-6 sm:py-6 flex flex-col h-[calc(100dvh-4rem)] min-h-[calc(100dvh-130px)] max-h-[920px]">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 pb-3 border-b border-[#1F1F23]">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 pb-3.5 border-b border-[#18181B]">
         <div className="flex items-center space-x-3">
-          <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl border border-[#1F1F23] bg-[#0A0A0C] text-white shadow-inner shrink-0">
-            <AiCoreIcon className="h-4 w-4 sm:h-5 sm:w-5 text-white" strokeWidth={1.75} />
+          <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl border border-[#1F1F23] bg-[#0A0A0C] text-indigo-400 shadow-[0_0_20px_rgba(99,102,241,0.12)] shrink-0">
+            <AiCoreIcon className="h-4 w-4 sm:h-5 sm:w-5" strokeWidth={1.75} />
           </div>
           <div>
             <div className="flex items-center space-x-2">
@@ -411,12 +414,12 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
                 <span className="text-[#71717A]">• Aqlli tahlil</span>
               </h1>
               <span className="inline-flex items-center space-x-1 rounded-full border border-[#1F1F23] bg-[#0A0A0C] px-2 py-0.5 text-[9px] sm:text-[10px] font-mono text-zinc-300">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#10B981] animate-pulse" />
+                <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,0.85)] animate-pulse" />
                 <span>FAOL</span>
               </span>
             </div>
             <p className="text-[11px] sm:text-xs text-[#71717A] truncate">
-              Mahsulotlar sifati, tarkibi va kontrafaktga qarshi tahlilchi
+              Mahsulotlar sifati, tarkibi va kontrafaktga qarshi ovozli tahlilchi
             </p>
           </div>
         </div>
@@ -432,7 +435,7 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
             }
             className={`flex items-center space-x-1.5 rounded-lg border px-2.5 py-1.5 text-xs transition-colors min-h-[34px] ${
               autoSpeak
-                ? 'border-[#10B981]/40 bg-[#10B981]/10 text-[#10B981]'
+                ? 'border-indigo-400/40 bg-indigo-500/10 text-indigo-300'
                 : 'border-[#1F1F23] bg-[#0A0A0C] text-[#71717A] hover:text-white hover:border-[#27272A]'
             }`}
           >
@@ -457,9 +460,9 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
       </div>
 
       {/* Quick Prompts Bar */}
-      <div className="py-2.5 overflow-x-auto no-scrollbar flex items-center space-x-2 border-b border-[#141414]">
-        <div className="flex items-center space-x-1 text-[10px] sm:text-[11px] text-[#525252] shrink-0 font-mono uppercase tracking-wider">
-          <AiCoreIcon className="h-3 w-3 text-[#888888]" strokeWidth={1.5} />
+      <div className="py-2.5 overflow-x-auto no-scrollbar flex items-center space-x-2 border-b border-[#18181B]">
+        <div className="flex items-center space-x-1 text-[10px] sm:text-[11px] text-[#71717A] shrink-0 font-mono uppercase tracking-wider">
+          <AiCoreIcon className="h-3 w-3 text-indigo-400" strokeWidth={1.5} />
           <span>Tezkor:</span>
         </div>
         <div className="flex items-center space-x-1.5 shrink-0">
@@ -469,7 +472,7 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
               type="button"
               disabled={isLoading}
               onClick={() => handleSendMessage(suggestion)}
-              className="rounded-full border border-[#1F1F1F] bg-[#0A0A0A] px-2.5 py-1 text-[11px] text-[#888888] hover:text-[#FAFAFA] hover:border-[#333333] hover:bg-[#141414] whitespace-nowrap transition-colors disabled:opacity-40"
+              className="rounded-full border border-[#1F1F23] bg-[#0A0A0C] px-3 py-1 text-[11px] text-[#A1A1AA] hover:text-white hover:border-[#27272A] hover:bg-[#141418] whitespace-nowrap transition-colors disabled:opacity-40"
             >
               {suggestion}
             </button>
@@ -491,8 +494,8 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
               <div
                 className={`flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg border text-xs ${
                   isUser
-                    ? 'border-[#2E2E2E] bg-[#1A1A1A] text-[#FAFAFA]'
-                    : 'border-zinc-800 bg-zinc-900 text-zinc-200'
+                    ? 'border-[#27272A] bg-[#141418] text-white'
+                    : 'border-[#1F1F23] bg-[#0A0A0C] text-indigo-400'
                 }`}
               >
                 {isUser ? (
@@ -503,19 +506,19 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
               </div>
 
               <div
-                className={`max-w-[88%] sm:max-w-[78%] rounded-2xl p-3 sm:p-4 break-words ${
+                className={`max-w-[88%] sm:max-w-[78%] rounded-2xl p-3.5 sm:p-4 break-words ${
                   isUser
-                    ? 'border border-[#2E2E2E] bg-gradient-to-b from-[#171717] to-[#111111] text-[#FAFAFA] rounded-tr-sm shadow-sm text-xs sm:text-sm'
-                    : 'border border-white/[0.08] border-t-white/15 bg-gradient-to-b from-[#121212] to-[#080808] text-[#B0B0B0] rounded-tl-sm shadow-[0_14px_35px_rgba(0,0,0,0.65)] text-xs sm:text-sm'
+                    ? 'border border-[#27272A] bg-[#141418] text-white rounded-tr-sm shadow-sm text-xs sm:text-sm'
+                    : 'relative overflow-hidden border border-[#1F1F23] border-t-white/[0.08] bg-[#0A0A0C] text-[#A1A1AA] rounded-tl-sm shadow-[0_14px_35px_rgba(0,0,0,0.75)] text-xs sm:text-sm'
                 }`}
               >
                 {!isUser && (
-                  <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-[#141414]">
-                    <span className="font-semibold text-xs text-[#FAFAFA] flex items-center space-x-1">
+                  <div className="flex items-center justify-between mb-2 pb-1.5 border-b border-[#18181B]">
+                    <span className="font-semibold text-xs text-white flex items-center space-x-1.5">
                       <span>AslCheck Yordamchi</span>
-                      <VerifiedSealIcon className="h-3 w-3 text-[#10B981]" strokeWidth={1.75} />
+                      <VerifiedSealIcon className="h-3 w-3 text-indigo-400" strokeWidth={1.75} />
                     </span>
-                    <span className="text-[10px] text-[#525252] font-mono">{msg.timestamp}</span>
+                    <span className="text-[10px] text-[#71717A] font-mono">{msg.timestamp}</span>
                   </div>
                 )}
 
@@ -528,9 +531,9 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
                     {renderFormattedText(msg.text)}
 
                     {/* Audio reader button in assistant bubble */}
-                    <div className="mt-2.5 pt-2 border-t border-[#141414] flex items-center justify-between">
-                      <span className="text-[10px] text-[#525252] font-mono">
-                        AslCheck Ovozli AI
+                    <div className="mt-2.5 pt-2 border-t border-[#18181B] flex items-center justify-between">
+                      <span className="text-[10px] text-[#71717A] font-mono">
+                        AslCheck Yordamchi • Ovozli javob
                       </span>
                       <AudioPlayerButton
                         text={msg.text}
@@ -543,10 +546,10 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
                 )}
 
                 {isUser && (
-                  <div className="mt-1.5 flex items-center justify-end space-x-2 text-[10px] text-[#525252] font-mono">
+                  <div className="mt-1.5 flex items-center justify-end space-x-2 text-[10px] text-[#71717A] font-mono">
                     {msg.isVoice && (
-                      <span className="inline-flex items-center space-x-1 text-[#888888]">
-                        <Mic className="h-2.5 w-2.5 text-[#10B981]" strokeWidth={2} />
+                      <span className="inline-flex items-center space-x-1 text-[#A1A1AA]">
+                        <Mic className="h-2.5 w-2.5 text-indigo-400" strokeWidth={2} />
                         <span>
                           Ovozli savol{typeof msg.durationSec === 'number' ? ` · ${msg.durationSec}s` : ''}
                         </span>
@@ -562,15 +565,15 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
 
         {isLoading && (
           <div className="flex items-start space-x-2 sm:space-x-3 animate-in fade-in">
-            <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300">
-              <AiCoreIcon className="h-3.5 w-3.5 animate-pulse text-zinc-200" strokeWidth={1.75} />
+            <div className="flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-lg border border-[#1F1F23] bg-[#0A0A0C] text-indigo-400">
+              <AiCoreIcon className="h-3.5 w-3.5 animate-pulse" strokeWidth={1.75} />
             </div>
-            <div className="rounded-2xl rounded-tl-sm border border-[#1F1F1F] bg-[#0A0A0A] p-3 text-xs text-[#888888] shadow-sm flex items-center space-x-2">
-              <span className="text-[#888888]">Tahlil qilinmoqda</span>
+            <div className="rounded-2xl rounded-tl-sm border border-[#1F1F23] bg-[#0A0A0C] p-3 text-xs text-[#A1A1AA] shadow-sm flex items-center space-x-2">
+              <span className="text-[#A1A1AA]">Tahlil qilinmoqda</span>
               <span className="flex space-x-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce" />
-                <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce [animation-delay:0.2s]" />
-                <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce [animation-delay:0.4s]" />
+                <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-bounce" />
+                <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-bounce [animation-delay:0.2s]" />
+                <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-bounce [animation-delay:0.4s]" />
               </span>
             </div>
           </div>
@@ -580,9 +583,9 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
       </div>
 
       {/* Input Form Bar */}
-      <div className="pt-2.5 border-t border-[#1F1F1F] bg-black space-y-1.5">
+      <div className="pt-2.5 border-t border-[#18181B] bg-black/90 space-y-1.5">
         {voiceError && (
-          <div className="flex items-center justify-between gap-2 rounded-lg border border-[#EF4444]/30 bg-[#EF4444]/10 px-3 py-1.5 text-[11px] text-[#FCA5A5]">
+          <div className="flex items-center justify-between gap-2 rounded-xl border border-[#EF4444]/30 bg-[#EF4444]/10 px-3 py-1.5 text-[11px] text-[#FCA5A5]">
             <span className="flex items-center space-x-1.5">
               <AlertCircle className="h-3.5 w-3.5 text-[#EF4444] shrink-0" strokeWidth={1.75} />
               <span>{voiceError}</span>
@@ -591,7 +594,7 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
               type="button"
               onClick={() => setVoiceError(null)}
               aria-label="Xabarni yopish"
-              className="text-[#888888] hover:text-white p-0.5"
+              className="text-[#71717A] hover:text-white p-0.5"
             >
               <X className="h-3 w-3" />
             </button>
@@ -599,29 +602,29 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
         )}
 
         {isRecording ? (
-          <div className="flex items-center justify-between gap-2 rounded-xl border border-[#EF4444]/40 bg-gradient-to-b from-[#170D0D] to-[#0A0A0A] px-3 py-2 min-h-[48px] shadow-[0_0_24px_rgba(239,68,68,0.08)]">
+          <div className="flex items-center justify-between gap-2 rounded-xl border border-indigo-400/40 bg-[#0A0A0C] px-3 py-2 min-h-[48px] shadow-[0_0_28px_rgba(99,102,241,0.14)]">
             <div className="flex items-center space-x-2 shrink-0">
               <span className="relative flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#EF4444] opacity-75" />
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#EF4444]" />
               </span>
-              <span className="font-mono text-xs font-semibold text-[#FAFAFA] tabular-nums">
+              <span className="font-mono text-xs font-semibold text-white tabular-nums">
                 {formatTimer(recordingSec)}
-                <span className="hidden sm:inline text-[#666666] font-normal">
+                <span className="hidden sm:inline text-[#71717A] font-normal">
                   {' '}
                   / {formatTimer(MAX_VOICE_DURATION_SEC)}
                 </span>
               </span>
-              <span className="hidden sm:inline text-xs text-[#A0A0A0]">Gapiring...</span>
+              <span className="hidden sm:inline text-xs text-indigo-300">Gapiring...</span>
             </div>
 
-            {/* Live Frequency Spectrum Bars */}
+            {/* Live Frequency Spectrum Bars (Gemini AI Violet-Blue Waveform) */}
             <div className="flex items-center justify-center gap-1 h-7 flex-1 max-w-[180px]" aria-hidden="true">
               {voiceLevels.map((lvl, i) => (
                 <span
                   key={i}
                   style={{ height: `${Math.max(4, Math.round(lvl * 24))}px` }}
-                  className="w-1 rounded-full bg-gradient-to-t from-zinc-500 to-white transition-[height] duration-75"
+                  className="w-1 rounded-full bg-gradient-to-t from-blue-500 via-indigo-400 to-violet-300 shadow-[0_0_8px_rgba(129,140,248,0.5)] transition-[height] duration-75"
                 />
               ))}
             </div>
@@ -632,14 +635,14 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
                 onClick={handleCancelVoiceRecording}
                 title="Ovoz yozishni bekor qilish"
                 aria-label="Bekor qilish"
-                className="flex items-center justify-center rounded-lg border border-[#262626] bg-[#141414] px-2.5 py-2 text-xs text-[#A0A0A0] hover:text-white hover:bg-[#1F1F1F] transition-colors min-h-[36px] min-w-[36px]"
+                className="flex items-center justify-center rounded-lg border border-[#27272A] bg-black px-2.5 py-2 text-xs text-[#A1A1AA] hover:text-white hover:border-zinc-500 transition-colors min-h-[36px] min-w-[36px]"
               >
                 <X className="h-3.5 w-3.5" strokeWidth={2} />
               </button>
               <button
                 type="button"
                 onClick={() => void handleStopAndSendVoice()}
-                className="flex items-center space-x-1.5 rounded-lg bg-white px-3 py-2 text-xs font-semibold text-black hover:bg-zinc-200 transition-colors shadow-sm min-h-[36px]"
+                className="flex items-center space-x-1.5 rounded-lg bg-white px-3 py-2 text-xs font-semibold text-black hover:bg-[#F4F4F5] transition-colors shadow-[0_0_20px_rgba(255,255,255,0.18)] min-h-[36px]"
               >
                 <span>Yuborish</span>
                 <Send className="h-3 w-3" strokeWidth={2} />
@@ -666,7 +669,7 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
               disabled={isLoading}
               title="Mikrofon orqali o‘zbekcha ovozli savol berish"
               aria-label="Ovozli savol berish"
-              className="flex items-center justify-center rounded-lg border border-[#27272A] bg-black/60 px-2.5 py-2 text-zinc-300 hover:text-white hover:border-zinc-500 disabled:opacity-30 transition-colors min-h-[38px] min-w-[38px] shrink-0"
+              className="flex items-center justify-center rounded-lg border border-[#27272A] bg-black/60 px-2.5 py-2 text-indigo-300 hover:text-white hover:border-indigo-400/50 disabled:opacity-30 transition-colors min-h-[38px] min-w-[38px] shrink-0"
             >
               <Mic className="h-4 w-4" strokeWidth={1.85} />
             </button>
@@ -687,17 +690,18 @@ Savolingizni yozing, mikrofonga gapiring yoki quyidagi tayyor so‘rovlardan bir
           </form>
         )}
 
-        <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-[#525252] px-1">
-          <span className="flex items-center space-x-1">
-            <CheckCircle2 className="h-3 w-3 text-[#10B981] shrink-0" strokeWidth={1.75} />
+        <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-[#71717A] px-1">
+          <span className="flex items-center space-x-1.5">
+            <CheckCircle2 className="h-3 w-3 text-indigo-400 shrink-0" strokeWidth={1.75} />
             <span className="truncate">
               Ovozli savol bering — AslCheck Yordamchi tinglab o‘zbek tilida javob beradi
             </span>
           </span>
-          <span className="hidden sm:inline font-mono text-[10px]">
-            AslCheck Voice AI
+          <span className="hidden sm:inline font-mono text-[10px] text-[#71717A]">
+            Gemini 2.5 • AslCheck Yordamchi
           </span>
         </div>
+      </div>
       </div>
     </div>
   );
