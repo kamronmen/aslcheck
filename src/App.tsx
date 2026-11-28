@@ -102,40 +102,13 @@ export function App() {
         </Suspense>
       </main>
 
-      {/* Floating Action Controls: Minimalist Awwwards Dock (Hidden on mobile to avoid overlapping footer/content) */}
-      {activeTab !== 'ai' && (
-        <div className="no-print hidden sm:flex fixed bottom-4 right-4 z-30 items-center rounded-full border border-[#1F1F23] bg-[#0A0A0C]/90 p-1 shadow-[0_12px_32px_rgba(0,0,0,0.85)] backdrop-blur-xl">
-          <button
-            type="button"
-            onClick={() => setIsVideoGuideOpen(true)}
-            title="Ishlatish yo‘riqnomasi videosini ko‘rish"
-            className="inline-flex items-center space-x-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-[#71717A] hover:text-white hover:bg-white/5 transition-colors"
-          >
-            <Film className="h-3.5 w-3.5 text-zinc-400" strokeWidth={1.75} />
-            <span>Yo‘riqnoma</span>
-          </button>
-          <div className="h-3.5 w-[1px] bg-[#1F1F23]" />
-          <a
-            href={PRESENTATION_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            title="AslCheck taqdimotini ochish"
-            className="inline-flex items-center space-x-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-[#71717A] hover:text-white hover:bg-white/5 transition-colors"
-          >
-            <Presentation className="h-3.5 w-3.5 text-zinc-400" strokeWidth={1.75} />
-            <span>Taqdimot</span>
-            <ArrowUpRight className="h-3 w-3 text-zinc-500" strokeWidth={1.75} />
-          </a>
-        </div>
-      )}
-
       {/* Video Guide Modal */}
       <VideoGuideModal
         isOpen={isVideoGuideOpen}
         onClose={() => setIsVideoGuideOpen(false)}
       />
 
-      <footer className="border-t border-[#1F1F23] bg-black pt-8 pb-20 sm:pb-8 text-xs text-[#71717A]">
+      <footer className="border-t border-[#18181B] bg-black py-8 text-xs text-[#71717A]">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center space-x-2">
             <AslBrandMark className="h-4 w-4 text-[#71717A]" strokeWidth={1.75} />

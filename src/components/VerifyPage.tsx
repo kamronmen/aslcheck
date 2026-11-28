@@ -803,7 +803,7 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
         {/* Verification Card Result */}
         {!isLoading && verificationResult && (
           <div className="mt-8 space-y-3">
-            <div className="mx-auto max-w-2xl flex items-center justify-between px-1">
+            <div className="mx-auto max-w-2xl flex items-center justify-between gap-2 px-1">
               <button
                 type="button"
                 onClick={() => {
@@ -815,10 +815,11 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
                   cleanUrl.searchParams.delete('code');
                   window.history.replaceState({}, '', cleanUrl.toString());
                 }}
-                className="inline-flex items-center space-x-1.5 text-[11px] font-mono text-[#71717A] hover:text-white transition-colors"
+                className="inline-flex items-center space-x-1.5 text-[11px] font-mono text-[#71717A] hover:text-white transition-colors whitespace-nowrap"
               >
-                <RotateCcw className="h-3 w-3" strokeWidth={1.75} />
-                <span>← Tizim reglamentiga qaytish</span>
+                <RotateCcw className="h-3 w-3 shrink-0" strokeWidth={1.75} />
+                <span className="sm:hidden">Bosh sahifa</span>
+                <span className="hidden sm:inline">Tizim reglamentiga qaytish</span>
               </button>
 
               {(searchedCode === 'ASL-2026-001' || searchedCode === 'ASL-2026-999') && (
@@ -828,10 +829,11 @@ export const VerifyPage: React.FC<VerifyPageProps> = ({
                     resetDemoShowcase();
                     void handleVerify(searchedCode, false);
                   }}
-                  className="inline-flex items-center space-x-1 text-[11px] font-mono text-[#71717A] hover:text-white transition-colors"
+                  className="inline-flex items-center space-x-1 text-[11px] font-mono text-[#71717A] hover:text-white transition-colors whitespace-nowrap"
                 >
-                  <RefreshCw className="h-3 w-3" strokeWidth={1.75} />
-                  <span>Demo holatini yangilash</span>
+                  <RefreshCw className="h-3 w-3 shrink-0" strokeWidth={1.75} />
+                  <span className="sm:hidden">Demo tiklash</span>
+                  <span className="hidden sm:inline">Demo holatini yangilash</span>
                 </button>
               )}
             </div>

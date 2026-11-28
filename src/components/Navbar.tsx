@@ -96,28 +96,17 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           </nav>
 
-          {/* Video Guide Trigger Button (Desktop labeled, Mobile compact icon) */}
+          {/* Video Guide Trigger Button (Desktop; accessible via Hero Bento & Footer on mobile) */}
           {onOpenVideoGuide && (
-            <>
-              <button
-                type="button"
-                onClick={onOpenVideoGuide}
-                aria-label="Ishlatish yo‘riqnomasi videosi"
-                title="Ishlatish yo‘riqnomasi videosini ko‘rish (1:11 min)"
-                className="sm:hidden inline-flex items-center justify-center rounded-lg border border-[#1F1F23] bg-[#0A0A0C] p-1.5 text-[#71717A] hover:border-[#27272A] hover:text-white transition-colors shrink-0"
-              >
-                <Film className="h-3.5 w-3.5 text-zinc-400" strokeWidth={1.75} />
-              </button>
-              <button
-                type="button"
-                onClick={onOpenVideoGuide}
-                title="Ishlatish yo‘riqnomasi videosini ko‘rish (1:11 min)"
-                className="hidden items-center space-x-1.5 rounded-lg border border-[#1F1F23] bg-[#0A0A0C] px-2.5 py-1.5 text-[11px] font-medium text-[#71717A] hover:border-[#27272A] hover:text-white transition-colors sm:inline-flex"
-              >
-                <Film className="h-3.5 w-3.5 text-zinc-400" strokeWidth={1.75} />
-                <span>Yo‘riqnoma</span>
-              </button>
-            </>
+            <button
+              type="button"
+              onClick={onOpenVideoGuide}
+              title="Ishlatish yo‘riqnomasi videosini ko‘rish (1:11 min)"
+              className="hidden items-center space-x-1.5 rounded-lg border border-[#1F1F23] bg-[#0A0A0C] px-2.5 py-1.5 text-[11px] font-medium text-[#71717A] hover:border-[#27272A] hover:text-white transition-colors sm:inline-flex"
+            >
+              <Film className="h-3.5 w-3.5 text-zinc-400" strokeWidth={1.75} />
+              <span>Yo‘riqnoma</span>
+            </button>
           )}
 
           {/* Presentation Link (Desktop) */}
