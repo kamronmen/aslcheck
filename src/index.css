@@ -57,7 +57,7 @@
   }
 }
 
-/* Printing styles for QR label cards (Single & Batch A4) */
+/* Printing styles for QR label cards (Single, 58mm Thermal Sticker & Batch A4) */
 @media print {
   body * {
     visibility: hidden;
@@ -66,6 +66,7 @@
     display: none !important;
   }
   #printable-qr-area, #printable-qr-area *,
+  #printable-thermal-58mm, #printable-thermal-58mm *,
   #batch-printable-area, #batch-printable-area * {
     visibility: visible;
   }
@@ -81,6 +82,28 @@
     border: 1px solid #ddd !important;
     box-shadow: none !important;
     padding: 16px !important;
+  }
+  #printable-thermal-58mm {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 58mm !important;
+    max-width: 58mm !important;
+    margin: 0 !important;
+    padding: 3mm 4mm !important;
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+  #printable-thermal-58mm * {
+    color: #000000 !important;
+    border-color: #000000 !important;
   }
   #batch-printable-area {
     position: absolute;
