@@ -59,6 +59,11 @@
 
 /* Printing styles for QR label cards (Single, 58mm Thermal Sticker & Batch A4) */
 @media print {
+  html, body {
+    background: #FFFFFF !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
   body * {
     visibility: hidden;
   }

@@ -594,7 +594,7 @@ export async function verifyScratchPin(
       });
       return {
         success: true,
-        message: '2FA Skretch-PIN muvaffaqiyatli tasdiqlandi! Qadoq 100% asl va o‘zingizga biriktirildi.',
+        message: 'Ichki PIN tasdiqlandi — 100% Original',
       };
     }
 
@@ -627,12 +627,12 @@ export async function verifyScratchPin(
 
     return {
       success: true,
-      message: '2FA Skretch-PIN muvaffaqiyatli tasdiqlandi! Qadoq 100% asl va o‘zingizga biriktirildi.',
+      message: 'Ichki PIN tasdiqlandi — 100% Original',
     };
   } else {
     return {
       success: false,
-      message: 'Skretch-PIN mos kelmadi! Mahsulot soxta qadoqqa ko‘chirilgan bo‘lishi mumkin.',
+      message: 'PIN noto‘g‘ri — qadoq soxta bo‘lishi mumkin',
     };
   }
 }

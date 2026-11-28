@@ -19,6 +19,8 @@ import {
   AlertTriangle,
   KeyRound,
   ShieldCheck,
+  Gift,
+  Copy,
 } from 'lucide-react';
 import { AiCoreIcon, CloneAlertIcon, VerifiedSealIcon } from './Icons';
 import { AudioPlayerButton } from './AudioPlayerButton';
@@ -42,11 +44,22 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
   const [logs, setLogs] = useState<ScanLog[]>(initialLogs);
   const [currentStatus, setCurrentStatus] = useState(status);
 
-  // Ownership Claim state
+  // Ownership Claim & Promo Bonus state
   const [isClaimed, setIsClaimed] = useState<boolean>(Boolean(product?.is_claimed));
   const [claimedAt, setClaimedAt] = useState<string | null>(product?.claimed_at || null);
   const [isClaiming, setIsClaiming] = useState(false);
   const [justClaimed, setJustClaimed] = useState(false);
+  const [copiedPromo, setCopiedPromo] = useState(false);
+
+  const handleCopyPromo = () => {
+    try {
+      void navigator.clipboard.writeText('ASL-BONUS-5');
+      setCopiedPromo(true);
+      window.setTimeout(() => setCopiedPromo(false), 2000);
+    } catch {
+      // Ignore clipboard failure
+    }
+  };
 
   // 2FA Scratch-PIN state
   const [scratchPinInput, setScratchPinInput] = useState('');
@@ -292,19 +305,29 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
       </div>
 
       <div className="p-5 sm:p-6 space-y-5">
-        {/* Feature 4: Impossible Travel & Velocity Shield Telemetry Box */}
+        {/* Feature 3: Geo-Radar & Impossible Travel Telemetry Box */}
         {product.velocity_alert && (
           <div className="rounded-xl border border-[#1F1F23] border-l-2 border-l-[#F59E0B] bg-[#050507] p-4 flex flex-col sm:flex-row items-start gap-3 text-xs animate-in fade-in">
             <AlertTriangle className="h-4 w-4 text-[#F59E0B] shrink-0 mt-0.5" strokeWidth={2} />
-            <div className="flex-1 space-y-1.5">
+            <div className="flex-1 space-y-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="font-semibold tracking-tight text-[#F59E0B]">
-                  GEOGRAFIK ANOMALIYA (IMPOSSIBLE TRAVEL)
+                  GEO-RADAR & IMPOSSIBLE TRAVEL (ANOMALIYA)
                 </span>
                 <span className="rounded-md bg-[#F59E0B]/10 border border-[#F59E0B]/30 px-2 py-0.5 text-[10px] font-mono text-[#F59E0B]">
                   Xavf: 98%
                 </span>
               </div>
+
+              {/* Timestamped Geographic Anomaly Trace */}
+              <div className="rounded-lg border border-[#1F1F23] bg-black/70 px-3 py-2 font-mono text-[11px] text-zinc-200 flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span>14:10 — Toshkent</span>
+                <span className="text-[#52525B]">|</span>
+                <span className="text-[#F59E0B] font-semibold">14:25 — Samarqand (Geografik anomaliya)</span>
+                <span className="text-[#52525B]">|</span>
+                <span>14:42 — Andijon</span>
+              </div>
+
               <p className="text-zinc-300 leading-relaxed">
                 {product.velocity_alert}
               </p>
@@ -315,7 +338,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
           </div>
         )}
 
-        {/* Feature 3: Automatic Expiry Date Alert */}
+        {/* Feature: Automatic Expiry Date Alert */}
         {isExpired && (
           <div className="rounded-xl border border-[#1F1F23] border-l-2 border-l-[#EF4444] bg-[#050507] p-4 flex flex-col sm:flex-row items-start gap-3 text-xs">
             <AlertOctagon className="h-4 w-4 text-[#EF4444] shrink-0 mt-0.5" strokeWidth={2} />
@@ -330,13 +353,46 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
           </div>
         )}
 
-        {/* Feature 2: Smart Ownership Claim Status Banners */}
+        {/* Feature 2: Smart Ownership Claim + 5% Cashback/Bonus Coupon Card */}
         {justClaimed && (
-          <div className="rounded-xl border border-[#10B981]/30 bg-[#10B981]/10 px-4 py-3 flex items-center space-x-2.5 text-xs text-[#10B981] animate-in fade-in">
-            <Check className="h-4 w-4 shrink-0" strokeWidth={2.5} />
-            <span className="font-semibold leading-relaxed">
-              Ushbu mahsulot siz tomoningizdan faollashtirildi (Band qilindi).
-            </span>
+          <div className="rounded-xl border border-[#10B981]/35 bg-[#050507] p-4 space-y-3 animate-in fade-in">
+            <div className="flex items-start space-x-2.5 text-xs text-[#10B981]">
+              <Gift className="h-4 w-4 shrink-0 mt-0.5" strokeWidth={2} />
+              <div className="leading-relaxed">
+                <div className="font-semibold text-white">
+                  Kod sizga band qilindi! Ishlab chiqaruvchidan 5% keyingi xarid bonusi faollashdi
+                </div>
+                <div className="mt-1 text-[11px] text-[#A1A1AA]">
+                  Ushbu unikal kod endi boshqa hech qayerda yangi deb tasdiqlanmaydi.
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between gap-2 rounded-lg border border-[#10B981]/30 bg-[#10B981]/10 px-3 py-2">
+              <div className="flex items-center space-x-2 text-xs">
+                <span className="text-[#A1A1AA]">Promo-kod:</span>
+                <span className="font-mono font-bold tracking-wider text-[#10B981]">
+                  ASL-BONUS-5
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={handleCopyPromo}
+                className="inline-flex items-center space-x-1 rounded-md border border-[#10B981]/30 bg-black/70 px-2.5 py-1 text-[11px] font-mono text-white hover:border-[#10B981] transition-colors"
+              >
+                {copiedPromo ? (
+                  <>
+                    <Check className="h-3 w-3 text-[#10B981]" strokeWidth={2.5} />
+                    <span>Nusxalandi</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-3 w-3 text-[#10B981]" strokeWidth={1.75} />
+                    <span>Nusxa olish</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         )}
 
@@ -344,7 +400,8 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
           <div className="rounded-xl border border-[#1F1F23] border-l-2 border-l-[#F59E0B] bg-[#050507] p-4 flex flex-col sm:flex-row items-start gap-3 text-xs">
             <ShieldAlert className="h-4 w-4 text-[#F59E0B] shrink-0 mt-0.5" strokeWidth={2} />
             <div className="leading-relaxed text-zinc-300">
-              <span className="font-semibold text-[#F59E0B]">DIQQAT!</span> Ushbu mahsulot avvalroq{' '}
+              <span className="font-semibold text-[#F59E0B]">Bu kod allaqachon xaridor tomonidan band qilingan.</span>{' '}
+              Faollashtirilgan vaqti:{' '}
               <span className="font-mono text-white underline underline-offset-2">
                 {claimedAt
                   ? new Date(claimedAt).toLocaleString('uz-UZ', {
@@ -355,13 +412,13 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
                       minute: '2-digit',
                     })
                   : 'oldingi xaridor tomonidan'}
-              </span>{' '}
-              sotib olinib, faollashtirilgan. Agar bu rastadagi yopiq yangi qadoq bo‘lsa — qalbaki yoki nusxalangan bo‘lishi mumkin!
+              </span>
+              . Agar bu rastadagi yopiq yangi qadoq bo‘lsa — qalbaki yoki nusxalangan bo‘lishi mumkin!
             </div>
           </div>
         )}
 
-        {/* Feature 5: 2FA Skretch-PIN (Two-Factor Scratch-off Verification) */}
+        {/* Feature 1: Ikki bosqichli 2FA PIN tasdiqlash */}
         {product.scratch_pin && (
           <div className="rounded-xl border border-[#1F1F23] bg-[#050507] p-4 sm:p-5 space-y-3.5">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
@@ -369,21 +426,21 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
                 <div className="text-xs font-semibold text-white flex flex-wrap items-center gap-2">
                   <span className="inline-flex items-center space-x-1.5">
                     <KeyRound className="h-4 w-4 text-zinc-300" strokeWidth={1.75} />
-                    <span>2FA Skretch-PIN Himoyasi</span>
+                    <span>Ikki bosqichli 2FA PIN tasdiqlash</span>
                   </span>
                   <span className="rounded-md bg-black border border-[#1F1F23] px-2 py-0.5 text-[10px] font-mono text-[#A1A1AA]">
                     2-Bosqichli Himoya
                   </span>
                 </div>
                 <p className="text-[11px] text-[#71717A] mt-1.5 leading-relaxed">
-                  Qallob tashqi QR-kodni 20 ta soxta qutiga ko‘paytirsa ham, qadoq ichidagi maxfiy skretch-qatlam PIN-kodini bila olmaydi.
+                  Qallob tashqi QR-kodni 20 ta soxta qutiga ko‘paytirsa ham, qadoq ichidagi maxfiy 4 xonali PIN-kodni bila olmaydi.
                 </p>
               </div>
 
               {isPinVerified && (
                 <span className="inline-flex items-center space-x-1 rounded-full border border-[#10B981]/30 bg-[#10B981]/15 px-2.5 py-1 text-[11px] font-mono text-[#10B981] shrink-0 self-start sm:self-auto">
                   <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2.5} />
-                  <span>PIN Tasdiqlangan</span>
+                  <span>Ichki PIN tasdiqlandi — 100% Original</span>
                 </span>
               )}
             </div>
@@ -420,7 +477,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
                     ) : (
                       <>
                         <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2} />
-                        <span>PIN-kodni tasdiqlash</span>
+                        <span>Tasdiqlash</span>
                       </>
                     )}
                   </button>
@@ -429,11 +486,11 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
             ) : (
               <div className="rounded-xl border border-[#10B981]/30 bg-[#10B981]/10 p-3 text-xs text-[#10B981] flex items-center space-x-2">
                 <ShieldCheck className="h-4 w-4 shrink-0" strokeWidth={2} />
-                <span>Qadoq ichki kriptografik PIN-kodi muvaffaqiyatli tasdiqlandi.</span>
+                <span>Ichki PIN tasdiqlandi — 100% Original</span>
               </div>
             )}
 
-            {pinMessage && (
+            {pinMessage && !isPinVerified && (
               <div
                 className={`p-3 rounded-xl border text-xs flex items-center space-x-2 animate-in fade-in ${
                   pinMessage.isError

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { Html5Qrcode } from 'html5-qrcode';
-import { X, Camera, Image, AlertCircle, RefreshCw } from 'lucide-react';
-import { extractSerialCode } from '../lib/qr';
+import { X, Camera, Image, AlertCircle, RefreshCw, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { validateOfficialQrPayload } from '../lib/qr';
 
 interface QrScannerModalProps {
   isOpen: boolean;
@@ -15,6 +15,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
   onScanSuccess,
 }) => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [phishingAlert, setPhishingAlert] = useState<{ message: string; payload: string } | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
   const [activeMode, setActiveMode] = useState<'camera' | 'file'>('camera');
   const qrScannerRef = useRef<Html5Qrcode | null>(null);
@@ -43,6 +44,7 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
 
   const startCamera = useCallback(async () => {
     setErrorMsg(null);
+    setPhishingAlert(null);
     setIsInitializing(true);
 
     try {
@@ -66,9 +68,16 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
           aspectRatio: 1.0,
         },
         async (decodedText) => {
-          const code = extractSerialCode(decodedText);
+          const check = validateOfficialQrPayload(decodedText);
           await stopCamera();
-          onScanSuccessRef.current(code);
+          if (!check.isValid || !check.code) {
+            setPhishingAlert({
+              message: check.reason || 'Xavf! Begona/soxta havola bloklandi (Phishing himoyasi)',
+              payload: decodedText.slice(0, 80),
+            });
+            return;
+          }
+          onScanSuccessRef.current(check.code);
         },
         () => {
           // Ignore per-frame misses
@@ -123,13 +132,21 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
     if (!file) return;
 
     setErrorMsg(null);
+    setPhishingAlert(null);
     try {
       const { Html5Qrcode: Html5QrcodeLib } = await import('html5-qrcode');
       const html5QrCode = new Html5QrcodeLib('file-scanner-temp');
       const decodedText = await html5QrCode.scanFile(file, true);
-      const code = extractSerialCode(decodedText);
+      const check = validateOfficialQrPayload(decodedText);
       await stopCamera();
-      onScanSuccess(code);
+      if (!check.isValid || !check.code) {
+        setPhishingAlert({
+          message: check.reason || 'Xavf! Begona/soxta havola bloklandi (Phishing himoyasi)',
+          payload: decodedText.slice(0, 80),
+        });
+        return;
+      }
+      onScanSuccess(check.code);
     } catch (err) {
       console.warn('File QR read error:', err);
       setErrorMsg('Rasmdan QR-kod topilmadi. Aniqroq yoki yorug‘roq rasm tanlang.');
@@ -259,6 +276,29 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
             </div>
           )}
 
+          {phishingAlert && (
+            <div className="mt-4 rounded-xl border border-[#EF4444]/40 bg-[#EF4444]/10 p-3.5 text-xs text-[#EF4444] space-y-2 animate-in fade-in">
+              <div className="flex items-start space-x-2.5">
+                <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5" strokeWidth={2} />
+                <div className="flex-1 space-y-1">
+                  <div className="font-bold leading-snug">{phishingAlert.message}</div>
+                  <div className="rounded bg-black/70 border border-[#EF4444]/25 px-2 py-1 font-mono text-[10px] text-zinc-300 break-all">
+                    Bloklangan manba: {phishingAlert.payload}
+                  </div>
+                </div>
+              </div>
+              {activeMode === 'camera' && (
+                <button
+                  type="button"
+                  onClick={() => void startCamera()}
+                  className="w-full rounded-lg border border-[#EF4444]/30 bg-black px-3 py-1.5 text-[11px] font-medium text-white hover:bg-[#141418] transition-colors"
+                >
+                  Kamerani qayta yoqish
+                </button>
+              )}
+            </div>
+          )}
+
           {errorMsg && (
             <div className="mt-4 flex items-start space-x-2.5 rounded-xl border border-[#EF4444]/30 bg-[#EF4444]/10 p-3 text-xs text-[#EF4444]">
               <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" strokeWidth={1.75} />
@@ -268,14 +308,33 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="border-t border-[#18181B] bg-[#050507] px-5 py-3 flex justify-end">
-          <button
-            type="button"
-            onClick={() => void handleModalClose()}
-            className="rounded-lg border border-[#1F1F23] bg-black px-3.5 py-1.5 text-xs font-medium text-white hover:border-[#27272A] transition-colors"
-          >
-            Yopish
-          </button>
+        <div className="border-t border-[#18181B] bg-[#050507] px-5 py-3 flex flex-wrap items-center justify-between gap-2">
+          <span className="inline-flex items-center space-x-1.5 text-[10px] font-mono text-[#71717A]">
+            <ShieldCheck className="h-3.5 w-3.5 text-[#10B981]" strokeWidth={1.75} />
+            <span>Phishing himoyasi faol</span>
+          </span>
+          <div className="flex items-center space-x-2">
+            <button
+              type="button"
+              onClick={async () => {
+                await stopCamera();
+                setPhishingAlert({
+                  message: 'Xavf! Begona/soxta havola bloklandi (Phishing himoyasi)',
+                  payload: 'https://soxta-sayt-phishing.uz/?code=FAKE',
+                });
+              }}
+              className="rounded-lg border border-[#1F1F23] bg-black px-2.5 py-1.5 text-[10px] font-mono text-[#71717A] hover:text-white hover:border-[#27272A] transition-colors"
+            >
+              Phishing sinovi
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleModalClose()}
+              className="rounded-lg border border-[#1F1F23] bg-black px-3.5 py-1.5 text-xs font-medium text-white hover:border-[#27272A] transition-colors"
+            >
+              Yopish
+            </button>
+          </div>
         </div>
       </div>
     </div>

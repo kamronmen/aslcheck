@@ -1,3 +1,83 @@
+export interface QrSourceValidation {
+  isValid: boolean;
+  code: string | null;
+  reason?: string;
+}
+
+/**
+ * Verify that scanned QR payload originates exclusively from official AslCheck domains
+ * (aslcheck-uz.vercel.app / aslcheck.uz) or matches an official ASL- serial code.
+ * Blocks foreign phishing URLs and untrusted barcodes.
+ */
+export function validateOfficialQrPayload(rawText: string): QrSourceValidation {
+  const text = rawText.trim();
+  if (!text) {
+    return {
+      isValid: false,
+      code: null,
+      reason: 'Xavf! Begona/soxta havola bloklandi (Phishing himoyasi)',
+    };
+  }
+
+  const looksLikeUrl =
+    /^https?:\/\//i.test(text) ||
+    /^www\./i.test(text) ||
+    /^[a-z0-9-]+\.[a-z]{2,}(\/|\?|$)/i.test(text);
+
+  if (looksLikeUrl) {
+    try {
+      const normalized = /^https?:\/\//i.test(text) ? text : `https://${text}`;
+      const parsed = new URL(normalized);
+      const host = parsed.hostname.toLowerCase();
+      const currentHost =
+        typeof window !== 'undefined' ? window.location.hostname.toLowerCase() : '';
+
+      const isTrustedHost =
+        host === 'aslcheck-uz.vercel.app' ||
+        host === 'aslcheck.uz' ||
+        host === 'www.aslcheck.uz' ||
+        (Boolean(currentHost) && host === currentHost);
+
+      if (!isTrustedHost) {
+        return {
+          isValid: false,
+          code: null,
+          reason: 'Xavf! Begona/soxta havola bloklandi (Phishing himoyasi)',
+        };
+      }
+
+      const codeParam = parsed.searchParams.get('code')?.trim().toUpperCase() || '';
+      if (!codeParam || !/^ASL-[A-Z0-9-]{3,}$/i.test(codeParam)) {
+        return {
+          isValid: false,
+          code: null,
+          reason: 'Xavf! Begona/soxta havola bloklandi (Phishing himoyasi)',
+        };
+      }
+
+      return { isValid: true, code: codeParam };
+    } catch {
+      return {
+        isValid: false,
+        code: null,
+        reason: 'Xavf! Begona/soxta havola bloklandi (Phishing himoyasi)',
+      };
+    }
+  }
+
+  // Raw serial format must strictly follow ASL- prefix
+  const normalizedSerial = extractSerialCode(text);
+  if (/^ASL-[A-Z0-9-]{3,}$/i.test(normalizedSerial)) {
+    return { isValid: true, code: normalizedSerial };
+  }
+
+  return {
+    isValid: false,
+    code: null,
+    reason: 'Xavf! Begona/soxta havola bloklandi (Phishing himoyasi)',
+  };
+}
+
 /**
  * Extract normalized serial code from raw QR payload or AslCheck URL.
  */
