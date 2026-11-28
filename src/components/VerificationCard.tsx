@@ -368,17 +368,17 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
               </div>
             </div>
 
-            <div className="flex items-center justify-between gap-2 rounded-lg border border-[#10B981]/30 bg-[#10B981]/10 px-3 py-2">
-              <div className="flex items-center space-x-2 text-xs">
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-[#10B981]/30 bg-[#10B981]/10 px-3 py-2.5">
+              <div className="flex items-center space-x-2 text-xs whitespace-nowrap">
                 <span className="text-[#A1A1AA]">Promo-kod:</span>
-                <span className="font-mono font-bold tracking-wider text-[#10B981]">
+                <span className="font-mono font-bold tracking-wider text-[#10B981] whitespace-nowrap">
                   ASL-BONUS-5
                 </span>
               </div>
               <button
                 type="button"
                 onClick={handleCopyPromo}
-                className="inline-flex items-center space-x-1 rounded-md border border-[#10B981]/30 bg-black/70 px-2.5 py-1 text-[11px] font-mono text-white hover:border-[#10B981] transition-colors"
+                className="inline-flex items-center space-x-1 rounded-md border border-[#10B981]/30 bg-black/70 px-2.5 py-1 text-[11px] font-mono text-white hover:border-[#10B981] transition-colors whitespace-nowrap shrink-0"
               >
                 {copiedPromo ? (
                   <>
@@ -388,7 +388,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
                 ) : (
                   <>
                     <Copy className="h-3 w-3 text-[#10B981]" strokeWidth={1.75} />
-                    <span>Nusxa olish</span>
+                    <span>Nusxa</span>
                   </>
                 )}
               </button>
@@ -440,7 +440,7 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
               {isPinVerified && (
                 <span className="inline-flex items-center space-x-1 rounded-full border border-[#10B981]/30 bg-[#10B981]/15 px-2.5 py-1 text-[11px] font-mono text-[#10B981] shrink-0 self-start sm:self-auto">
                   <ShieldCheck className="h-3.5 w-3.5" strokeWidth={2.5} />
-                  <span>Ichki PIN tasdiqlandi — 100% Original</span>
+                  <span>Tasdiqlandi</span>
                 </span>
               )}
             </div>
