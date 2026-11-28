@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { AiCoreIcon, CloneAlertIcon, VerifiedSealIcon } from './Icons';
 import { AudioPlayerButton } from './AudioPlayerButton';
+import { UzbekistanGeoRadar } from './UzbekistanGeoRadar';
 import type { VerificationResult, ScanLog } from '../types';
 import { reportFakeProduct, claimProduct, verifyScratchPin } from '../lib/api';
 import { analyzeProductWithAi, type ProductAiAnalysis } from '../lib/ai';
@@ -331,6 +332,10 @@ export const VerificationCard: React.FC<VerificationCardProps> = ({
               <p className="text-zinc-300 leading-relaxed">
                 {product.velocity_alert}
               </p>
+
+              {/* Live Interactive Uzbekistan Geo-Radar Map */}
+              <UzbekistanGeoRadar mode="impossible-travel" />
+
               <p className="text-[11px] text-[#F59E0B]/90 font-medium">
                 Xulosa: Bitta haqiqiy QR-kod rasmga olinib, 20 tagacha qalbaki qadoqlarga ko‘paytirib yopishtirilgan.
               </p>

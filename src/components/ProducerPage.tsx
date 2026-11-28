@@ -41,6 +41,7 @@ import { QrLabelCard } from './QrLabelCard';
 import { BatchQrModal } from './BatchQrModal';
 import { AudioPlayerButton } from './AudioPlayerButton';
 import { ScanAnalyticsChart } from './ScanAnalyticsChart';
+import { UzbekistanGeoRadar } from './UzbekistanGeoRadar';
 import {
   AiCoreIcon,
   VerifiedSealIcon,
@@ -803,6 +804,13 @@ export const ProducerPage: React.FC = () => {
               </button>
             </div>
           </div>
+
+          {/* Interactive Live Uzbekistan Counterfeit & Hotspot Radar Map */}
+          <UzbekistanGeoRadar
+            mode="hotspots"
+            reports={reports}
+            homeRegion={currentManufacturer.region}
+          />
 
           {/* AI Executive Briefing Card */}
           {aiReport && (

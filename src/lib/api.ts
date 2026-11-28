@@ -340,11 +340,17 @@ export async function verifyProduct(rawCode: string): Promise<VerificationResult
 
   if (isSupabaseConfigured) {
     try {
-      const { data: productData, error: productError } = await supabase
-        .from('products')
-        .select(`*, manufacturers(*)`)
-        .ilike('serial_code', serialCode)
-        .maybeSingle();
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        window.setTimeout(() => reject(new Error('Supabase verification timeout')), 4500)
+      );
+      const { data: productData, error: productError } = await Promise.race([
+        supabase
+          .from('products')
+          .select(`*, manufacturers(*)`)
+          .ilike('serial_code', serialCode)
+          .maybeSingle(),
+        timeoutPromise,
+      ]);
 
       if (productError) {
         console.warn('Supabase query error, falling back to local registry:', productError.message);
